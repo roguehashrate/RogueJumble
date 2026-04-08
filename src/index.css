@@ -44,7 +44,7 @@
     position: relative;
 
     &:active {
-      background-color: hsl(var(--muted) / 0.4);
+      background-color: hsl(var(--note-hover));
     }
   }
 
@@ -86,7 +86,7 @@
 
   @media (hover: hover) and (pointer: fine) {
     .clickable:hover {
-      background-color: hsl(var(--muted) / 0.4);
+      background-color: hsl(var(--note-hover));
     }
   }
 
@@ -125,6 +125,11 @@
     --border: 240 5.9% 92%;
     --input: 240 5.9% 90%;
     --ring: 259 43% 56%;
+    --zap: 45 93% 47%;
+    --repost: 142 71% 45%;
+    --bookmark: 346 86% 56%;
+    --comment: 217 91% 60%;
+    --note-hover: 240 4.8% 96%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -154,6 +159,11 @@
     --border: 240 3.7% 18%;
     --input: 240 3.7% 15.9%;
     --ring: 259 43% 56%;
+    --zap: 45 93% 47%;
+    --repost: 142 71% 45%;
+    --bookmark: 346 86% 56%;
+    --comment: 217 91% 60%;
+    --note-hover: 0 0% 11%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;

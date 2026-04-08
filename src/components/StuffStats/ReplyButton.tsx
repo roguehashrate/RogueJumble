@@ -20,8 +20,8 @@ export default function ReplyButton({ stuff }: { stuff: Event | string }) {
     <>
       <button
         className={cn(
-          'flex h-full items-center gap-1 pr-3 enabled:hover:text-blue-400',
-          hasReplied ? 'text-blue-400' : 'text-muted-foreground'
+          'flex h-full items-center gap-1 pr-3 enabled:hover:text-comment',
+          hasReplied ? 'text-comment' : 'text-muted-foreground'
         )}
         onClick={(e) => {
           e.stopPropagation()

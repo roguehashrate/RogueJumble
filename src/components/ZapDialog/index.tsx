@@ -232,7 +232,7 @@ function ZapDialogContent({
 
       {/* Self-zap easter egg warning */}
       {isSelfZap && (
-        <div className="rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-center text-sm text-yellow-600 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-400">
+        <div className="rounded-md border border-zap/30 bg-zap/10 px-4 py-2 text-center text-sm text-zap">
           {t('selfZapWarning')}
         </div>
       )}

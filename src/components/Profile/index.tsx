@@ -156,7 +156,7 @@ export default function Profile({ id }: { id?: string }) {
             </div>
             <Nip05 pubkey={pubkey} />
             {lightningAddress && (
-              <div className="flex select-text items-center gap-1 text-sm text-yellow-400">
+              <div className="flex select-text items-center gap-1 text-sm text-zap">
                 <Zap className="size-4 shrink-0" />
                 <div className="w-0 max-w-fit flex-1 truncate">{lightningAddress}</div>
               </div>

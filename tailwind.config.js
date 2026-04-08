@@ -49,6 +49,11 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        zap: 'hsl(var(--zap))',
+        repost: 'hsl(var(--repost))',
+        bookmark: 'hsl(var(--bookmark))',
+        comment: 'hsl(var(--comment))',
+        noteHover: 'hsl(var(--note-hover))',
         chart: {
           1: 'hsl(var(--chart-1))',
           2: 'hsl(var(--chart-2))',

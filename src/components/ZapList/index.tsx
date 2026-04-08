@@ -48,8 +48,8 @@ export default function ZapList({ event }: { event: Event }) {
           onClick={() => push(toProfile(zap.pubkey))}
         >
           <div className="mt-0.5 flex w-8 flex-col items-center">
-            <Zap className="size-5 text-yellow-400" />
-            <div className="text-sm font-semibold text-yellow-400">{formatAmount(zap.amount)}</div>
+            <Zap className="size-5 text-zap" />
+            <div className="text-sm font-semibold text-zap">{formatAmount(zap.amount)}</div>
           </div>
 
           <div className="flex items-start space-x-2">

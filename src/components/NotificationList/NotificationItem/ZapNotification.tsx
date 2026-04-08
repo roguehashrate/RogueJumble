@@ -26,12 +26,12 @@ export function ZapNotification({
   return (
     <Notification
       notificationId={notification.id}
-      icon={<Zap size={24} className="shrink-0 text-yellow-400" />}
+      icon={<Zap size={24} className="shrink-0 text-zap" />}
       sender={senderPubkey}
       sentAt={notification.created_at}
       targetEvent={event}
       middle={
-        <div className="truncate font-semibold text-yellow-400">
+        <div className="truncate font-semibold text-zap">
           {formatAmount(amount)} {t('sats')} {comment}
         </div>
       }

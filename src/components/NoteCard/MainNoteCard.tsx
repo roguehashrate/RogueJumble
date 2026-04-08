@@ -39,7 +39,7 @@ export default function MainNoteCard({
           'clickable transition-all duration-200',
           embedded ? 'rounded-xl border bg-card p-3 sm:p-4' : 'py-3'
         )}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'hsl(0, 0%, 3.5%)')}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'hsl(var(--note-hover))')}
         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
       >
         <Collapsible alwaysExpand={embedded}>

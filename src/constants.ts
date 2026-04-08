@@ -498,7 +498,12 @@ export const THEME_COLORS = {
       border: '0 0% 18%',
       input: '0 0% 15%',
       ring: '25 95% 55%',
-      surfaceBackground: '0 0% 3%'
+      surfaceBackground: '0 0% 3%',
+      zap: '45 93% 47%',
+      repost: '142 71% 45%',
+      bookmark: '346 86% 56%',
+      comment: '217 91% 60%',
+      noteHover: '0 0% 3.5%'
     }
   },
   nord: {
@@ -524,7 +529,12 @@ export const THEME_COLORS = {
       border: '219 16% 36%',
       input: '220 16% 24%',
       ring: '193 39% 68%',
-      surfaceBackground: '220 14% 17%'
+      surfaceBackground: '220 14% 17%',
+      zap: '42 74% 64%',
+      repost: '93 37% 66%',
+      bookmark: '42 74% 64%',
+      comment: '213 28% 63%',
+      noteHover: '220 14% 24%'
     }
   },
   dracula: {
@@ -550,7 +560,12 @@ export const THEME_COLORS = {
       border: '232 14% 35%',
       input: '232 14% 28%',
       ring: '336 89% 78%',
-      surfaceBackground: '231 15% 15%'
+      surfaceBackground: '231 15% 15%',
+      zap: '32 85% 67%',
+      repost: '142 76% 56%',
+      bookmark: '32 85% 67%',
+      comment: '217 91% 60%',
+      noteHover: '231 15% 21%'
     }
   },
   gruvbox: {
@@ -576,7 +591,12 @@ export const THEME_COLORS = {
       border: '30 10% 30%',
       input: '30 10% 22%',
       ring: '25 95% 52%',
-      surfaceBackground: '30 10% 12%'
+      surfaceBackground: '30 10% 12%',
+      zap: '25 95% 52%',
+      repost: '94 35% 62%',
+      bookmark: '25 95% 52%',
+      comment: '217 91% 60%',
+      noteHover: '30 10% 18%'
     }
   },
   everforest: {
@@ -602,7 +622,12 @@ export const THEME_COLORS = {
       border: '200 15% 27%',
       input: '200 15% 21%',
       ring: '84 28% 58%',
-      surfaceBackground: '200 15% 12%'
+      surfaceBackground: '200 15% 12%',
+      zap: '17 37% 64%',
+      repost: '84 28% 58%',
+      bookmark: '17 37% 64%',
+      comment: '217 91% 60%',
+      noteHover: '200 15% 18%'
     }
   },
   kanagawa: {
@@ -628,7 +653,12 @@ export const THEME_COLORS = {
       border: '240 13% 28%',
       input: '240 13% 20%',
       ring: '350 55% 55%',
-      surfaceBackground: '240 13% 10%'
+      surfaceBackground: '240 13% 10%',
+      zap: '30 85% 62%',
+      repost: '110 22% 56%',
+      bookmark: '350 55% 55%',
+      comment: '220 40% 60%',
+      noteHover: '240 13% 17%'
     }
   }
 } as const

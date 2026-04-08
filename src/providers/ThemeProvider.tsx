@@ -37,6 +37,11 @@ const applyTheme = (themeName: TThemeName) => {
   root.style.setProperty('--input', colors.input)
   root.style.setProperty('--ring', colors.ring)
   root.style.setProperty('--surface-background', colors.surfaceBackground)
+  root.style.setProperty('--zap', colors.zap)
+  root.style.setProperty('--repost', colors.repost)
+  root.style.setProperty('--bookmark', colors.bookmark)
+  root.style.setProperty('--comment', colors.comment)
+  root.style.setProperty('--note-hover', colors.noteHover)
 
   root.classList.remove('light', 'dark', 'rogue', 'nord', 'dracula', 'gruvbox', 'everforest', 'kanagawa')
   root.classList.add(themeName)

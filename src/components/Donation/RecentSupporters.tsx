@@ -37,7 +37,7 @@ export default function RecentSupporters() {
                 </div>
               </div>
             </div>
-            <div className="shrink-0 font-semibold text-yellow-400">
+            <div className="shrink-0 font-semibold text-zap">
               {formatAmount(item.amount)} {t('sats')}
             </div>
           </div>

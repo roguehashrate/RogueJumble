@@ -16,7 +16,7 @@ export default function ProfileZapButton({ pubkey }: { pubkey: string }) {
         className="rounded-full"
         onClick={() => checkLogin(() => setOpen(true))}
       >
-        <Zap className="text-yellow-400" />
+        <Zap className="text-zap" />
       </Button>
       <ZapDialog open={open} setOpen={setOpen} pubkey={pubkey} />
     </>

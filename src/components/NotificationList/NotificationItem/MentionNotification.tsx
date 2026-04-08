@@ -83,11 +83,11 @@ export function MentionNotification({
       notificationId={notification.id}
       icon={
         isMention ? (
-          <AtSign size={24} className="text-pink-400" />
+          <AtSign size={24} className="text-bookmark" />
         ) : parentEventId ? (
-          <MessageCircle size={24} className="text-blue-400" />
+          <MessageCircle size={24} className="text-comment" />
         ) : (
-          <Quote size={24} className="text-green-400" />
+          <Quote size={24} className="text-repost" />
         )
       }
       sender={notification.pubkey}

@@ -35,8 +35,8 @@ export default function ZapDetailDialog({ open, setOpen, zap }: ZapDetailDialogP
             <FormattedTimestamp timestamp={zap.created_at} />
           </div>
         </div>
-        <div className="flex items-center gap-1 text-yellow-400">
-          <Zap className="size-5 fill-yellow-400" />
+        <div className="flex items-center gap-1 text-zap">
+          <Zap className="size-5 fill-zap" />
           <span className="text-lg font-bold">{formatAmount(zap.amount)}</span>
         </div>
       </div>

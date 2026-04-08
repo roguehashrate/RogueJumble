@@ -46,7 +46,7 @@ export function EmbeddedLNInvoice({ invoice, className }: { invoice: string; cla
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-2">
-        <Zap className="h-5 w-5 text-yellow-400" />
+        <Zap className="h-5 w-5 text-zap" />
         <div className="text-sm font-semibold">{t('Lightning Invoice')}</div>
       </div>
       {description && (

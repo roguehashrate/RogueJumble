@@ -135,8 +135,8 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
     <>
       <button
         className={cn(
-          'flex h-full cursor-pointer select-none items-center gap-1 px-3 enabled:hover:text-yellow-400 disabled:cursor-default disabled:text-muted-foreground/40',
-          hasZapped ? 'text-yellow-400' : 'text-muted-foreground'
+          'flex h-full cursor-pointer select-none items-center gap-1 px-3 enabled:hover:text-zap disabled:cursor-default disabled:text-muted-foreground/40',
+          hasZapped ? 'text-zap' : 'text-muted-foreground'
         )}
         title={t('Zap')}
         disabled={disable || zapping}
@@ -149,7 +149,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
         {zapping ? (
           <Loader className="animate-spin" />
         ) : (
-          <Zap className={hasZapped ? 'fill-yellow-400' : ''} />
+          <Zap className={hasZapped ? 'fill-zap' : ''} />
         )}
         {!!zapAmount && <div className="text-sm">{formatAmount(zapAmount)}</div>}
       </button>
