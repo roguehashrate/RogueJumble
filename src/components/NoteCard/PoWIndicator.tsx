@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Event } from 'nostr-tools'
+import { getPow } from 'nostr-tools/nip13'
 import { useTranslation } from 'react-i18next'
 import { Pickaxe } from 'lucide-react'
 
@@ -11,16 +12,14 @@ export default function PoWIndicator({
   className?: string
 }) {
   const { t } = useTranslation()
-  
-  // Find the nonce tag - this is only present when PoW was intentionally mined
-  const nonceTag = event.tags.find(tag => tag[0] === 'nonce' && tag.length >= 3)
-  
+
   // Only show if nonce tag exists (meaning PoW was intentionally applied)
+  const nonceTag = event.tags.find(tag => tag[0] === 'nonce' && tag.length >= 3)
   if (!nonceTag) return null
-  
-  // The difficulty is the third element in the nonce tag
-  const pow = parseInt(nonceTag[2], 10)
-  
+
+  // Calculate the actual achieved difficulty from the event ID
+  const pow = getPow(event.id)
+
   return (
     <span
       className={cn(
