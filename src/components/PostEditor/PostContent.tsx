@@ -14,7 +14,17 @@ import { useNostr } from '@/providers/NostrProvider'
 import postEditorCache from '@/services/post-editor-cache.service'
 import threadService from '@/services/thread.service'
 import { TPollCreateData } from '@/types'
-import { CircleHelp, ImageUp, ListTodo, LoaderCircle, Settings, Smile, X } from 'lucide-react'
+import {
+  Ban,
+  CircleHelp,
+  ImageUp,
+  ListTodo,
+  LoaderCircle,
+  Pickaxe,
+  Smile,
+  Tag,
+  X
+} from 'lucide-react'
 import { Event, kinds } from 'nostr-tools'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -25,7 +35,6 @@ import { Switch } from '@/components/ui/switch'
 import EmojiPickerDialog from '../EmojiPickerDialog'
 import Mentions from './Mentions'
 import PollEditor from './PollEditor'
-import PostOptions from './PostOptions'
 import PostRelaySelector from './PostRelaySelector'
 import PostTextarea, { TPostTextareaHandle } from './PostTextarea'
 import Uploader from './Uploader'
@@ -56,8 +65,7 @@ export default function PostContent({
     () => (parentStuff && typeof parentStuff !== 'string' ? parentStuff : undefined),
     [parentStuff]
   )
-  const [showMoreOptions, setShowMoreOptions] = useState(false)
-  const [addClientTag, setAddClientTag] = useState(false)
+  const [addClientTag, setAddClientTag] = useState(true)
   const [mentions, setMentions] = useState<string[]>([])
   const [isNsfw, setIsNsfw] = useState(false)
   const [isPoll, setIsPoll] = useState(false)
@@ -69,7 +77,7 @@ export default function PostContent({
     endsAt: undefined,
     relays: []
   })
-  const [minPow, setMinPow] = useState(0)
+  const [minPow, setMinPow] = useState(16)
   const userDismissedProtected = useRef(false)
   const handleProtectedSuggestionChange = useCallback((suggested: boolean) => {
     if (suggested && !userDismissedProtected.current) {
@@ -348,10 +356,29 @@ export default function PostContent({
           <Button
             variant="ghost"
             size="icon"
-            className={showMoreOptions ? 'bg-accent' : ''}
-            onClick={() => setShowMoreOptions((pre) => !pre)}
+            title={t('Client Tag')}
+            className={addClientTag ? 'text-primary' : ''}
+            onClick={() => setAddClientTag(!addClientTag)}
           >
-            <Settings />
+            <Tag />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t('Proof of Work')}
+            className={minPow > 0 ? 'text-primary' : ''}
+            onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
+          >
+            <Pickaxe />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t('NSFW')}
+            className={isNsfw ? 'text-primary' : ''}
+            onClick={() => setIsNsfw(!isNsfw)}
+          >
+            <Ban />
           </Button>
         </div>
         <div className="flex items-center gap-2">
@@ -378,15 +405,6 @@ export default function PostContent({
           </div>
         </div>
       </div>
-      <PostOptions
-        posting={posting}
-        addClientTag={addClientTag}
-        setAddClientTag={setAddClientTag}
-        isNsfw={isNsfw}
-        setIsNsfw={setIsNsfw}
-        minPow={minPow}
-        setMinPow={setMinPow}
-      />
       <div className="flex items-center justify-around gap-2 sm:hidden">
         <Button
           className="w-full"

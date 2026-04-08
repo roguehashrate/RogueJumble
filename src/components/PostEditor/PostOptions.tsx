@@ -45,7 +45,7 @@ export default function PostOptions({
   }
 
   const onPoWToggle = (checked: boolean) => {
-    setMinPow(checked ? 12 : 0)
+    setMinPow(checked ? 16 : 0)
     window.localStorage.setItem(StorageKey.POW_ENABLED, checked.toString())
   }
 
@@ -53,7 +53,7 @@ export default function PostOptions({
     const cached = window.localStorage.getItem(StorageKey.POW_ENABLED)
     if (cached === null) {
       window.localStorage.setItem(StorageKey.POW_ENABLED, 'true')
-      setMinPow(12)
+      setMinPow(16)
     }
   }, [])
 
