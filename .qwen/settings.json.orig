@@ -3,6 +3,5 @@
     "allow": [
       "Bash(sed *)"
     ]
-  },
-  "$version": 3
+  }
 }
