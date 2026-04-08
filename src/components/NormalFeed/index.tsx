@@ -2,12 +2,15 @@ import NoteList, { TNoteListRef } from '@/components/NoteList'
 import Tabs from '@/components/Tabs'
 import TrustScoreFilter from '@/components/TrustScoreFilter'
 import UserAggregationList, { TUserAggregationListRef } from '@/components/UserAggregationList'
+import { ExtendedKind } from '@/constants'
 import { isTouchDevice } from '@/lib/utils'
 import { useKindFilter } from '@/providers/KindFilterProvider'
 import { useUserTrust } from '@/providers/UserTrustProvider'
 import storage from '@/services/local-storage.service'
 import { TFeedSubRequest, TNoteListMode } from '@/types'
 import { useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { kinds } from 'nostr-tools'
 import KindFilter from '../KindFilter'
 import { RefreshButton } from '../RefreshButton'
 
@@ -19,7 +22,8 @@ export default function NormalFeed({
   showRelayCloseReason = false,
   disable24hMode = false,
   onRefresh,
-  isPubkeyFeed = false
+  isPubkeyFeed = false,
+  feedVariant = 'following'
 }: {
   trustScoreFilterId?: string
   subRequests: TFeedSubRequest[]
@@ -29,7 +33,9 @@ export default function NormalFeed({
   disable24hMode?: boolean
   onRefresh?: () => void
   isPubkeyFeed?: boolean
+  feedVariant?: 'following' | 'mediaFeed' | 'textFeed'
 }) {
+  const { t } = useTranslation()
   const { showKinds } = useKindFilter()
   const { getMinTrustScore } = useUserTrust()
   const [temporaryShowKinds, setTemporaryShowKinds] = useState(showKinds)
@@ -63,17 +69,32 @@ export default function NormalFeed({
     setTrustFilterOpen(open)
   }
 
+  const effectiveListMode = listMode === '24h' && disable24hMode ? 'posts' : listMode
+
+  // Compute effective kinds filter based on feedVariant from dropdown
+  const effectiveShowKinds = useMemo(() => {
+    if (feedVariant === 'mediaFeed') {
+      return [ExtendedKind.PICTURE, ExtendedKind.VIDEO, ExtendedKind.SHORT_VIDEO]
+    }
+    if (feedVariant === 'textFeed') {
+      return [kinds.ShortTextNote]
+    }
+    return temporaryShowKinds
+  }, [feedVariant, temporaryShowKinds])
+
+  const isTextFeed = feedVariant === 'textFeed'
+
   return (
     <>
       <Tabs
-        value={listMode === '24h' && disable24hMode ? 'posts' : listMode}
+        value={effectiveListMode}
         tabs={[
           { value: 'posts', label: 'Notes' },
           { value: 'postsAndReplies', label: 'Replies' },
           ...(!disable24hMode ? [{ value: '24h', label: '24h Pulse' }] : [])
         ]}
-        onTabChange={(listMode) => {
-          handleListModeChange(listMode as TNoteListMode)
+        onTabChange={(mode) => {
+          handleListModeChange(mode as TNoteListMode)
         }}
         options={
           <>
@@ -98,7 +119,7 @@ export default function NormalFeed({
                 onOpenChange={handleTrustFilterOpenChange}
               />
             )}
-            {showKindsFilter && (
+            {!isTextFeed && showKindsFilter && (
               <KindFilter
                 showKinds={temporaryShowKinds}
                 onShowKindsChange={handleShowKindsChange}
@@ -122,13 +143,14 @@ export default function NormalFeed({
       ) : (
         <NoteList
           ref={noteListRef}
-          showKinds={temporaryShowKinds}
+          showKinds={effectiveShowKinds}
           subRequests={subRequests}
-          hideReplies={listMode === 'posts'}
+          hideReplies={effectiveListMode === 'posts'}
           areAlgoRelays={areAlgoRelays}
           showRelayCloseReason={showRelayCloseReason}
           isPubkeyFeed={isPubkeyFeed}
           trustScoreThreshold={trustScoreThreshold}
+          displayMode={isTextFeed ? 'textOnlyMode' : undefined}
         />
       )}
     </>

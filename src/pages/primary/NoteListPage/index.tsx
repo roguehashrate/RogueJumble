@@ -22,7 +22,6 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import FeedButton from './FeedButton'
-import PinnedFeed from './PinnedFeed'
 import RelaysFeed from './RelaysFeed'
 
 const NoteListPage = forwardRef<TPageRef>((_, ref) => {
@@ -60,13 +59,18 @@ const NoteListPage = forwardRef<TPageRef>((_, ref) => {
   } else if (feedInfo.feedType === 'following' && !pubkey) {
     switchFeed(null)
     return null
-  } else if (feedInfo.feedType === 'pinned' && !pubkey) {
+  } else if (feedInfo.feedType === 'mediaFeed' && !pubkey) {
+    switchFeed(null)
+    return null
+  } else if (feedInfo.feedType === 'textFeed' && !pubkey) {
     switchFeed(null)
     return null
   } else if (feedInfo.feedType === 'following') {
     content = <FollowingFeed />
-  } else if (feedInfo.feedType === 'pinned') {
-    content = <PinnedFeed />
+  } else if (feedInfo.feedType === 'mediaFeed') {
+    content = <FollowingFeed feedVariant="mediaFeed" />
+  } else if (feedInfo.feedType === 'textFeed') {
+    content = <FollowingFeed feedVariant="textFeed" />
   } else {
     content = (
       <>

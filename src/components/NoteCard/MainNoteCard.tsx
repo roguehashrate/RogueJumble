@@ -6,6 +6,7 @@ import { Event } from 'nostr-tools'
 import Collapsible from '../Collapsible'
 import Note from '../Note'
 import StuffStats from '../StuffStats'
+import { TDisplayMode } from '../NoteCard'
 import PinnedButton from './PinnedButton'
 import RepostDescription from './RepostDescription'
 
@@ -15,7 +16,8 @@ export default function MainNoteCard({
   reposters,
   embedded,
   originalNoteId,
-  pinned = false
+  pinned = false,
+  displayMode
 }: {
   event: Event
   className?: string
@@ -23,6 +25,7 @@ export default function MainNoteCard({
   embedded?: boolean
   originalNoteId?: string
   pinned?: boolean
+  displayMode?: TDisplayMode
 }) {
   const { push } = useSecondaryPage()
 
@@ -50,6 +53,7 @@ export default function MainNoteCard({
             size={embedded ? 'small' : 'normal'}
             event={event}
             originalNoteId={originalNoteId}
+            displayMode={displayMode}
           />
         </Collapsible>
         {!embedded && <StuffStats className="mt-3 px-4" stuff={event} />}

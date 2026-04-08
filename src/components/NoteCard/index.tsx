@@ -9,18 +9,22 @@ import { useMemo } from 'react'
 import MainNoteCard from './MainNoteCard'
 import RepostNoteCard from './RepostNoteCard'
 
+export type TDisplayMode = 'imageMode' | 'textOnlyMode' | undefined
+
 export default function NoteCard({
   event,
   className,
   filterMutedNotes = true,
   pinned = false,
-  reposters
+  reposters,
+  displayMode
 }: {
   event: Event
   className?: string
   filterMutedNotes?: boolean
   pinned?: boolean
   reposters?: string[]
+  displayMode?: TDisplayMode
 }) {
   const { mutePubkeySet } = useMuteList()
   const { hideContentMentioningMutedUsers, nsfwDisplayPolicy } = useContentPolicy()
@@ -46,10 +50,11 @@ export default function NoteCard({
         filterMutedNotes={filterMutedNotes}
         pinned={pinned}
         reposters={reposters}
+        displayMode={displayMode}
       />
     )
   }
-  return <MainNoteCard event={event} className={className} pinned={pinned} reposters={reposters} />
+  return <MainNoteCard event={event} className={className} pinned={pinned} reposters={reposters} displayMode={displayMode} />
 }
 
 export function NoteCardLoadingSkeleton({ className }: { className?: string }) {

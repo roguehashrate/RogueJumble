@@ -10,7 +10,7 @@ import {
   deleteDraftEventCache
 } from '@/lib/draft-event'
 import { getDefaultRelayUrls } from '@/lib/relay'
-import { isTouchDevice } from '@/lib/utils'
+import { cn, isTouchDevice } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import postEditorCache from '@/services/post-editor-cache.service'
 import threadService from '@/services/thread.service'
@@ -84,6 +84,7 @@ export default function PostContent({
     const storedDifficulty = window.localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
     return storedDifficulty ? parseInt(storedDifficulty, 10) : 16
   })
+  const [postKind, setPostKind] = useState<'text' | 'picture' | 'video' | 'shortVideo'>('text')
   const userDismissedProtected = useRef(false)
   const handleProtectedSuggestionChange = useCallback((suggested: boolean) => {
     if (suggested && !userDismissedProtected.current) {
@@ -171,7 +172,8 @@ export default function PostContent({
           pubkey,
           addClientTag,
           isProtectedEvent,
-          isNsfw
+          isNsfw,
+          postKind
         })
 
         const _additionalRelayUrls = [...additionalRelayUrls]
@@ -246,6 +248,8 @@ export default function PostContent({
         parentStuff={parentStuff}
         onSubmit={() => post()}
         className={isPoll ? 'min-h-20' : 'min-h-52'}
+        postKind={postKind}
+        setPostKind={setPostKind}
         onUploadStart={handleUploadStart}
         onUploadProgress={handleUploadProgress}
         onUploadEnd={handleUploadEnd}
@@ -353,7 +357,7 @@ export default function PostContent({
               variant="ghost"
               size="icon"
               title={t('Create Poll')}
-              className={isPoll ? 'bg-accent' : ''}
+              className={cn('text-muted-foreground', isPoll && 'text-primary')}
               onClick={handlePollToggle}
             >
               <ListTodo />
@@ -363,7 +367,7 @@ export default function PostContent({
             variant="ghost"
             size="icon"
             title={t('Client Tag')}
-            className={addClientTag ? 'text-primary' : ''}
+            className={cn('text-muted-foreground', addClientTag && 'text-primary')}
             onClick={() => setAddClientTag(!addClientTag)}
           >
             <Tag />
@@ -372,8 +376,15 @@ export default function PostContent({
             variant="ghost"
             size="icon"
             title={t('Proof of Work')}
-            className={minPow > 0 ? 'text-primary' : ''}
-            onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
+            className={cn('text-muted-foreground', minPow > 0 && 'text-primary')}
+            onClick={() => {
+              if (minPow > 0) {
+                setMinPow(0)
+              } else {
+                const stored = localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
+                setMinPow(stored ? parseInt(stored, 10) : 16)
+              }
+            }}
           >
             <Pickaxe />
           </Button>
@@ -381,7 +392,7 @@ export default function PostContent({
             variant="ghost"
             size="icon"
             title={t('NSFW')}
-            className={isNsfw ? 'text-primary' : ''}
+            className={cn('text-muted-foreground', isNsfw && 'text-primary')}
             onClick={() => setIsNsfw(!isNsfw)}
           >
             <Ban />
@@ -441,7 +452,8 @@ async function createDraftEvent({
   addClientTag,
   isProtectedEvent,
   isNsfw,
-  highlightedText
+  highlightedText,
+  postKind = 'text'
 }: {
   parentStuff: Event | string | undefined
   text: string
@@ -453,6 +465,7 @@ async function createDraftEvent({
   isProtectedEvent: boolean
   isNsfw: boolean
   highlightedText?: string
+  postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
 }) {
   const { parentEvent, externalContent } =
     typeof parentStuff === 'string'
@@ -486,6 +499,7 @@ async function createDraftEvent({
     parentEvent,
     addClientTag,
     protectedEvent: isProtectedEvent,
-    isNsfw
+    isNsfw,
+    postKind
   })
 }

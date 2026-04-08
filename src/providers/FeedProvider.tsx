@@ -83,6 +83,11 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         return await switchFeed('pinned', { pubkey })
       }
 
+      // update media/text feeds if pubkey changes
+      if ((feedInfo?.feedType === 'mediaFeed' || feedInfo?.feedType === 'textFeed') && pubkey) {
+        return await switchFeed(feedInfo.feedType, { pubkey })
+      }
+
       setIsReady(true)
     }
 
@@ -175,6 +180,20 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       return
     }
     if (feedType === 'pinned') {
+      if (!options.pubkey) {
+        setIsReady(true)
+        return
+      }
+      const newFeedInfo = { feedType }
+      setFeedInfo(newFeedInfo)
+      feedInfoRef.current = newFeedInfo
+      storage.setFeedInfo(newFeedInfo, pubkey)
+
+      setRelayUrls([])
+      setIsReady(true)
+      return
+    }
+    if (feedType === 'mediaFeed' || feedType === 'textFeed') {
       if (!options.pubkey) {
         setIsReady(true)
         return

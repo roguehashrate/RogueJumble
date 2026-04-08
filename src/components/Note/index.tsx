@@ -46,7 +46,8 @@ export default function Note({
   size = 'normal',
   className,
   hideParentNotePreview = false,
-  showFull = false
+  showFull = false,
+  displayMode
 }: {
   event: Event
   originalNoteId?: string
@@ -54,6 +55,7 @@ export default function Note({
   className?: string
   hideParentNotePreview?: boolean
   showFull?: boolean
+  displayMode?: 'imageMode' | 'textOnlyMode'
 }) {
   const { t } = useTranslation()
   const { push } = useSecondaryPage()
@@ -110,7 +112,7 @@ export default function Note({
   } else if (event.kind === ExtendedKind.POLL) {
     content = (
       <>
-        <Content className="mt-2" event={event} />
+        <Content className="mt-2" event={event} displayMode={displayMode} />
         <Poll className="mt-2" event={event} />
       </>
     )
@@ -134,7 +136,7 @@ export default function Note({
   } else if (event.kind === kinds.Reaction) {
     content = <Reaction className="mt-2" event={event} />
   } else {
-    content = <Content className="mt-2" event={event} enableHighlight />
+    content = <Content className="mt-2" event={event} enableHighlight displayMode={displayMode} />
   }
 
   return (

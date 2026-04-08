@@ -6,19 +6,22 @@ import client from '@/services/client.service'
 import { Event, kinds, verifyEvent } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
 import MainNoteCard from './MainNoteCard'
+import { TDisplayMode } from './index'
 
 export default function RepostNoteCard({
   event,
   className,
   filterMutedNotes = true,
   pinned = false,
-  reposters
+  reposters,
+  displayMode
 }: {
   event: Event
   className?: string
   filterMutedNotes?: boolean
   pinned?: boolean
   reposters?: string[]
+  displayMode?: TDisplayMode
 }) {
   const { mutePubkeySet } = useMuteList()
   const { hideContentMentioningMutedUsers } = useContentPolicy()
@@ -92,6 +95,7 @@ export default function RepostNoteCard({
       reposters={reposters?.includes(event.pubkey) ? reposters : [event.pubkey]}
       event={targetEvent}
       pinned={pinned}
+      displayMode={displayMode}
     />
   )
 }

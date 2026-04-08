@@ -150,6 +150,7 @@ export async function createShortTextNoteDraftEvent(
     addClientTag?: boolean
     protectedEvent?: boolean
     isNsfw?: boolean
+    postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
   } = {}
 ): Promise<TDraftEvent> {
   const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(content)
@@ -195,7 +196,13 @@ export async function createShortTextNoteDraftEvent(
   }
 
   const baseDraft = {
-    kind: kinds.ShortTextNote,
+    kind: options.postKind === 'picture'
+      ? ExtendedKind.PICTURE
+      : options.postKind === 'video'
+        ? ExtendedKind.VIDEO
+        : options.postKind === 'shortVideo'
+          ? ExtendedKind.SHORT_VIDEO
+          : kinds.ShortTextNote,
     content: transformedEmojisContent,
     tags
   }

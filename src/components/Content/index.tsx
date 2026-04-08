@@ -41,13 +41,15 @@ export default function Content({
   content,
   className,
   mustLoadMedia,
-  enableHighlight = false
+  enableHighlight = false,
+  displayMode
 }: {
   event?: Event
   content?: string
   className?: string
   mustLoadMedia?: boolean
   enableHighlight?: boolean
+  displayMode?: 'imageMode' | 'textOnlyMode'
 }) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [showHighlightEditor, setShowHighlightEditor] = useState(false)
@@ -135,10 +137,18 @@ export default function Content({
   }
 
   if (isMarkdown) {
+    // Text Only Mode: strip images, media, embeds from markdown
+    const cleanedContent = displayMode === 'textOnlyMode'
+      ? resolvedContent
+          .replace(/!\[.*?\]\(.*?\)/g, '')
+          .replace(/^[^\S\n]*https?:\/\/(www\.)?youtu(be\.com|\.be)\//gim, '')
+          .replace(/^[^\S\n]*https?:\/\/(x\.com|twitter\.com)\//gim, '')
+      : resolvedContent
+
     return (
       <>
         <div ref={contentRef} className={cn('text-wrap break-words', className)}>
-          <MarkdownContent content={resolvedContent} event={event} />
+          <MarkdownContent content={cleanedContent} event={event} />
         </div>
         {enableHighlight && (
           <HighlightButton onHighlight={handleHighlight} containerRef={contentRef} />
@@ -160,6 +170,142 @@ export default function Content({
   }
 
   let imageIndex = 0
+
+  // Text Only Mode: ONLY text and emojis - strip ALL media, links, embeds
+  if (displayMode === 'textOnlyMode') {
+    return (
+      <>
+        <div ref={contentRef} className={cn('whitespace-pre-wrap text-wrap break-words', className)}>
+          {nodes.map((node, index) => {
+            if (node.type === 'text') {
+              return node.data
+            }
+            if (node.type === 'image' || node.type === 'images') {
+              imageIndex += Array.isArray(node.data) ? node.data.length : 1
+              return null
+            }
+            if (node.type === 'media') return null
+            if (node.type === 'url') return null
+            if (node.type === 'invoice') return null
+            if (node.type === 'websocket-url') return null
+            if (node.type === 'event') return null
+            if (node.type === 'mention') {
+              return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
+            }
+            if (node.type === 'hashtag') {
+              return <EmbeddedHashtag hashtag={node.data} key={index} />
+            }
+            if (node.type === 'emoji') {
+              const shortcode = node.data.split(':')[1]
+              const emoji = emojiInfos.find((e) => e.shortcode === shortcode)
+              if (!emoji) return node.data
+              return <Emoji classNames={{ img: 'mb-1' }} emoji={emoji} key={index} />
+            }
+            if (node.type === 'youtube') return null
+            if (node.type === 'x-post') return null
+            return null
+          })}
+        </div>
+        {enableHighlight && (
+          <HighlightButton onHighlight={handleHighlight} containerRef={contentRef} />
+        )}
+        {enableHighlight && (
+          <PostEditor
+            highlightedText={selectedText}
+            parentStuff={event}
+            open={showHighlightEditor}
+            setOpen={setShowHighlightEditor}
+          />
+        )}
+      </>
+    )
+  }
+
+  // Image Mode: show images/media first (large), then text below
+  if (displayMode === 'imageMode') {
+    const mediaNodes = nodes.filter(n => n.type === 'image' || n.type === 'images' || n.type === 'media' || n.type === 'youtube' || n.type === 'x-post')
+    const textNodes = nodes.filter(n => n.type !== 'image' && n.type !== 'images' && n.type !== 'media' && n.type !== 'youtube' && n.type !== 'x-post' && n.type !== 'url')
+
+    return (
+      <>
+        {mediaNodes.length > 0 && (
+          <div className="mb-3">
+            {mediaNodes.map((node, index) => {
+              if (node.type === 'image' || node.type === 'images') {
+                const urls = Array.isArray(node.data) ? node.data : [node.data]
+                const images = urls.map(url => {
+                  const imageInfo = (event ? getImetaInfosFromEvent(event) : []).find((img) => img.url === url)
+                  return imageInfo ?? { url, pubkey: event?.pubkey }
+                })
+                return (
+                  <ImageGallery
+                    className="rounded-lg overflow-hidden"
+                    key={index}
+                    images={images}
+                    start={0}
+                    end={images.length}
+                    mustLoad={mustLoadMedia}
+                  />
+                )
+              }
+              if (node.type === 'media') {
+                return <MediaPlayer className="mt-2" key={index} src={node.data} mustLoad={mustLoadMedia} />
+              }
+              if (node.type === 'youtube') {
+                return <YoutubeEmbeddedPlayer key={index} url={node.data} className="mt-2" mustLoad={mustLoadMedia} />
+              }
+              if (node.type === 'x-post') {
+                return <XEmbeddedPost key={index} url={node.data} className="mt-2" mustLoad={mustLoadMedia} />
+              }
+              return null
+            })}
+          </div>
+        )}
+        <div ref={contentRef} className={cn('whitespace-pre-wrap text-wrap break-words', className)}>
+          {textNodes.map((node, index) => {
+            if (node.type === 'text') {
+              return node.data
+            }
+            if (node.type === 'url') return <ExternalLink url={node.data} key={index} />
+            if (node.type === 'invoice') {
+              return <EmbeddedLNInvoice invoice={node.data} key={index} className="mt-2" />
+            }
+            if (node.type === 'websocket-url') return <EmbeddedWebsocketUrl url={node.data} key={index} />
+            if (node.type === 'event') {
+              const id = node.data.split(':')[1]
+              return <EmbeddedNote key={index} noteId={id} className="mt-2" />
+            }
+            if (node.type === 'mention') {
+              return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
+            }
+            if (node.type === 'hashtag') {
+              return <EmbeddedHashtag hashtag={node.data} key={index} />
+            }
+            if (node.type === 'emoji') {
+              const shortcode = node.data.split(':')[1]
+              const emoji = emojiInfos.find((e) => e.shortcode === shortcode)
+              if (!emoji) return node.data
+              return <Emoji classNames={{ img: 'mb-1' }} emoji={emoji} key={index} />
+            }
+            return null
+          })}
+        </div>
+        {enableHighlight && (
+          <HighlightButton onHighlight={handleHighlight} containerRef={contentRef} />
+        )}
+        {enableHighlight && (
+          <PostEditor
+            highlightedText={selectedText}
+            parentStuff={event}
+            open={showHighlightEditor}
+            setOpen={setShowHighlightEditor}
+          />
+        )}
+      </>
+    )
+  }
+
+  // Normal mode
   return (
     <>
       <div ref={contentRef} className={cn('whitespace-pre-wrap text-wrap break-words', isEmojiOnly && 'flex items-end gap-1', className)}>

@@ -13,9 +13,17 @@ import Text from '@tiptap/extension-text'
 import { TextSelection } from '@tiptap/pm/state'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Event } from 'nostr-tools'
+import { ChevronDown, ImageUp, PencilLine, Tv, Video } from 'lucide-react'
 import { Dispatch, forwardRef, SetStateAction, useImperativeHandle, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClipboardAndDropHandler } from './ClipboardAndDropHandler'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import Emoji from './Emoji'
 import emojiSuggestion from './Emoji/suggestion'
 import Mention from './Mention'
@@ -41,6 +49,8 @@ const PostTextarea = forwardRef<
     onUploadProgress?: (file: File, progress: number) => void
     onUploadEnd?: (file: File) => void
     placeholder?: string
+    postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
+    setPostKind?: (kind: 'text' | 'picture' | 'video' | 'shortVideo') => void
   }
 >(
   (
@@ -54,7 +64,9 @@ const PostTextarea = forwardRef<
       onUploadStart,
       onUploadProgress,
       onUploadEnd,
-      placeholder
+      placeholder,
+      postKind = 'text',
+      setPostKind
     },
     ref
   ) => {
@@ -162,29 +174,65 @@ const PostTextarea = forwardRef<
     }
 
     return (
-      <Tabs
-        defaultValue="edit"
-        value={tabValue}
-        onValueChange={(v) => setTabValue(v)}
-        className="space-y-2"
-      >
-        <TabsList>
-          <TabsTrigger value="edit">{t('Edit')}</TabsTrigger>
-          <TabsTrigger value="preview">{t('Preview')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="edit">
-          <EditorContent className="tiptap" editor={editor} />
-        </TabsContent>
-        <TabsContent
-          value="preview"
-          onClick={() => {
-            setTabValue('edit')
-            editor.commands.focus()
-          }}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <Tabs
+            defaultValue="edit"
+            value={tabValue}
+            onValueChange={(v) => setTabValue(v)}
+          >
+            <TabsList>
+              <TabsTrigger value="edit">{t('Edit')}</TabsTrigger>
+              <TabsTrigger value="preview">{t('Preview')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {setPostKind && !parentStuff && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 text-xs">
+                  {postKind === 'text' && <><PencilLine className="size-3.5" />{t('Text')}</>}
+                  {postKind === 'picture' && <><ImageUp className="size-3.5" />{t('Picture')}</>}
+                  {postKind === 'video' && <><Tv className="size-3.5" />{t('Video')}</>}
+                  {postKind === 'shortVideo' && <><Video className="size-3.5" />{t('Short Video')}</>}
+                  <ChevronDown className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setPostKind('text')}>
+                  <PencilLine className="size-4" />{t('Text Post')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPostKind('picture')}>
+                  <ImageUp className="size-4" />{t('Picture Post')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPostKind('video')}>
+                  <Tv className="size-4" />{t('Video Post')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPostKind('shortVideo')}>
+                  <Video className="size-4" />{t('Short Video Post')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+        <Tabs
+          value={tabValue}
+          onValueChange={(v) => setTabValue(v)}
         >
-          <Preview content={text} className={className} />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="edit" className="mt-0">
+            <EditorContent className="tiptap" editor={editor} />
+          </TabsContent>
+          <TabsContent
+            value="preview"
+            className="mt-0"
+            onClick={() => {
+              setTabValue('edit')
+              editor.commands.focus()
+            }}
+          >
+            <Preview content={text} className={className} />
+          </TabsContent>
+        </Tabs>
+      </div>
     )
   }
 )

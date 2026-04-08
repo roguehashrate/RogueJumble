@@ -120,7 +120,7 @@ export type TAccount = {
 
 export type TAccountPointer = Pick<TAccount, 'pubkey' | 'signerType'>
 
-export type TFeedType = 'following' | 'pinned' | 'relays' | 'relay'
+export type TFeedType = 'following' | 'pinned' | 'relays' | 'relay' | 'mediaFeed' | 'textFeed'
 export type TFeedInfo = { feedType: TFeedType; id?: string; name?: string } | null
 
 export type TLanguage = 'en' | 'zh' | 'pl'
@@ -139,7 +139,7 @@ export type TPublishOptions = {
   minPow?: number
 }
 
-export type TNoteListMode = 'posts' | 'postsAndReplies' | 'you' | '24h'
+export type TNoteListMode = 'posts' | 'postsAndReplies' | 'you' | '24h' | 'imageMode' | 'textOnlyMode'
 
 export type TNotificationType = 'all' | 'mentions' | 'reactions' | 'zaps'
 

@@ -58,6 +58,7 @@ const NoteList = forwardRef<
     filterFn?: (event: Event) => boolean
     showNewNotesDirectly?: boolean
     isPubkeyFeed?: boolean
+    displayMode?: 'imageMode' | 'textOnlyMode'
   }
 >(
   (
@@ -73,7 +74,8 @@ const NoteList = forwardRef<
       pinnedEventIds,
       filterFn,
       showNewNotesDirectly = false,
-      isPubkeyFeed = false
+      isPubkeyFeed = false,
+      displayMode
     },
     ref
   ) => {
@@ -486,6 +488,7 @@ const NoteList = forwardRef<
             event={event}
             filterMutedNotes={filterMutedNotes}
             reposters={reposters}
+            displayMode={displayMode}
           />
         ))}
         <div ref={bottomRef} />
