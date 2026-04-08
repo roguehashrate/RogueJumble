@@ -200,7 +200,7 @@ export async function createShortTextNoteDraftEvent(
   // For media posts (kind 20/21/22), content should be just the URL(s)
   let finalContent = transformedEmojisContent
   if (isMediaPost && images && images.length > 0) {
-    finalContent = images[0].url
+    finalContent = images[0]
   }
 
   const baseDraft = {
