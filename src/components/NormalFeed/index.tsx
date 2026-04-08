@@ -9,7 +9,6 @@ import { useUserTrust } from '@/providers/UserTrustProvider'
 import storage from '@/services/local-storage.service'
 import { TFeedSubRequest, TNoteListMode } from '@/types'
 import { useMemo, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { kinds } from 'nostr-tools'
 import KindFilter from '../KindFilter'
 import { RefreshButton } from '../RefreshButton'
@@ -35,7 +34,6 @@ export default function NormalFeed({
   isPubkeyFeed?: boolean
   feedVariant?: 'following' | 'mediaFeed' | 'textFeed'
 }) {
-  const { t } = useTranslation()
   const { showKinds } = useKindFilter()
   const { getMinTrustScore } = useUserTrust()
   const [temporaryShowKinds, setTemporaryShowKinds] = useState(showKinds)
