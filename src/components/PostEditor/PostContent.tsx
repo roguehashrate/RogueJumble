@@ -274,12 +274,12 @@ export default function PostContent({
       {!isPoll && (
         <div className="flex items-center gap-3">
           <div className="min-w-0">
-          <PostRelaySelector
-            onProtectedSuggestionChange={handleProtectedSuggestionChange}
-            setAdditionalRelayUrls={setAdditionalRelayUrls}
-            parentEvent={parentEvent}
-            openFrom={openFrom}
-          />
+            <PostRelaySelector
+              onProtectedSuggestionChange={handleProtectedSuggestionChange}
+              setAdditionalRelayUrls={setAdditionalRelayUrls}
+              parentEvent={parentEvent}
+              openFrom={openFrom}
+            />
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <Switch
@@ -299,9 +299,7 @@ export default function PostContent({
                   <CircleHelp className="!size-3.5 text-muted-foreground" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="text-sm">
-                {t('Protected event hint')}
-              </PopoverContent>
+              <PopoverContent className="text-sm">{t('Protected event hint')}</PopoverContent>
             </Popover>
           </div>
         </div>
@@ -382,7 +380,6 @@ export default function PostContent({
       </div>
       <PostOptions
         posting={posting}
-        show={showMoreOptions}
         addClientTag={addClientTag}
         setAddClientTag={setAddClientTag}
         isNsfw={isNsfw}

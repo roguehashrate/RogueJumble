@@ -1,5 +1,4 @@
 import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { StorageKey } from '@/constants'
 import { Dispatch, SetStateAction, useEffect } from 'react'
@@ -7,7 +6,6 @@ import { useTranslation } from 'react-i18next'
 
 export default function PostOptions({
   posting,
-  show,
   addClientTag,
   setAddClientTag,
   isNsfw,
@@ -16,7 +14,6 @@ export default function PostOptions({
   setMinPow
 }: {
   posting: boolean
-  show: boolean
   addClientTag: boolean
   setAddClientTag: Dispatch<SetStateAction<boolean>>
   isNsfw: boolean
@@ -27,10 +24,16 @@ export default function PostOptions({
   const { t } = useTranslation()
 
   useEffect(() => {
-    setAddClientTag(window.localStorage.getItem(StorageKey.ADD_CLIENT_TAG) === 'true')
+    const cached = window.localStorage.getItem(StorageKey.ADD_CLIENT_TAG)
+    if (cached === null) {
+      window.localStorage.setItem(StorageKey.ADD_CLIENT_TAG, 'true')
+      setAddClientTag(true)
+    } else {
+      setAddClientTag(cached === 'true')
+    }
   }, [])
 
-  if (!show) return null
+  const poWEnabled = minPow > 0
 
   const onAddClientTagChange = (checked: boolean) => {
     setAddClientTag(checked)
@@ -40,6 +43,19 @@ export default function PostOptions({
   const onNsfwChange = (checked: boolean) => {
     setIsNsfw(checked)
   }
+
+  const onPoWToggle = (checked: boolean) => {
+    setMinPow(checked ? 12 : 0)
+    window.localStorage.setItem(StorageKey.POW_ENABLED, checked.toString())
+  }
+
+  useEffect(() => {
+    const cached = window.localStorage.getItem(StorageKey.POW_ENABLED)
+    if (cached === null) {
+      window.localStorage.setItem(StorageKey.POW_ENABLED, 'true')
+      setMinPow(12)
+    }
+  }, [])
 
   return (
     <div className="space-y-4">
@@ -68,14 +84,12 @@ export default function PostOptions({
         />
       </div>
 
-      <div className="grid gap-4 pb-4">
-        <Label>{t('Proof of Work (difficulty {{minPow}})', { minPow })}</Label>
-        <Slider
-          defaultValue={[0]}
-          value={[minPow]}
-          onValueChange={([pow]) => setMinPow(pow)}
-          max={28}
-          step={1}
+      <div className="flex items-center space-x-2">
+        <Label htmlFor="pow-toggle">{t('Proof of Work')}</Label>
+        <Switch
+          id="pow-toggle"
+          checked={poWEnabled}
+          onCheckedChange={onPoWToggle}
           disabled={posting}
         />
       </div>
