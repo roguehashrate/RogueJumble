@@ -153,7 +153,14 @@ export async function createShortTextNoteDraftEvent(
     postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
   } = {}
 ): Promise<TDraftEvent> {
-  const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(content)
+  const isMediaPost = options.postKind === 'picture' || options.postKind === 'video' || options.postKind === 'shortVideo'
+
+  // For media posts, strip image/video URLs from content — they go into imeta tags instead
+  const textContent = isMediaPost
+    ? content.replace(/https?:\/\/[^\s"']+\.(jpg|jpeg|png|gif|webp|heic|mp4|webm|mov|avi|mkv|m4v)/gi, '').replace(/\n\s*\n/g, '\n').trim()
+    : content
+
+  const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(textContent)
   const { quoteTags, rootTag, parentTag } = await extractRelatedEventIds(
     transformedEmojisContent,
     options.parentEvent

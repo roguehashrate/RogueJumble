@@ -12,7 +12,7 @@ import {
 import { getImetaInfosFromEvent } from '@/lib/event'
 import { containsMarkdown } from '@/lib/markdown'
 import { getEmojiInfosFromEmojiTags, getImetaInfoFromImetaTag } from '@/lib/tag'
-import { ExtendedKind, EMOJI_REGEX } from '@/constants'
+import { EMOJI_REGEX } from '@/constants'
 import { cn } from '@/lib/utils'
 import mediaUpload from '@/services/media-upload.service'
 import { TImetaInfo } from '@/types'
@@ -57,11 +57,6 @@ export default function Content({
   const translatedEvent = useTranslatedEvent(event?.id)
   const resolvedContent = translatedEvent?.content ?? event?.content ?? content
   const isMarkdown = useMemo(() => resolvedContent ? containsMarkdown(resolvedContent) : false, [resolvedContent])
-  const isMediaKind = useMemo(() => {
-    return event?.kind === ExtendedKind.PICTURE ||
-      event?.kind === ExtendedKind.VIDEO ||
-      event?.kind === ExtendedKind.SHORT_VIDEO
-  }, [event?.kind])
   const { nodes, allImages, lastNormalUrl, emojiInfos } = useMemo(() => {
     if (!resolvedContent || isMarkdown) return {}
     const _content = resolvedContent
@@ -142,8 +137,8 @@ export default function Content({
   }
 
   if (isMarkdown) {
-    // Text Only Mode or media kind: strip images, media, embeds from markdown
-    const cleanedContent = (displayMode === 'textOnlyMode' || isMediaKind)
+    // Text Only Mode: strip images, media, embeds from markdown
+    const cleanedContent = displayMode === 'textOnlyMode'
       ? resolvedContent
           .replace(/!\[.*?\]\(.*?\)/g, '')
           .replace(/^[^\S\n]*https?:\/\/(www\.)?youtu(be\.com|\.be)\//gim, '')
@@ -322,11 +317,6 @@ export default function Content({
             return node.data
           }
           if (node.type === 'image' || node.type === 'images') {
-            if (isMediaKind) {
-              const end = imageIndex + (Array.isArray(node.data) ? node.data.length : 1)
-              imageIndex = end
-              return null
-            }
             const start = imageIndex
             const end = imageIndex + (Array.isArray(node.data) ? node.data.length : 1)
             imageIndex = end
@@ -342,7 +332,6 @@ export default function Content({
             )
           }
           if (node.type === 'media') {
-            if (isMediaKind) return null
             return (
               <MediaPlayer className="mt-2" key={index} src={node.data} mustLoad={mustLoadMedia} />
             )
