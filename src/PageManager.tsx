@@ -19,7 +19,6 @@ import TooManyRelaysAlertDialog from './components/TooManyRelaysAlertDialog'
 import { normalizeUrl } from './lib/url'
 import { NotificationProvider } from './providers/NotificationProvider'
 import { useScreenSize } from './providers/ScreenSizeProvider'
-import { useTheme } from './providers/ThemeProvider'
 import { useUserPreferences } from './providers/UserPreferencesProvider'
 import { PRIMARY_PAGE_MAP, PRIMARY_PAGE_REF_MAP, TPrimaryPageName } from './routes/primary'
 import { SECONDARY_ROUTES } from './routes/secondary'
@@ -76,7 +75,6 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
   ])
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
   const { isSmallScreen } = useScreenSize()
-  const { themeSetting } = useTheme()
   const { enableSingleColumnLayout } = useUserPreferences()
   const ignorePopStateRef = useRef(false)
 
@@ -409,18 +407,8 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                 }}
               >
                 <Sidebar />
-                <div
-                  className={cn(
-                    'grid w-full grid-cols-2',
-                    themeSetting === 'pure-black' ? '' : 'gap-2 py-2 pr-2'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'overflow-hidden bg-background',
-                      themeSetting === 'pure-black' ? 'border-l' : 'rounded-2xl shadow-lg'
-                    )}
-                  >
+                <div className={cn('grid w-full grid-cols-2', 'gap-2 py-2 pr-2')}>
+                  <div className={cn('overflow-hidden bg-background', 'rounded-2xl shadow-lg')}>
                     {primaryPages.map(({ name, element, props }) => (
                       <div
                         key={name}
@@ -436,8 +424,8 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                   <div
                     className={cn(
                       'overflow-hidden bg-background',
-                      themeSetting === 'pure-black' ? 'border-l' : 'rounded-2xl',
-                      themeSetting !== 'pure-black' && secondaryStack.length > 0 && 'shadow-lg',
+                      'rounded-2xl',
+                      secondaryStack.length > 0 && 'shadow-lg',
                       secondaryStack.length === 0 ? 'bg-surface' : ''
                     )}
                   >

@@ -2,7 +2,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { toExternalContent } from '@/lib/link'
 import { cn, isTouchDevice } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
-import { useTheme } from '@/providers/ThemeProvider'
 import { MessageCircle } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +15,6 @@ interface PostProps {
 
 const Post = memo(({ tweetId, url, className, embedded = true }: PostProps) => {
   const { t } = useTranslation()
-  const { theme } = useTheme()
   const { push } = useSecondaryPage()
   const supportTouch = useMemo(() => isTouchDevice(), [])
   const [loaded, setLoaded] = useState(false)
@@ -56,7 +54,7 @@ const Post = memo(({ tweetId, url, className, embedded = true }: PostProps) => {
 
       window.twttr.widgets
         .createTweet(tweetId, containerRef.current, {
-          theme: theme === 'light' ? 'light' : 'dark',
+          theme: 'dark',
           dnt: true, // Do not track
           conversation: 'none' // Hide conversation thread
         })
@@ -89,7 +87,7 @@ const Post = memo(({ tweetId, url, className, embedded = true }: PostProps) => {
         containerRef.current.innerHTML = ''
       }
     }
-  }, [tweetId, theme])
+  }, [tweetId])
 
   const handleViewComments = useCallback(
     (e: React.MouseEvent) => {

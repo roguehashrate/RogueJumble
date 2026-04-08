@@ -1,20 +1,13 @@
 import { Label } from '@/components/ui/label'
-import { PRIMARY_COLORS, TPrimaryColor } from '@/constants'
+import { THEME_COLORS, TThemeName } from '@/constants'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useTheme } from '@/providers/ThemeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
-import { Columns2, LayoutList, List, Monitor, Moon, PanelLeft, Sun } from 'lucide-react'
+import { Columns2, LayoutList, List, PanelLeft } from 'lucide-react'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
-
-const THEMES = [
-  { key: 'system', label: 'System', icon: <Monitor className="size-5" /> },
-  { key: 'light', label: 'Light', icon: <Sun className="size-5" /> },
-  { key: 'dark', label: 'Dark', icon: <Moon className="size-5" /> },
-  { key: 'pure-black', label: 'Pure Black', icon: <Moon className="size-5 fill-current" /> }
-] as const
 
 const LAYOUTS = [
   { key: false, label: 'Two-column', icon: <Columns2 className="size-5" /> },
@@ -29,7 +22,7 @@ const NOTIFICATION_STYLES = [
 const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
-  const { themeSetting, setThemeSetting, primaryColor, setPrimaryColor } = useTheme()
+  const { themeSetting, setThemeSetting } = useTheme()
   const {
     enableSingleColumnLayout,
     updateEnableSingleColumnLayout,
@@ -37,18 +30,34 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
     updateNotificationListStyle
   } = useUserPreferences()
 
+  const themeEntries = Object.entries(THEME_COLORS) as [
+    TThemeName,
+    (typeof THEME_COLORS)[TThemeName]
+  ][]
+
   return (
     <SecondaryPageLayout ref={ref} index={index} title={t('Appearance')}>
       <div className="my-3 space-y-4">
         <div className="flex flex-col gap-2 px-4">
           <Label className="text-base">{t('Theme')}</Label>
-          <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-            {THEMES.map(({ key, label, icon }) => (
+          <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-3">
+            {themeEntries.map(([key, theme]) => (
               <OptionButton
                 key={key}
                 isSelected={themeSetting === key}
-                icon={icon}
-                label={t(label)}
+                icon={
+                  <div className="flex h-8 w-8 overflow-hidden rounded-full">
+                    <div
+                      className="h-full w-1/2"
+                      style={{ background: `hsl(${theme.colors.background})` }}
+                    />
+                    <div
+                      className="h-full w-1/2"
+                      style={{ background: `hsl(${theme.colors.primary})` }}
+                    />
+                  </div>
+                }
+                label={t(theme.name)}
                 onClick={() => setThemeSetting(key)}
               />
             ))}
@@ -80,27 +89,6 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
                 icon={icon}
                 label={t(label)}
                 onClick={() => updateNotificationListStyle(key)}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 px-4">
-          <Label className="text-base">{t('Primary color')}</Label>
-          <div className="grid w-full grid-cols-4 gap-4">
-            {Object.entries(PRIMARY_COLORS).map(([key, config]) => (
-              <OptionButton
-                key={key}
-                isSelected={primaryColor === key}
-                icon={
-                  <div
-                    className="size-8 rounded-full shadow-md"
-                    style={{
-                      backgroundColor: `hsl(${config.light.primary})`
-                    }}
-                  />
-                }
-                label={t(config.name)}
-                onClick={() => setPrimaryColor(key as TPrimaryColor)}
               />
             ))}
           </div>

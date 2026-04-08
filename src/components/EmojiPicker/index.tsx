@@ -1,6 +1,5 @@
 import { parseEmojiPickerUnified } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { useTheme } from '@/providers/ThemeProvider'
 import customEmojiService from '@/services/custom-emoji.service'
 import { TEmoji } from '@/types'
 import EmojiPickerReact, {
@@ -15,14 +14,11 @@ export default function EmojiPicker({
 }: {
   onEmojiClick: (emoji: string | TEmoji | undefined, event: MouseEvent) => void
 }) {
-  const { themeSetting } = useTheme()
   const { isSmallScreen } = useScreenSize()
 
   return (
     <EmojiPickerReact
-      theme={
-        themeSetting === 'system' ? Theme.AUTO : themeSetting === 'dark' ? Theme.DARK : Theme.LIGHT
-      }
+      theme={Theme.DARK}
       width={isSmallScreen ? '100%' : 350}
       autoFocusSearch={false}
       emojiStyle={EmojiStyle.NATIVE}

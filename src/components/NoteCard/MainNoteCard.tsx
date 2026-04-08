@@ -37,8 +37,10 @@ export default function MainNoteCard({
       <div
         className={cn(
           'clickable transition-all duration-200',
-          embedded ? 'rounded-xl border bg-card p-3 sm:p-4' : 'py-3 hover:bg-accent/30'
+          embedded ? 'rounded-xl border bg-card p-3 sm:p-4' : 'py-3'
         )}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'hsl(0, 0%, 3.5%)')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
       >
         <Collapsible alwaysExpand={embedded}>
           {pinned && <PinnedButton event={event} />}

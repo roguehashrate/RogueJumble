@@ -11,10 +11,17 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { toRizful } from '@/lib/link'
 import { useZap } from '@/providers/ZapProvider'
 import { disconnect, launchModal } from '@getalby/bitcoin-connect-react'
+import { Settings } from 'lucide-react'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import DefaultZapAmountInput from './DefaultZapAmountInput'
@@ -25,12 +32,46 @@ import QuickZapSwitch from './QuickZapSwitch'
 const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { push } = useSecondaryPage()
-  const { isWalletConnected, walletInfo } = useZap()
+  const {
+    isWalletConnected,
+    walletInfo,
+    balance,
+    balanceDisplayUnit,
+    setBalanceDisplayUnit,
+    formatBalance
+  } = useZap()
+
+  const controls = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="size-7">
+          <Settings className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setBalanceDisplayUnit('sats')}>
+          {t('Sats')} {balanceDisplayUnit === 'sats' && '✓'}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setBalanceDisplayUnit('bits')}>
+          μ {t('Bits')} {balanceDisplayUnit === 'bits' && '✓'}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setBalanceDisplayUnit('btc')}>
+          ₿ {t('BTC')} {balanceDisplayUnit === 'btc' && '✓'}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 
   return (
-    <SecondaryPageLayout ref={ref} index={index} title={t('Wallet')}>
+    <SecondaryPageLayout ref={ref} index={index} title={t('Wallet')} controls={controls}>
       {isWalletConnected ? (
         <div className="space-y-4 px-4 pt-3">
+          <div className="rounded-lg border bg-card p-4">
+            {walletInfo?.node.alias && (
+              <div className="mb-2 text-sm text-muted-foreground">{walletInfo.node.alias}</div>
+            )}
+            {balance !== null && <div className="text-2xl font-bold">{formatBalance(balance)}</div>}
+          </div>
           <div>
             {walletInfo?.node.alias && (
               <div className="mb-2">

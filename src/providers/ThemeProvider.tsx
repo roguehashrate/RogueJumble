@@ -1,84 +1,61 @@
-import { PRIMARY_COLORS, StorageKey, TPrimaryColor } from '@/constants'
+import { StorageKey, THEME_COLORS, TThemeName } from '@/constants'
 import storage from '@/services/local-storage.service'
-import { TTheme, TThemeSetting } from '@/types'
+import { TTheme } from '@/types'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 type ThemeProviderState = {
   theme: TTheme
-  themeSetting: TThemeSetting
-  setThemeSetting: (themeSetting: TThemeSetting) => void
-  primaryColor: TPrimaryColor
-  setPrimaryColor: (color: TPrimaryColor) => void
+  themeSetting: TThemeName
+  setThemeSetting: (themeSetting: TThemeName) => void
 }
 
 const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
 
-const updateCSSVariables = (color: TPrimaryColor, currentTheme: TTheme) => {
+const applyTheme = (themeName: TThemeName) => {
   const root = window.document.documentElement
-  const colorConfig = PRIMARY_COLORS[color] ?? PRIMARY_COLORS.DEFAULT
+  const theme = THEME_COLORS[themeName]
+  const colors = theme.colors
 
-  const config = currentTheme === 'light' ? colorConfig.light : colorConfig.dark
+  root.style.setProperty('--background', colors.background)
+  root.style.setProperty('--foreground', colors.foreground)
+  root.style.setProperty('--card', colors.card)
+  root.style.setProperty('--card-foreground', colors.cardForeground)
+  root.style.setProperty('--popover', colors.popover)
+  root.style.setProperty('--popover-foreground', colors.popoverForeground)
+  root.style.setProperty('--primary', colors.primary)
+  root.style.setProperty('--primary-hover', colors.primaryHover)
+  root.style.setProperty('--primary-foreground', colors.primaryForeground)
+  root.style.setProperty('--secondary', colors.secondary)
+  root.style.setProperty('--secondary-foreground', colors.secondaryForeground)
+  root.style.setProperty('--muted', colors.muted)
+  root.style.setProperty('--muted-foreground', colors.mutedForeground)
+  root.style.setProperty('--accent', colors.accent)
+  root.style.setProperty('--accent-foreground', colors.accentForeground)
+  root.style.setProperty('--destructive', colors.destructive)
+  root.style.setProperty('--destructive-foreground', colors.destructiveForeground)
+  root.style.setProperty('--border', colors.border)
+  root.style.setProperty('--input', colors.input)
+  root.style.setProperty('--ring', colors.ring)
+  root.style.setProperty('--surface-background', colors.surfaceBackground)
 
-  root.style.setProperty('--primary', config.primary)
-  root.style.setProperty('--primary-hover', config['primary-hover'])
-  root.style.setProperty('--primary-foreground', config['primary-foreground'])
-  root.style.setProperty('--ring', config.ring)
+  root.classList.remove('light', 'dark', 'rogue', 'nord', 'dracula', 'gruvbox', 'everforest')
+  root.classList.add(themeName)
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeSetting, setThemeSetting] = useState<TThemeSetting>(
-    (localStorage.getItem(StorageKey.THEME_SETTING) as TThemeSetting) ?? 'system'
+  const [themeSetting, setThemeSettingState] = useState<TThemeName>(
+    (localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'rogue'
   )
-  const [theme, setTheme] = useState<TTheme>('light')
-  const [primaryColor, setPrimaryColor] = useState<TPrimaryColor>(
-    (localStorage.getItem(StorageKey.PRIMARY_COLOR) as TPrimaryColor) ?? 'DEFAULT'
-  )
+  const [theme, setTheme] = useState<TTheme>(themeSetting)
 
   useEffect(() => {
-    if (themeSetting !== 'system') {
-      setTheme(themeSetting)
-      return
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light')
-    }
-    mediaQuery.addEventListener('change', handleChange)
-    setTheme(mediaQuery.matches ? 'dark' : 'light')
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
+    applyTheme(themeSetting)
+    setTheme(themeSetting)
   }, [themeSetting])
 
-  useEffect(() => {
-    const updateTheme = async () => {
-      const root = window.document.documentElement
-      root.classList.remove('light', 'dark')
-      root.classList.add(theme === 'pure-black' ? 'dark' : theme)
-
-      if (theme === 'pure-black') {
-        root.classList.add('pure-black')
-      } else {
-        root.classList.remove('pure-black')
-      }
-    }
-    updateTheme()
-  }, [theme])
-
-  useEffect(() => {
-    updateCSSVariables(primaryColor, theme)
-  }, [theme, primaryColor])
-
-  const updateThemeSetting = (themeSetting: TThemeSetting) => {
-    storage.setThemeSetting(themeSetting)
-    setThemeSetting(themeSetting)
-  }
-
-  const updatePrimaryColor = (color: TPrimaryColor) => {
-    storage.setPrimaryColor(color)
-    setPrimaryColor(color)
+  const updateThemeSetting = (newTheme: TThemeName) => {
+    storage.setThemeSetting(newTheme)
+    setThemeSettingState(newTheme)
   }
 
   return (
@@ -86,9 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       value={{
         theme,
         themeSetting,
-        setThemeSetting: updateThemeSetting,
-        primaryColor,
-        setPrimaryColor: updatePrimaryColor
+        setThemeSetting: updateThemeSetting
       }}
     >
       {children}

@@ -21,6 +21,7 @@ export const StorageKey = {
   DEFAULT_ZAP_SATS: 'defaultZapSats',
   DEFAULT_ZAP_COMMENT: 'defaultZapComment',
   QUICK_ZAP: 'quickZap',
+  WALLET_DISPLAY_UNIT: 'walletDisplayUnit',
   LAST_READ_NOTIFICATION_TIME_MAP: 'lastReadNotificationTimeMap',
   ACCOUNT_FEED_INFO_MAP: 'accountFeedInfoMap',
   AUTOPLAY: 'autoplay',
@@ -471,6 +472,140 @@ export const PRIMARY_COLORS = {
   }
 } as const
 export type TPrimaryColor = keyof typeof PRIMARY_COLORS
+
+export const THEME_COLORS = {
+  rogue: {
+    name: 'Rogue',
+    colors: {
+      background: '0 0% 0%',
+      foreground: '0 0% 98%',
+      card: '0 0% 5%',
+      cardForeground: '0 0% 98%',
+      popover: '0 0% 8%',
+      popoverForeground: '0 0% 98%',
+      primary: '25 95% 55%',
+      primaryHover: '25 95% 65%',
+      primaryForeground: '0 0% 0%',
+      secondary: '0 0% 15%',
+      secondaryForeground: '0 0% 98%',
+      muted: '0 0% 12%',
+      mutedForeground: '0 0% 60%',
+      accent: '25 95% 55%',
+      accentForeground: '0 0% 0%',
+      destructive: '0 62% 30%',
+      destructiveForeground: '0 0% 98%',
+      border: '0 0% 18%',
+      input: '0 0% 15%',
+      ring: '25 95% 55%',
+      surfaceBackground: '0 0% 3%'
+    }
+  },
+  nord: {
+    name: 'Nord',
+    colors: {
+      background: '220 26% 24%',
+      foreground: '213 20% 85%',
+      card: '220 26% 28%',
+      cardForeground: '213 20% 85%',
+      popover: '220 26% 30%',
+      popoverForeground: '213 20% 85%',
+      primary: '190 45% 69%',
+      primaryHover: '190 45% 78%',
+      primaryForeground: '200 30% 15%',
+      secondary: '220 26% 32%',
+      secondaryForeground: '213 20% 85%',
+      muted: '220 26% 34%',
+      mutedForeground: '213 20% 60%',
+      accent: '150 30% 60%',
+      accentForeground: '200 30% 15%',
+      destructive: '0 45% 60%',
+      destructiveForeground: '213 20% 85%',
+      border: '220 26% 36%',
+      input: '220 26% 30%',
+      ring: '190 45% 69%',
+      surfaceBackground: '220 26% 20%'
+    }
+  },
+  dracula: {
+    name: 'Dracula',
+    colors: {
+      background: '231 15% 18%',
+      foreground: '60 30% 96%',
+      card: '231 15% 22%',
+      cardForeground: '60 30% 96%',
+      popover: '231 15% 24%',
+      popoverForeground: '60 30% 96%',
+      primary: '265 89% 78%',
+      primaryHover: '265 89% 85%',
+      primaryForeground: '231 15% 18%',
+      secondary: '232 14% 28%',
+      secondaryForeground: '60 30% 96%',
+      muted: '232 14% 32%',
+      mutedForeground: '225 27% 65%',
+      accent: '326 100% 74%',
+      accentForeground: '231 15% 18%',
+      destructive: '0 100% 67%',
+      destructiveForeground: '60 30% 96%',
+      border: '232 14% 35%',
+      input: '232 14% 28%',
+      ring: '265 89% 78%',
+      surfaceBackground: '231 15% 15%'
+    }
+  },
+  gruvbox: {
+    name: 'Gruvbox',
+    colors: {
+      background: '30 10% 15%',
+      foreground: '40 30% 80%',
+      card: '30 10% 20%',
+      cardForeground: '40 30% 80%',
+      popover: '30 10% 22%',
+      popoverForeground: '40 30% 80%',
+      primary: '25 95% 52%',
+      primaryHover: '25 95% 60%',
+      primaryForeground: '30 10% 10%',
+      secondary: '30 10% 24%',
+      secondaryForeground: '40 30% 80%',
+      muted: '30 10% 26%',
+      mutedForeground: '40 30% 55%',
+      accent: '90 30% 45%',
+      accentForeground: '30 10% 10%',
+      destructive: '0 60% 50%',
+      destructiveForeground: '40 30% 80%',
+      border: '30 10% 30%',
+      input: '30 10% 22%',
+      ring: '25 95% 52%',
+      surfaceBackground: '30 10% 12%'
+    }
+  },
+  everforest: {
+    name: 'Everforest',
+    colors: {
+      background: '210 18% 18%',
+      foreground: '43 25% 72%',
+      card: '210 18% 22%',
+      cardForeground: '43 25% 72%',
+      popover: '210 18% 24%',
+      popoverForeground: '43 25% 72%',
+      primary: '84 28% 58%',
+      primaryHover: '84 28% 68%',
+      primaryForeground: '210 18% 18%',
+      secondary: '210 18% 26%',
+      secondaryForeground: '43 25% 72%',
+      muted: '210 18% 28%',
+      mutedForeground: '43 25% 50%',
+      accent: '35 50% 60%',
+      accentForeground: '210 18% 18%',
+      destructive: '0 35% 55%',
+      destructiveForeground: '43 25% 72%',
+      border: '210 18% 32%',
+      input: '210 18% 24%',
+      ring: '84 28% 58%',
+      surfaceBackground: '210 18% 15%'
+    }
+  }
+} as const
+export type TThemeName = keyof typeof THEME_COLORS
 
 export const LONG_PRESS_THRESHOLD = 400
 

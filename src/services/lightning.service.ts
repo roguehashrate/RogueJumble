@@ -26,8 +26,8 @@ class LightningService {
     if (!LightningService.instance) {
       LightningService.instance = this
       init({
-        appName: 'Jumble',
-        showBalance: false
+        appName: 'RogueJumble',
+        showBalance: true
       })
     }
     return LightningService.instance

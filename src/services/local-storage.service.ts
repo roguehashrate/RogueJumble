@@ -10,7 +10,8 @@ import {
   PROFILE_PICTURE_AUTO_LOAD_POLICY,
   SEARCHABLE_RELAY_URLS,
   StorageKey,
-  TPrimaryColor
+  TPrimaryColor,
+  TThemeName
 } from '@/constants'
 import { isSameAccount } from '@/lib/account'
 import { randomString } from '@/lib/random'
@@ -27,7 +28,6 @@ import {
   TNsfwDisplayPolicy,
   TProfilePictureAutoLoadPolicy,
   TRelaySet,
-  TThemeSetting,
   TTranslationServiceConfig
 } from '@/types'
 import { kinds } from 'nostr-tools'
@@ -36,7 +36,7 @@ class LocalStorageService {
   static instance: LocalStorageService
 
   private relaySets: TRelaySet[] = []
-  private themeSetting: TThemeSetting = 'system'
+  private themeSetting: TThemeName = 'rogue'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
   private noteListMode: TNoteListMode = 'posts'
@@ -44,6 +44,7 @@ class LocalStorageService {
   private defaultZapSats: number = 21
   private defaultZapComment: string = 'Zap!'
   private quickZap: boolean = false
+  private walletDisplayUnit: 'sats' | 'bits' | 'btc' = 'sats'
   private accountFeedInfoMap: Record<string, TFeedInfo | undefined> = {}
   private mediaUploadService: string = DEFAULT_NIP_96_SERVICE
   private autoplay: boolean = true
@@ -84,7 +85,7 @@ class LocalStorageService {
 
   init() {
     this.themeSetting =
-      (window.localStorage.getItem(StorageKey.THEME_SETTING) as TThemeSetting) ?? 'system'
+      (window.localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'rogue'
     const accountsStr = window.localStorage.getItem(StorageKey.ACCOUNTS)
     this.accounts = accountsStr ? JSON.parse(accountsStr) : []
     const currentAccountStr = window.localStorage.getItem(StorageKey.CURRENT_ACCOUNT)
@@ -130,6 +131,9 @@ class LocalStorageService {
     }
     this.defaultZapComment = window.localStorage.getItem(StorageKey.DEFAULT_ZAP_COMMENT) ?? 'Zap!'
     this.quickZap = window.localStorage.getItem(StorageKey.QUICK_ZAP) === 'true'
+    this.walletDisplayUnit =
+      (window.localStorage.getItem(StorageKey.WALLET_DISPLAY_UNIT) as 'sats' | 'bits' | 'btc') ??
+      'sats'
 
     const accountFeedInfoMapStr =
       window.localStorage.getItem(StorageKey.ACCOUNT_FEED_INFO_MAP) ?? '{}'
@@ -372,7 +376,7 @@ class LocalStorageService {
     return this.themeSetting
   }
 
-  setThemeSetting(themeSetting: TThemeSetting) {
+  setThemeSetting(themeSetting: TThemeName) {
     window.localStorage.setItem(StorageKey.THEME_SETTING, themeSetting)
     this.themeSetting = themeSetting
   }
@@ -464,6 +468,15 @@ class LocalStorageService {
   setQuickZap(quickZap: boolean) {
     this.quickZap = quickZap
     window.localStorage.setItem(StorageKey.QUICK_ZAP, quickZap.toString())
+  }
+
+  getWalletDisplayUnit() {
+    return this.walletDisplayUnit
+  }
+
+  setWalletDisplayUnit(unit: 'sats' | 'bits' | 'btc') {
+    this.walletDisplayUnit = unit
+    window.localStorage.setItem(StorageKey.WALLET_DISPLAY_UNIT, unit)
   }
 
   getLastReadNotificationTime(pubkey: string) {

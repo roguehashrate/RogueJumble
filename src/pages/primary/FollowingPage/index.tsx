@@ -1,3 +1,4 @@
+import TitlebarProfileButton from '@/components/TitlebarProfileButton'
 import FollowingFeed from '@/components/FollowingFeed'
 import PrimaryPageLayout from '@/layouts/PrimaryPageLayout'
 import { TPageRef } from '@/types'
@@ -24,9 +25,13 @@ function FollowingPageTitlebar() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex h-full items-center gap-2 pl-3">
-      <UsersRound />
-      <div className="text-lg font-semibold">{t('Following')}</div>
+    <div className="flex h-full w-full items-center">
+      <TitlebarProfileButton />
+      <div className="flex flex-1 items-center justify-center gap-2">
+        <UsersRound />
+        <div className="text-lg font-semibold">{t('Following')}</div>
+      </div>
+      <div className="w-8" />
     </div>
   )
 }

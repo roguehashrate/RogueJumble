@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import { usePrimaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { useTheme } from '@/providers/ThemeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import { ChevronsLeft, ChevronsRight } from 'lucide-react'
 import AccountButton from './AccountButton'
@@ -22,7 +21,6 @@ import SettingsButton from './SettingsButton'
 
 export default function PrimaryPageSidebar() {
   const { isSmallScreen } = useScreenSize()
-  const { themeSetting } = useTheme()
   const { sidebarCollapse, updateSidebarCollapse, enableSingleColumnLayout } = useUserPreferences()
   const { pubkey } = useNostr()
   const { navigate } = usePrimaryPage()
@@ -71,9 +69,7 @@ export default function PrimaryPageSidebar() {
       <button
         className={cn(
           'absolute flex h-6 w-5 flex-col items-center justify-center rounded-l-md p-0 text-muted-foreground transition-colors hover:bg-background hover:text-foreground hover:shadow-md [&_svg]:size-4',
-          themeSetting === 'pure-black' || enableSingleColumnLayout
-            ? 'right-0 top-3'
-            : '-right-0.5 top-5'
+          enableSingleColumnLayout ? 'right-0 top-3' : '-right-0.5 top-5'
         )}
         onClick={(e) => {
           e.stopPropagation()

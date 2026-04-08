@@ -1,14 +1,11 @@
-import { useTheme } from '@/providers/ThemeProvider'
 import { Toaster as Sonner } from 'sonner'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { themeSetting } = useTheme()
-
   return (
     <Sonner
-      theme={themeSetting === 'pure-black' ? 'dark' : themeSetting}
+      theme="dark"
       className="toaster group"
       richColors
       mobileOffset={64}

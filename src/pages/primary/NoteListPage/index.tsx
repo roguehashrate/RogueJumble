@@ -1,6 +1,6 @@
 import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
+import TitlebarProfileButton from '@/components/TitlebarProfileButton'
 import FollowingFeed from '@/components/FollowingFeed'
-import PostEditor from '@/components/PostEditor'
 import RelayInfo from '@/components/RelayInfo'
 import { Button } from '@/components/ui/button'
 import PrimaryPageLayout from '@/layouts/PrimaryPageLayout'
@@ -10,7 +10,7 @@ import { useFeed } from '@/providers/FeedProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { TPageRef } from '@/types'
-import { Compass, Info, LogIn, PencilLine, Search, Sparkles } from 'lucide-react'
+import { Compass, Info, LogIn, Search, Sparkles } from 'lucide-react'
 import {
   Dispatch,
   forwardRef,
@@ -112,7 +112,8 @@ function NoteListPageTitlebar({
   const { isSmallScreen } = useScreenSize()
 
   return (
-    <div className="flex h-full items-center justify-between gap-1">
+    <div className="flex h-full w-full items-center justify-between gap-1">
+      <TitlebarProfileButton />
       <FeedButton className="w-0 max-w-fit flex-1" />
       <div className="flex shrink-0 items-center gap-1">
         {setShowRelayDetails && (
@@ -132,37 +133,9 @@ function NoteListPageTitlebar({
             <Info />
           </Button>
         )}
-        {isSmallScreen && (
-          <>
-            <SearchButton />
-            <PostButton />
-          </>
-        )}
+        {isSmallScreen && <SearchButton />}
       </div>
     </div>
-  )
-}
-
-function PostButton() {
-  const { checkLogin } = useNostr()
-  const [open, setOpen] = useState(false)
-
-  return (
-    <>
-      <Button
-        variant="ghost"
-        size="titlebar-icon"
-        onClick={(e) => {
-          e.stopPropagation()
-          checkLogin(() => {
-            setOpen(true)
-          })
-        }}
-      >
-        <PencilLine />
-      </Button>
-      <PostEditor open={open} setOpen={setOpen} />
-    </>
   )
 }
 
