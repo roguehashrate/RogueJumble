@@ -79,7 +79,7 @@ export type TConfig = {
   theme: TThemeSetting
 }
 
-export type TThemeSetting = 'rogue' | 'nord' | 'dracula' | 'gruvbox' | 'everforest'
+export type TThemeSetting = 'rogue' | 'nord' | 'dracula' | 'gruvbox' | 'everforest' | 'kanagawa'
 export type TTheme = TThemeSetting
 
 export type TDraftEvent = Pick<Event, 'content' | 'created_at' | 'kind' | 'tags'>

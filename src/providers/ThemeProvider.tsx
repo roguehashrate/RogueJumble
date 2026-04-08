@@ -38,7 +38,7 @@ const applyTheme = (themeName: TThemeName) => {
   root.style.setProperty('--ring', colors.ring)
   root.style.setProperty('--surface-background', colors.surfaceBackground)
 
-  root.classList.remove('light', 'dark', 'rogue', 'nord', 'dracula', 'gruvbox', 'everforest')
+  root.classList.remove('light', 'dark', 'rogue', 'nord', 'dracula', 'gruvbox', 'everforest', 'kanagawa')
   root.classList.add(themeName)
 }
 
