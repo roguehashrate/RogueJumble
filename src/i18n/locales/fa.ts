@@ -408,7 +408,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'اثبات کار (دشواری {{minPow}})',
     'Proof of Work': 'اثبات کار',
     'Posts & comments difficulty': 'دشواری نوشته‌ها و نظرات',
-    'Likes & reactions difficulty': 'دشواری پسند و واکنش‌ها',
+    'Reactions difficulty': 'دشواری واکنش‌ها',
     'via {{client}}': 'از طریق {{client}}',
     'Auto-load media': 'بارگذاری خودکار رسانه',
     Always: 'همیشه',

@@ -407,7 +407,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'إثبات العمل (الصعوبة {{minPow}})',
     'Proof of Work': 'إثبات العمل',
     'Posts & comments difficulty': 'صعوبة المنشورات والتعليقات',
-    'Likes & reactions difficulty': 'صعوبة الإعجابات والتفاعلات',
+    'Reactions difficulty': 'صعوبة التفاعلات',
     'via {{client}}': 'عبر {{client}}',
     'Auto-load media': 'تحميل الوسائط تلقائياً',
     Always: 'دائماً',

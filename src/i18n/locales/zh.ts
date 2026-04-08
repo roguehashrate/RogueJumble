@@ -403,7 +403,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': '工作量证明 (难度 {{minPow}})',
     'Proof of Work': '工作量证明',
     'Posts & comments difficulty': '帖子和评论难度',
-    'Likes & reactions difficulty': '点赞和互动难度',
+    'Reactions difficulty': '互动难度',
     'via {{client}}': '来自 {{client}}',
     'Auto-load media': '自动加载媒体文件',
     Always: '始终',

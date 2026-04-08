@@ -408,7 +408,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'Proof of Work (nehézség {{minPow}})',
     'Proof of Work': 'Proof of Work',
     'Posts & comments difficulty': 'Bejegyzések és hozzászólások nehézsége',
-    'Likes & reactions difficulty': 'Kedvelések és reakciók nehézsége',
+    'Reactions difficulty': 'Reakciók nehézsége',
     'via {{client}}': 'via {{client}}',
     'Auto-load media': 'média automatikus betöltése',
     Always: 'Mindig',

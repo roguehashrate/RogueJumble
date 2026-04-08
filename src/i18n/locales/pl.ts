@@ -413,7 +413,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'Dowód pracy (trudność {{minPow}})',
     'Proof of Work': 'Dowód pracy',
     'Posts & comments difficulty': 'Trudność wpisów i komentarzy',
-    'Likes & reactions difficulty': 'Trudność polubień i reakcji',
+    'Reactions difficulty': 'Trudność reakcji',
     'via {{client}}': 'przez {{client}}',
     'Auto-load media': 'Automatyczne ładowanie mediów',
     Always: 'Zawsze',

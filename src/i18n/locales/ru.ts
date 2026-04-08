@@ -414,7 +414,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'Доказательство работы (сложность {{minPow}})',
     'Proof of Work': 'Доказательство работы',
     'Posts & comments difficulty': 'Сложность для записей и комментариев',
-    'Likes & reactions difficulty': 'Сложность для лайков и реакций',
+    'Reactions difficulty': 'Сложность реакций',
     'via {{client}}': 'через {{client}}',
     'Auto-load media': 'Автозагрузка медиа',
     Always: 'Всегда',

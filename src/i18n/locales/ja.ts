@@ -409,7 +409,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'プルーフオブワーク (難易度 {{minPow}})',
     'Proof of Work': 'プルーフオブワーク',
     'Posts & comments difficulty': '投稿とコメントの難易度',
-    'Likes & reactions difficulty': 'いいねとリアクションの難易度',
+    'Reactions difficulty': 'リアクションの難易度',
     'via {{client}}': '{{client}} 経由',
     'Auto-load media': 'メディアの自動読み込み',
     Always: '常に',

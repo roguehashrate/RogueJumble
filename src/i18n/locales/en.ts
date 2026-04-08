@@ -406,7 +406,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'Proof of Work (difficulty {{minPow}})',
     'Proof of Work': 'Proof of Work',
     'Posts & comments difficulty': 'Posts & comments difficulty',
-    'Likes & reactions difficulty': 'Likes & reactions difficulty',
+    'Reactions difficulty': 'Reactions difficulty',
     'via {{client}}': 'via {{client}}',
     'Auto-load media': 'Auto-load media',
     Always: 'Always',

@@ -411,7 +411,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'कार्य प्रमाण (कठिनाई {{minPow}})',
     'Proof of Work': 'कार्य प्रमाण',
     'Posts & comments difficulty': 'पोस्ट और टिप्पणियों की कठिनाई',
-    'Likes & reactions difficulty': 'लाइक और प्रतिक्रियाओं की कठिनाई',
+    'Reactions difficulty': 'प्रतिक्रियाओं की कठिनाई',
     'via {{client}}': 'के माध्यम से {{client}}',
     'Auto-load media': 'मीडिया स्वतः लोड करें',
     Always: 'हमेशा',

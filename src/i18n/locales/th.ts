@@ -405,7 +405,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': 'หลักฐานการทำงาน (ความยาก {{minPow}})',
     'Proof of Work': 'หลักฐานการทำงาน',
     'Posts & comments difficulty': 'ความยากของโพสต์และความคิดเห็น',
-    'Likes & reactions difficulty': 'ความยากของไลก์และรีแอคชัน',
+    'Reactions difficulty': 'ความยากของรีแอคชัน',
     'via {{client}}': 'ผ่าน {{client}}',
     'Auto-load media': 'โหลดสื่ออัตโนมัติ',
     Always: 'เสมอ',

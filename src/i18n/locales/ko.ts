@@ -409,7 +409,7 @@ export default {
     'Proof of Work (difficulty {{minPow}})': '작업 증명 (난이도 {{minPow}})',
     'Proof of Work': '작업 증명',
     'Posts & comments difficulty': '게시물 및 댓글 난이도',
-    'Likes & reactions difficulty': '좋아요 및 반응 난이도',
+    'Reactions difficulty': '반응 난이도',
     'via {{client}}': '{{client}} 통해',
     'Auto-load media': '미디어 자동 로드',
     Always: '항상',
