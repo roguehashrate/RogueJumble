@@ -153,6 +153,8 @@ export async function createShortTextNoteDraftEvent(
     postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
   } = {}
 ): Promise<TDraftEvent> {
+  const isMediaPost = options.postKind === 'picture' || options.postKind === 'video' || options.postKind === 'shortVideo'
+
   const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(content)
   const { quoteTags, rootTag, parentTag } = await extractRelatedEventIds(
     transformedEmojisContent,
@@ -195,6 +197,12 @@ export async function createShortTextNoteDraftEvent(
     tags.push(buildProtectedTag())
   }
 
+  // For media posts (kind 20/21/22), content should be just the URL(s)
+  let finalContent = transformedEmojisContent
+  if (isMediaPost && images && images.length > 0) {
+    finalContent = images[0].url
+  }
+
   const baseDraft = {
     kind: options.postKind === 'picture'
       ? ExtendedKind.PICTURE
@@ -203,7 +211,7 @@ export async function createShortTextNoteDraftEvent(
         : options.postKind === 'shortVideo'
           ? ExtendedKind.SHORT_VIDEO
           : kinds.ShortTextNote,
-    content: transformedEmojisContent,
+    content: finalContent,
     tags
   }
   return setDraftEventCache(baseDraft)
