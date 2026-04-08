@@ -1,6 +1,7 @@
 import Note from '@/components/Note'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { StorageKey } from '@/constants'
 import {
   createCommentDraftEvent,
   createHighlightDraftEvent,
@@ -77,7 +78,12 @@ export default function PostContent({
     endsAt: undefined,
     relays: []
   })
-  const [minPow, setMinPow] = useState(16)
+  const [minPow, setMinPow] = useState(() => {
+    const cached = window.localStorage.getItem(StorageKey.POW_ENABLED)
+    if (cached === 'false') return 0
+    const storedDifficulty = window.localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
+    return storedDifficulty ? parseInt(storedDifficulty, 10) : 16
+  })
   const userDismissedProtected = useRef(false)
   const handleProtectedSuggestionChange = useCallback((suggested: boolean) => {
     if (suggested && !userDismissedProtected.current) {

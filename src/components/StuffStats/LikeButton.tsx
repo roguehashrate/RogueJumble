@@ -1,6 +1,6 @@
 import { Drawer, DrawerContent, DrawerOverlay } from '@/components/ui/drawer'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
-import { LONG_PRESS_THRESHOLD, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
+import { LONG_PRESS_THRESHOLD, SPECIAL_TRUST_SCORE_FILTER_ID, StorageKey } from '@/constants'
 import { useStuff } from '@/hooks/useStuff'
 import { useStuffStatsById } from '@/hooks/useStuffStatsById'
 import {
@@ -89,7 +89,13 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
           ? createReactionDraftEvent(event, emoji)
           : createExternalContentReactionDraftEvent(externalContent, emoji)
         const seenOn = event ? client.getSeenEventRelayUrls(event.id) : getDefaultRelayUrls()
-        const evt = await publish(reaction, { additionalRelayUrls: seenOn })
+        const powEnabled = window.localStorage.getItem(StorageKey.POW_ENABLED) !== 'false'
+        const reactionDifficulty = window.localStorage.getItem(StorageKey.POW_REACTION_DIFFICULTY)
+        const minPow = powEnabled ? (reactionDifficulty ? parseInt(reactionDifficulty, 10) : 12) : 0
+        const evt = await publish(reaction, {
+          additionalRelayUrls: seenOn,
+          minPow
+        })
         stuffStatsService.updateStuffStatsByEvents([evt])
       } catch (error) {
         const errors = formatError(error)

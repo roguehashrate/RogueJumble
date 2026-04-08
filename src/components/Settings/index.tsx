@@ -7,7 +7,6 @@ import {
   toPostSettings,
   toRelaySettings,
   toSystemSettings,
-  toTranslation,
   toWallet
 } from '@/lib/link'
 import { cn } from '@/lib/utils'
@@ -20,7 +19,6 @@ import {
   Copy,
   Info,
   KeyRound,
-  Languages,
   Palette,
   PencilLine,
   Server,
@@ -61,15 +59,6 @@ export default function Settings() {
         </div>
         <ChevronRight />
       </SettingItem>
-      {!!pubkey && (
-        <SettingItem className="clickable" onClick={() => push(toTranslation())}>
-          <div className="flex items-center gap-4">
-            <Languages />
-            <div>{t('Translation')}</div>
-          </div>
-          <ChevronRight />
-        </SettingItem>
-      )}
       {!!pubkey && (
         <SettingItem className="clickable" onClick={() => push(toWallet())}>
           <div className="flex items-center gap-4">

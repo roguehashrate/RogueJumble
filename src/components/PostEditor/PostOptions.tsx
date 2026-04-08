@@ -45,7 +45,8 @@ export default function PostOptions({
   }
 
   const onPoWToggle = (checked: boolean) => {
-    setMinPow(checked ? 16 : 0)
+    const difficulty = window.localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
+    setMinPow(checked ? (difficulty ? parseInt(difficulty, 10) : 16) : 0)
     window.localStorage.setItem(StorageKey.POW_ENABLED, checked.toString())
   }
 
