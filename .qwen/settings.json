@@ -3,7 +3,9 @@
     "allow": [
       "Bash(sed *)",
       "Read(//home/roguehashrate/Downloads/android/**)",
-      "Read(//home/roguehashrate/Downloads/ios/**)"
+      "Read(//home/roguehashrate/Downloads/ios/**)",
+      "Bash(cp *)",
+      "Bash(identify *)"
     ]
   },
   "$version": 3
