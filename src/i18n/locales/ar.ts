@@ -419,6 +419,7 @@ export default {
     Picture: 'صورة',
     Video: 'فيديو',
     'Short Video': 'فيديو قصير',
+    'Post Type': 'نوع المنشور',
     'via {{client}}': 'عبر {{client}}',
     'Auto-load media': 'تحميل الوسائط تلقائياً',
     Always: 'دائماً',

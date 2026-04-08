@@ -425,6 +425,7 @@ export default {
     Picture: 'Zdjęcie',
     Video: 'Wideo',
     'Short Video': 'Krótkie wideo',
+    'Post Type': 'Typ wpisu',
     'via {{client}}': 'przez {{client}}',
     'Auto-load media': 'Automatyczne ładowanie mediów',
     Always: 'Zawsze',

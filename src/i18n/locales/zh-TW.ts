@@ -415,6 +415,7 @@ export default {
     Picture: '圖片',
     Video: '影片',
     'Short Video': '短影片',
+    'Post Type': '貼文類型',
     'via {{client}}': '來自 {{client}}',
     'Auto-load media': '自動載入媒體檔案',
     Always: '始終',

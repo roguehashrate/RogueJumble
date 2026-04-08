@@ -420,6 +420,7 @@ export default {
     Picture: 'Kép',
     Video: 'Videó',
     'Short Video': 'Rövid videó',
+    'Post Type': 'Bejegyzés típusa',
     'via {{client}}': 'via {{client}}',
     'Auto-load media': 'média automatikus betöltése',
     Always: 'Mindig',

@@ -14,7 +14,7 @@ import { TextSelection } from '@tiptap/pm/state'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Event } from 'nostr-tools'
 import { ChevronDown, ImageUp, PencilLine, Tv, Video } from 'lucide-react'
-import { Dispatch, forwardRef, SetStateAction, useImperativeHandle, useState } from 'react'
+import { Dispatch, forwardRef, SetStateAction, useImperativeHandle, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClipboardAndDropHandler } from './ClipboardAndDropHandler'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { isTouchDevice } from '@/lib/utils'
 import Emoji from './Emoji'
 import emojiSuggestion from './Emoji/suggestion'
 import Mention from './Mention'
@@ -169,9 +171,29 @@ const PostTextarea = forwardRef<
       }
     }))
 
+    const isTouch = useMemo(() => isTouchDevice(), [])
+    const [kindDrawerOpen, setKindDrawerOpen] = useState(false)
+
     if (!editor) {
       return null
     }
+
+    const PostKindOptions = () => (
+      <>
+        <div className="clickable flex items-center gap-3 px-4 py-3 text-sm" onClick={() => { setPostKind?.('text'); setKindDrawerOpen(false) }}>
+          <PencilLine className="size-4" />{t('Text Post')}
+        </div>
+        <div className="clickable flex items-center gap-3 px-4 py-3 text-sm" onClick={() => { setPostKind?.('picture'); setKindDrawerOpen(false) }}>
+          <ImageUp className="size-4" />{t('Picture Post')}
+        </div>
+        <div className="clickable flex items-center gap-3 px-4 py-3 text-sm" onClick={() => { setPostKind?.('video'); setKindDrawerOpen(false) }}>
+          <Tv className="size-4" />{t('Video Post')}
+        </div>
+        <div className="clickable flex items-center gap-3 px-4 py-3 text-sm" onClick={() => { setPostKind?.('shortVideo'); setKindDrawerOpen(false) }}>
+          <Video className="size-4" />{t('Short Video Post')}
+        </div>
+      </>
+    )
 
     return (
       <div className="space-y-2">
@@ -187,31 +209,51 @@ const PostTextarea = forwardRef<
             </TabsList>
           </Tabs>
           {setPostKind && !parentStuff && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1 text-xs">
-                  {postKind === 'text' && <><PencilLine className="size-3.5" />{t('Text')}</>}
-                  {postKind === 'picture' && <><ImageUp className="size-3.5" />{t('Picture')}</>}
-                  {postKind === 'video' && <><Tv className="size-3.5" />{t('Video')}</>}
-                  {postKind === 'shortVideo' && <><Video className="size-3.5" />{t('Short Video')}</>}
-                  <ChevronDown className="size-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setPostKind('text')}>
-                  <PencilLine className="size-4" />{t('Text Post')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPostKind('picture')}>
-                  <ImageUp className="size-4" />{t('Picture Post')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPostKind('video')}>
-                  <Tv className="size-4" />{t('Video Post')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setPostKind('shortVideo')}>
-                  <Video className="size-4" />{t('Short Video Post')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              {isTouch ? (
+                <Drawer open={kindDrawerOpen} onOpenChange={setKindDrawerOpen}>
+                  <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => setKindDrawerOpen(true)}>
+                    {postKind === 'text' && <><PencilLine className="size-3.5" />{t('Text')}</>}
+                    {postKind === 'picture' && <><ImageUp className="size-3.5" />{t('Picture')}</>}
+                    {postKind === 'video' && <><Tv className="size-3.5" />{t('Video')}</>}
+                    {postKind === 'shortVideo' && <><Video className="size-3.5" />{t('Short Video')}</>}
+                    <ChevronDown className="size-3" />
+                  </Button>
+                  <DrawerContent>
+                    <div className="pb-4">
+                      <div className="px-4 py-3 text-sm font-semibold">{t('Post Type')}</div>
+                      <PostKindOptions />
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1 text-xs">
+                      {postKind === 'text' && <><PencilLine className="size-3.5" />{t('Text')}</>}
+                      {postKind === 'picture' && <><ImageUp className="size-3.5" />{t('Picture')}</>}
+                      {postKind === 'video' && <><Tv className="size-3.5" />{t('Video')}</>}
+                      {postKind === 'shortVideo' && <><Video className="size-3.5" />{t('Short Video')}</>}
+                      <ChevronDown className="size-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setPostKind('text')}>
+                      <PencilLine className="size-4" />{t('Text Post')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setPostKind('picture')}>
+                      <ImageUp className="size-4" />{t('Picture Post')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setPostKind('video')}>
+                      <Tv className="size-4" />{t('Video Post')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setPostKind('shortVideo')}>
+                      <Video className="size-4" />{t('Short Video Post')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </>
           )}
         </div>
         <Tabs

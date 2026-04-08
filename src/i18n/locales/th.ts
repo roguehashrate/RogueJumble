@@ -417,6 +417,7 @@ export default {
     Picture: 'รูปภาพ',
     Video: 'วิดีโอ',
     'Short Video': 'วิดีโอสั้น',
+    'Post Type': 'ประเภทโพสต์',
     'via {{client}}': 'ผ่าน {{client}}',
     'Auto-load media': 'โหลดสื่ออัตโนมัติ',
     Always: 'เสมอ',

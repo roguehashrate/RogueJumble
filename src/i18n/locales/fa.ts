@@ -420,6 +420,7 @@ export default {
     Picture: 'تصویر',
     Video: 'ویدیو',
     'Short Video': 'ویدیوی کوتاه',
+    'Post Type': 'نوع پست',
     'via {{client}}': 'از طریق {{client}}',
     'Auto-load media': 'بارگذاری خودکار رسانه',
     Always: 'همیشه',

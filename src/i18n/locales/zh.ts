@@ -415,6 +415,7 @@ export default {
     Picture: '图片',
     Video: '视频',
     'Short Video': '短视频',
+    'Post Type': '帖子类型',
     'via {{client}}': '来自 {{client}}',
     'Auto-load media': '自动加载媒体文件',
     Always: '始终',

@@ -423,6 +423,7 @@ export default {
     Picture: 'तस्वीर',
     Video: 'वीडियो',
     'Short Video': 'लघु वीडियो',
+    'Post Type': 'पोस्ट प्रकार',
     'via {{client}}': 'के माध्यम से {{client}}',
     'Auto-load media': 'मीडिया स्वतः लोड करें',
     Always: 'हमेशा',

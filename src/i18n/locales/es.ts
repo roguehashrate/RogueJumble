@@ -424,6 +424,7 @@ export default {
     Picture: 'Imagen',
     Video: 'Video',
     'Short Video': 'Video corto',
+    'Post Type': 'Tipo de publicación',
     'via {{client}}': 'vía {{client}}',
     'Auto-load media': 'Cargar medios automáticamente',
     Always: 'Siempre',

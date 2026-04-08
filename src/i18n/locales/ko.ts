@@ -421,6 +421,7 @@ export default {
     Picture: '사진',
     Video: '동영상',
     'Short Video': '짧은 동영상',
+    'Post Type': '게시물 유형',
     'via {{client}}': '{{client}} 통해',
     'Auto-load media': '미디어 자동 로드',
     Always: '항상',

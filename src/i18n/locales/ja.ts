@@ -421,6 +421,7 @@ export default {
     Picture: '画像',
     Video: '動画',
     'Short Video': 'ショート動画',
+    'Post Type': '投稿タイプ',
     'via {{client}}': '{{client}} 経由',
     'Auto-load media': 'メディアの自動読み込み',
     Always: '常に',

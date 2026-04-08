@@ -426,6 +426,7 @@ export default {
     Picture: 'Картинка',
     Video: 'Видео',
     'Short Video': 'Короткое видео',
+    'Post Type': 'Тип поста',
     'via {{client}}': 'через {{client}}',
     'Auto-load media': 'Автозагрузка медиа',
     Always: 'Всегда',
