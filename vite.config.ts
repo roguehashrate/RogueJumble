@@ -60,8 +60,8 @@ export default defineConfig(({ mode }) => {
           enabled: true
         },
         manifest: {
-          name: 'Jumble',
-          short_name: 'Jumble',
+          name: 'RogueJumble',
+          short_name: 'RogueJumble',
           icons: [
             {
               src: '/pwa-512x512.png',

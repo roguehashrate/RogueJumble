@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { JUMBLE_API_BASE_URL } from '@/constants'
+import { ROGUEJUMBLE_API_BASE_URL } from '@/constants'
 import { useNostr } from '@/providers/NostrProvider'
 import { Check, Copy, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
@@ -64,7 +64,7 @@ export function AccountInfo() {
         </div>
         <p className="select-text text-sm text-muted-foreground">
           {t('jumbleTranslateApiKeyDescription', {
-            serviceUrl: new URL('/v1/translation', JUMBLE_API_BASE_URL).toString()
+            serviceUrl: new URL('/v1/translation', ROGUEJUMBLE_API_BASE_URL).toString()
           })}
         </p>
       </div>

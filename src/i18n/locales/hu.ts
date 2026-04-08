@@ -1,6 +1,6 @@
 export default {
   translation: {
-    'Welcome! 🥳': 'Isten hozott! 🥳',
+    'Welcome! 🥳': 'Üdvözlünk a RogueJumble-ban! 🥳',
     About: 'Rólunk',
     'New Note': 'Új Poszt',
     Post: 'Új Poszt',
@@ -95,7 +95,7 @@ export default {
     'Add an Account': 'Profil hozzáadása',
     'More options': 'További lehetőségek',
     'Add client tag': 'Kliens jelölése',
-    'Show others this was sent via Jumble': 'Mutasd meg másoknak, hogy Jumble-lel küldted',
+    'Show others this was sent via RogueJumble': 'Mutasd meg másoknak, hogy RogueJumble-lel küldted',
     'Are you sure you want to logout?': 'Biztosan ki akarsz lépni?',
     'relay sets': 'csomópont listák',
     edit: 'szerkesztés',
@@ -198,8 +198,8 @@ export default {
     All: 'Minden',
     Reactions: 'Reakciók',
     Zaps: 'Zap-ok',
-    'Enjoying Jumble?': 'Tetszik a Jumble?',
-    'Your donation helps me maintain Jumble and make it better! 😊':
+    'Enjoying RogueJumble?': 'Tetszik a RogueJumble?',
+    'Your donation helps me maintain RogueJumble and make it better! 😊':
       'Az adományok segítenek a Jumble fenntartásában és továbbfejlesztésében! 😊',
     'Earlier notifications': 'Korábbi értesítések',
     'Temporarily display this note': 'Poszt ideiglenes megmutatása',
@@ -492,9 +492,9 @@ export default {
     Remote: 'Távoli',
     'Encrypted Key': 'Jelszóval védett titkos Kulcs',
     'Private Key': 'Titkos Kulcs',
-    'Welcome to Jumble': 'Isten hozott',
-    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'Jumble egy kliens, amivel könnyen böngészhetsz csomópontokat. Kezdd az érdekes csomópontok felderítésével, vagy lépj be, hogy a követettek posztjait megnézd.',
+    'Welcome to RogueJumble': 'Üdvözlünk a RogueJumble-ban',
+    'RogueJumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble egy kliens, amivel könnyen böngészhetsz csomópontokat. Kezdd az érdekes csomópontok felderítésével, vagy lépj be, hogy a követettek posztjait megnézd.',
     'Explore Relays': 'Csomópontok felderítése',
     'Choose a feed': 'Válassz hírfolyamot',
     'and {{x}} others': 'és {{x}} másik',
@@ -591,7 +591,7 @@ export default {
     'Publish Highlight': 'Kiemelés Közzététele',
     'Show replies': 'Válaszok megjelenítése',
     'Hide replies': 'Válaszok elrejtése',
-    'Welcome to Jumble!': 'Üdvözlünk a Jumble-ban!',
+    'Welcome to RogueJumble!': 'Üdvözlünk a RogueJumble-ban!',
     'Your feed is empty because you are not following anyone yet. Start by exploring interesting content and following users you like!':
       'A hírcsatornád üres, mert még nem követsz senkit. Kezdd el érdekes tartalmak felfedezésével és kövesd azokat a felhasználókat, akik tetszenek!',
     'Search Users': 'Felhasználók keresése',

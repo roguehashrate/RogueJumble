@@ -8,7 +8,7 @@ export const toNote = (eventOrId: Event | string) => {
   const nevent = getNoteBech32Id(eventOrId)
   return `/notes/${nevent}`
 }
-export const toJumbleNote = (eventOrId: Event | string) => {
+export const toRogueJumbleNote = (eventOrId: Event | string) => {
   return `https://jumble.social${toNote(eventOrId)}`
 }
 export const toNoteList = ({

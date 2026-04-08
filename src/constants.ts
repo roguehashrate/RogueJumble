@@ -1,7 +1,7 @@
 import { kinds } from 'nostr-tools'
 import { TRelaySet } from './types'
 
-export const JUMBLE_API_BASE_URL = 'https://api.jumble.social'
+export const ROGUEJUMBLE_API_BASE_URL = 'https://api.jumble.social'
 
 export const RECOMMENDED_BLOSSOM_SERVERS = [
   'https://blossom.band/',
@@ -149,9 +149,8 @@ export const YOUTUBE_URL_REGEX =
 export const X_URL_REGEX =
   /https?:\/\/(?:www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)(?:[?#].*)?/i
 
-export const JUMBLE_PUBKEY = 'f4eb8e62add1340b9cadcd9861e669b2e907cea534e0f7f3ac974c11c758a51a'
+export const ROGUEJUMBLE_PUBKEY = 'f4eb8e62add1340b9cadcd9861e669b2e907cea534e0f7f3ac974c11c758a51a'
 export const ROGUE_HASHRATE_PUBKEY = 'bc28aad5b167f31dd37c66d8c95d400c6411d83275ed12c504f60965d1f9eec6'
-export const CODY_PUBKEY = '8125b911ed0e94dbe3008a0be48cfe5cd0c0b05923cfff917ae7e87da8400883'
 
 export const NIP_96_SERVICE = [
   'https://mockingyou.com',

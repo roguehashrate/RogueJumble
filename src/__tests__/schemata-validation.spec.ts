@@ -1,5 +1,5 @@
 /**
- * Schemata validation tests for Jumble's draft event builders.
+ * Schemata validation tests for RogueJumble's draft event builders.
  *
  * Validates that every create*DraftEvent function in src/lib/draft-event.ts
  * produces events conforming to @nostrability/schemata JSON schemas.

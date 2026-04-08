@@ -1,16 +1,16 @@
 {
-  "name": "jumble",
+  "name": "roguejumble",
   "version": "0.1.0",
   "description": "A user-friendly Nostr client for exploring relay feeds",
   "private": true,
   "type": "module",
-  "author": "codytseng",
+  "author": "roguehashrate",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CodyTseng/jumble"
+    "url": "git+https://github.com/roguehashrate/RogueJumble"
   },
-  "homepage": "https://github.com/CodyTseng/jumble",
+  "homepage": "https://github.com/roguehashrate/RogueJumble",
   "scripts": {
     "dev": "vite --host",
     "build": "tsc -b && vite build",
