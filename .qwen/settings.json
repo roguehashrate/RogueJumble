@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(sed *)"
+      "Bash(sed *)",
+      "Read(//home/roguehashrate/Downloads/android/**)",
+      "Read(//home/roguehashrate/Downloads/ios/**)"
     ]
   },
   "$version": 3
