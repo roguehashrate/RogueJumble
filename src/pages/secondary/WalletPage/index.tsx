@@ -17,12 +17,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { toRizful } from '@/lib/link'
 import { useZap } from '@/providers/ZapProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { disconnect, launchModal } from '@getalby/bitcoin-connect-react'
 import { Settings } from 'lucide-react'
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import DefaultZapAmountInput from './DefaultZapAmountInput'
 import DefaultZapCommentInput from './DefaultZapCommentInput'
@@ -32,6 +34,7 @@ import QuickZapSwitch from './QuickZapSwitch'
 const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { push } = useSecondaryPage()
+  const { isSmallScreen } = useScreenSize()
   const {
     isWalletConnected,
     walletInfo,
@@ -40,8 +43,58 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
     setBalanceDisplayUnit,
     formatBalance
   } = useZap()
+  const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
 
-  const controls = (
+  const BalanceUnitOptions = () => (
+    <>
+      <div
+        className="clickable flex items-center px-4 py-3 text-sm"
+        onClick={() => {
+          setBalanceDisplayUnit('sats')
+          setSettingsDrawerOpen(false)
+        }}
+      >
+        {t('Sats')} {balanceDisplayUnit === 'sats' && ' ✓'}
+      </div>
+      <div
+        className="clickable flex items-center px-4 py-3 text-sm"
+        onClick={() => {
+          setBalanceDisplayUnit('bits')
+          setSettingsDrawerOpen(false)
+        }}
+      >
+        μ {t('Bits')} {balanceDisplayUnit === 'bits' && ' ✓'}
+      </div>
+      <div
+        className="clickable flex items-center px-4 py-3 text-sm"
+        onClick={() => {
+          setBalanceDisplayUnit('btc')
+          setSettingsDrawerOpen(false)
+        }}
+      >
+        ₿ {t('BTC')} {balanceDisplayUnit === 'btc' && ' ✓'}
+      </div>
+    </>
+  )
+
+  const controls = isSmallScreen ? (
+    <Drawer open={settingsDrawerOpen} onOpenChange={setSettingsDrawerOpen}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-7"
+        onClick={() => setSettingsDrawerOpen(true)}
+      >
+        <Settings className="size-4" />
+      </Button>
+      <DrawerContent>
+        <div className="pb-4">
+          <div className="px-4 py-3 text-sm font-semibold">{t('Balance Display Unit')}</div>
+          <BalanceUnitOptions />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  ) : (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="size-7">
