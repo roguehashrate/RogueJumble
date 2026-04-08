@@ -9,11 +9,8 @@ export default function PictureNote({ event, className }: { event: Event; classN
 
   return (
     <div className={className}>
-      {imageInfos.length > 0 ? (
-        <ImageGallery images={imageInfos} />
-      ) : (
-        <Content event={event} />
-      )}
+      <Content event={event} />
+      {imageInfos.length > 0 && <ImageGallery images={imageInfos} />}
     </div>
   )
 }
