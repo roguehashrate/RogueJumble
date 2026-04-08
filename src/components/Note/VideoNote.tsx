@@ -20,7 +20,6 @@ export default function VideoNote({ event, className }: { event: Event; classNam
   return (
     <div className={className}>
       {metadata?.title && <div className="font-semibold">{metadata.title}</div>}
-      <Content event={event} />
       {metadata && metadata.tags.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">
           {metadata.tags.map((tag) => (
@@ -28,9 +27,13 @@ export default function VideoNote({ event, className }: { event: Event; classNam
           ))}
         </div>
       )}
-      {videoInfos.map((video) => (
-        <MediaPlayer src={video.url} key={video.url} className="mt-2" />
-      ))}
+      {videoInfos.length > 0 ? (
+        videoInfos.map((video) => (
+          <MediaPlayer src={video.url} key={video.url} className="mt-2" />
+        ))
+      ) : (
+        <Content event={event} />
+      )}
     </div>
   )
 }
