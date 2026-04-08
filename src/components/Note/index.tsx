@@ -13,6 +13,7 @@ import AudioPlayer from '../AudioPlayer'
 import ClientTag from '../ClientTag'
 import Content from '../Content'
 import FollowingBadge from '../FollowingBadge'
+import PoWIndicator from '../NoteCard/PoWIndicator'
 import ProtectedBadge from '../ProtectedBadge'
 import { FormattedTimestamp } from '../FormattedTimestamp'
 import Nip05 from '../Nip05'
@@ -152,6 +153,7 @@ export default function Note({
               <TrustScoreBadge pubkey={event.pubkey} />
               <ProtectedBadge event={event} />
               <ClientTag event={event} />
+              <PoWIndicator event={event} />
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Nip05 pubkey={event.pubkey} append="·" />
