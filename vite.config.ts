@@ -27,8 +27,10 @@ const getAppVersion = () => {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const base = env.GITHUB_PAGES ? '/RogueJumble/' : '/'
 
   return {
+    base,
     define: {
       'import.meta.env.GIT_COMMIT': getGitHash(),
       'import.meta.env.APP_VERSION': getAppVersion(),
