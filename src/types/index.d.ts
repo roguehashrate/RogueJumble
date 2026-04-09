@@ -144,10 +144,10 @@ export type TPublishOptions = {
 export type TNoteListMode =
   | 'posts'
   | 'postsAndReplies'
-  | 'you'
   | '24h'
   | 'imageMode'
   | 'textOnlyMode'
+  | 'gallery'
 
 export type TNotificationType = 'all' | 'mentions' | 'reactions' | 'zaps'
 

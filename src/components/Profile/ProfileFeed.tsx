@@ -14,6 +14,7 @@ import { TFeedSubRequest, TNoteListMode } from '@/types'
 import { NostrEvent } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RefreshButton } from '../RefreshButton'
+import GalleryGrid from './GalleryGrid'
 
 export default function ProfileFeed({
   pubkey,
@@ -37,17 +38,12 @@ export default function ProfileFeed({
   const [subRequests, setSubRequests] = useState<TFeedSubRequest[]>([])
   const [pinnedEventIds, setPinnedEventIds] = useState<string[]>([])
   const tabs = useMemo(() => {
-    const _tabs = [
+    return [
       { value: 'posts', label: 'Notes' },
-      { value: 'postsAndReplies', label: 'Replies' }
+      { value: 'postsAndReplies', label: 'Replies' },
+      { value: 'gallery', label: 'Gallery' }
     ]
-
-    if (myPubkey && myPubkey !== pubkey) {
-      _tabs.push({ value: 'you', label: 'YouTabName' })
-    }
-
-    return _tabs
-  }, [myPubkey, pubkey])
+  }, [])
   const supportTouch = useMemo(() => isTouchDevice(), [])
   const noteListRef = useRef<TNoteListRef>(null)
 
@@ -85,36 +81,6 @@ export default function ProfileFeed({
 
   useEffect(() => {
     const init = async () => {
-      if (listMode === 'you') {
-        if (!myPubkey) {
-          setSubRequests([])
-          return
-        }
-
-        const [relayList, myRelayList] = await Promise.all([
-          client.fetchRelayList(pubkey),
-          client.fetchRelayList(myPubkey)
-        ])
-
-        setSubRequests([
-          {
-            urls: myRelayList.write.concat(getDefaultRelayUrls()).slice(0, 5),
-            filter: {
-              authors: [myPubkey],
-              '#p': [pubkey]
-            }
-          },
-          {
-            urls: relayList.write.concat(getDefaultRelayUrls()).slice(0, 5),
-            filter: {
-              authors: [pubkey],
-              '#p': [myPubkey]
-            }
-          }
-        ])
-        return
-      }
-
       const relayList = await client.fetchRelayList(pubkey)
 
       if (search) {
@@ -163,21 +129,30 @@ export default function ProfileFeed({
         }}
         threshold={Math.max(800, topSpace)}
         options={
-          <>
-            {!supportTouch && <RefreshButton onClick={() => noteListRef.current?.refresh()} />}
-            <KindFilter showKinds={temporaryShowKinds} onShowKindsChange={handleShowKindsChange} />
-          </>
+          listMode !== 'gallery' ? (
+            <>
+              {!supportTouch && <RefreshButton onClick={() => noteListRef.current?.refresh()} />}
+              <KindFilter
+                showKinds={temporaryShowKinds}
+                onShowKindsChange={handleShowKindsChange}
+              />
+            </>
+          ) : undefined
         }
       />
-      <NoteList
-        ref={noteListRef}
-        subRequests={subRequests}
-        showKinds={temporaryShowKinds}
-        hideReplies={listMode === 'posts'}
-        filterMutedNotes={false}
-        pinnedEventIds={listMode === 'you' || !!search ? [] : pinnedEventIds}
-        showNewNotesDirectly={myPubkey === pubkey}
-      />
+      {listMode === 'gallery' ? (
+        <GalleryGrid pubkey={pubkey} />
+      ) : (
+        <NoteList
+          ref={noteListRef}
+          subRequests={subRequests}
+          showKinds={temporaryShowKinds}
+          hideReplies={listMode === 'posts'}
+          filterMutedNotes={false}
+          pinnedEventIds={!!search ? [] : pinnedEventIds}
+          showNewNotesDirectly={myPubkey === pubkey}
+        />
+      )}
     </>
   )
 }
