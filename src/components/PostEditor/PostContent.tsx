@@ -367,7 +367,7 @@ export default function PostContent({
             variant="ghost"
             size="icon"
             title={t('Client Tag')}
-            className={addClientTag ? 'text-primary' : 'text-muted-foreground'}
+            className={addClientTag ? '!important text-primary' : 'text-muted-foreground'}
             onClick={() => setAddClientTag(!addClientTag)}
           >
             <Tag />
@@ -376,7 +376,7 @@ export default function PostContent({
             variant="ghost"
             size="icon"
             title={t('Proof of Work')}
-            className={minPow > 0 ? 'text-primary' : 'text-muted-foreground'}
+            className={minPow > 0 ? '!important text-primary' : 'text-muted-foreground'}
             onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
           >
             <Pickaxe />
@@ -385,7 +385,7 @@ export default function PostContent({
             variant="ghost"
             size="icon"
             title={t('NSFW')}
-            className={isNsfw ? 'text-primary' : 'text-muted-foreground'}
+            className={isNsfw ? '!important text-primary' : 'text-muted-foreground'}
             onClick={() => setIsNsfw(!isNsfw)}
           >
             <Ban />
