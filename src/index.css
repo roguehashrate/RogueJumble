@@ -31,27 +31,6 @@
     font-family: "Andika", sans-serif !important;
   }
 
-  html.font-opendyslexic body,
-  html.font-opendyslexic p,
-  html.font-opendyslexic span,
-  html.font-opendyslexic div:not(.font-monospace):not(.font-sourcesans):not(.font-default),
-  html.font-opendyslexic a,
-  html.font-opendyslexic button,
-  html.font-opendyslexic input,
-  html.font-opendyslexic textarea,
-  html.font-opendyslexic h1,
-  html.font-opendyslexic h2,
-  html.font-opendyslexic h3,
-  html.font-opendyslexic h4,
-  html.font-opendyslexic h5,
-  html.font-opendyslexic h6 {
-    font-family: inherit !important;
-    max-width: 100%;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    hyphens: auto;
-  }
-
   html.font-sourcesans {
     font-family: "Nunito", sans-serif !important;
   }
