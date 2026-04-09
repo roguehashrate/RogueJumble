@@ -694,13 +694,23 @@ export default {
     'Automatically replay videos when they end': 'Automatically replay videos when they end',
     'Relays used for searching notes (NIP-50)': 'Relays used for searching notes (NIP-50)',
     'Protected event (NIP-70)': 'Protected event (NIP-70)',
-    'Protected': 'Protected',
+    Protected: 'Protected',
     'Protected event hint':
       'Protected events (NIP-70) can only be published by the author. Relays will reject these events from third parties, preventing others from rebroadcasting your content. Note: not all relays support protected events.',
     'Allow insecure connections': 'Allow insecure connections',
     'Allow insecure connections description':
       'Allow loading http:// resources and connecting to ws:// relays. May trigger browser mixed content warnings.',
     'reacted to': 'reacted to',
-    Reaction: 'Reaction'
+    Reaction: 'Reaction',
+    Font: 'Font',
+    'Font size': 'Font size',
+    'Advanced mode': 'Advanced mode',
+    Advanced: 'Advanced',
+    'Post type selector': 'Post type selector',
+    'Shows post kind dropdown when creating posts': 'Shows post kind dropdown when creating posts',
+    'Sans-serif': 'Sans-serif',
+    Monospace: 'Monospace',
+    OpenDyslexic: 'OpenDyslexic',
+    'Source Sans': 'Source Sans'
   }
 }

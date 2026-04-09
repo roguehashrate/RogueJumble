@@ -1,11 +1,11 @@
 import { Label } from '@/components/ui/label'
-import { THEME_COLORS, TThemeName } from '@/constants'
+import { FONT, FONT_SIZE, THEME_COLORS, TThemeName } from '@/constants'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useTheme } from '@/providers/ThemeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
-import { Columns2, LayoutList, List, PanelLeft } from 'lucide-react'
+import { Columns2, LayoutList, List, PanelLeft, Type } from 'lucide-react'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -19,6 +19,31 @@ const NOTIFICATION_STYLES = [
   { key: 'compact', label: 'Compact', icon: <List className="size-5" /> }
 ] as const
 
+const FONTS = [
+  { key: FONT.DEFAULT, label: 'Sans-serif', preview: <Type className="size-5" /> },
+  {
+    key: FONT.MONOSPACE,
+    label: 'Monospace',
+    preview: <span className="size-5 font-mono">Aa</span>
+  },
+  {
+    key: FONT.OPENDYSLEXIC,
+    label: 'OpenDyslexic',
+    preview: <span className="size-5 font-['OpenDyslexic']">Aa</span>
+  },
+  {
+    key: FONT.SOURCESANS,
+    label: 'Source Sans',
+    preview: <span className="size-5 font-['Source_Sans_3']">Aa</span>
+  }
+] as const
+
+const FONT_SIZES = [
+  { key: FONT_SIZE.DEFAULT, label: '1', preview: <span className="text-xs">Aa</span> },
+  { key: FONT_SIZE.MEDIUM, label: '2', preview: <span className="text-sm">Aa</span> },
+  { key: FONT_SIZE.LARGE, label: '3', preview: <span className="text-base">Aa</span> }
+] as const
+
 const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
@@ -27,7 +52,11 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
     enableSingleColumnLayout,
     updateEnableSingleColumnLayout,
     notificationListStyle,
-    updateNotificationListStyle
+    updateNotificationListStyle,
+    font,
+    updateFont,
+    fontSize,
+    updateFontSize
   } = useUserPreferences()
 
   const themeEntries = Object.entries(THEME_COLORS) as [
@@ -59,6 +88,34 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
                 }
                 label={t(theme.name)}
                 onClick={() => setThemeSetting(key)}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 px-4">
+          <Label className="text-base">{t('Font')}</Label>
+          <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-4">
+            {FONTS.map(({ key, label, preview }) => (
+              <OptionButton
+                key={key}
+                isSelected={font === key}
+                icon={preview}
+                label={t(label)}
+                onClick={() => updateFont(key)}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 px-4">
+          <Label className="text-base">{t('Font size')}</Label>
+          <div className="grid w-full grid-cols-3 gap-4">
+            {FONT_SIZES.map(({ key, label, preview }) => (
+              <OptionButton
+                key={key}
+                isSelected={fontSize === key}
+                icon={preview}
+                label={label}
+                onClick={() => updateFontSize(key)}
               />
             ))}
           </div>

@@ -4,12 +4,16 @@ import {
   DEFAULT_FAVICON_URL_TEMPLATE,
   DEFAULT_NIP_96_SERVICE,
   ExtendedKind,
+  FONT,
+  FONT_SIZE,
   MEDIA_AUTO_LOAD_POLICY,
   NOTIFICATION_LIST_STYLE,
   NSFW_DISPLAY_POLICY,
   PROFILE_PICTURE_AUTO_LOAD_POLICY,
   SEARCHABLE_RELAY_URLS,
   StorageKey,
+  TFont,
+  TFontSize,
   TPrimaryColor,
   TThemeName
 } from '@/constants'
@@ -68,6 +72,9 @@ class LocalStorageService {
   private quickReaction: boolean = false
   private quickReactionEmoji: string | TEmoji = '+'
   private nsfwDisplayPolicy: TNsfwDisplayPolicy = NSFW_DISPLAY_POLICY.HIDE_CONTENT
+  private font: TFont = FONT.DEFAULT
+  private fontSize: TFontSize = FONT_SIZE.DEFAULT
+  private advancedMode: boolean = false
   private defaultRelayUrls: string[] = BIG_RELAY_URLS
   private searchRelayUrls: string[] = SEARCHABLE_RELAY_URLS
   private mutedWords: string[] = []
@@ -174,6 +181,25 @@ class LocalStorageService {
         defaultShowNsfwStr === 'true' ? NSFW_DISPLAY_POLICY.SHOW : NSFW_DISPLAY_POLICY.HIDE_CONTENT
       window.localStorage.setItem(StorageKey.NSFW_DISPLAY_POLICY, this.nsfwDisplayPolicy)
     }
+
+    const fontStr = window.localStorage.getItem(StorageKey.FONT)
+    if (fontStr && Object.values(FONT).includes(fontStr as TFont)) {
+      this.font = fontStr as TFont
+    } else {
+      this.font = FONT.DEFAULT
+      window.localStorage.setItem(StorageKey.FONT, this.font)
+    }
+
+    const fontSizeStr = window.localStorage.getItem(StorageKey.FONT_SIZE)
+    if (fontSizeStr && Object.values(FONT_SIZE).includes(fontSizeStr as TFontSize)) {
+      this.fontSize = fontSizeStr as TFontSize
+    } else {
+      this.fontSize = FONT_SIZE.DEFAULT
+      window.localStorage.setItem(StorageKey.FONT_SIZE, this.fontSize)
+    }
+
+    const advancedModeStr = window.localStorage.getItem(StorageKey.ADVANCED_MODE)
+    this.advancedMode = advancedModeStr === 'true'
 
     this.dismissedTooManyRelaysAlert =
       window.localStorage.getItem(StorageKey.DISMISSED_TOO_MANY_RELAYS_ALERT) === 'true'
@@ -605,6 +631,33 @@ class LocalStorageService {
   setProfilePictureAutoLoadPolicy(policy: TProfilePictureAutoLoadPolicy) {
     this.profilePictureAutoLoadPolicy = policy
     window.localStorage.setItem(StorageKey.PROFILE_PICTURE_AUTO_LOAD_POLICY, policy)
+  }
+
+  getFont() {
+    return this.font
+  }
+
+  setFont(font: TFont) {
+    this.font = font
+    window.localStorage.setItem(StorageKey.FONT, font)
+  }
+
+  getFontSize() {
+    return this.fontSize
+  }
+
+  setFontSize(fontSize: TFontSize) {
+    this.fontSize = fontSize
+    window.localStorage.setItem(StorageKey.FONT_SIZE, fontSize)
+  }
+
+  getAdvancedMode() {
+    return this.advancedMode
+  }
+
+  setAdvancedMode(enabled: boolean) {
+    this.advancedMode = enabled
+    window.localStorage.setItem(StorageKey.ADVANCED_MODE, enabled.toString())
   }
 
   hasShownCreateWalletGuideToast(pubkey: string) {

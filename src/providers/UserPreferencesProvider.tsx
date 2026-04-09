@@ -1,11 +1,20 @@
 import storage from '@/services/local-storage.service'
-import { TEmoji, TNotificationStyle } from '@/types'
+import { TEmoji, TFont, TFontSize, TNotificationStyle } from '@/types'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useScreenSize } from './ScreenSizeProvider'
 
 type TUserPreferencesContext = {
   notificationListStyle: TNotificationStyle
   updateNotificationListStyle: (style: TNotificationStyle) => void
+
+  font: TFont
+  updateFont: (font: TFont) => void
+
+  fontSize: TFontSize
+  updateFontSize: (fontSize: TFontSize) => void
+
+  advancedMode: boolean
+  updateAdvancedMode: (enabled: boolean) => void
 
   muteMedia: boolean
   updateMuteMedia: (mute: boolean) => void
@@ -41,6 +50,9 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const [notificationListStyle, setNotificationListStyle] = useState(
     storage.getNotificationListStyle()
   )
+  const [font, setFont] = useState<TFont>(storage.getFont())
+  const [fontSize, setFontSize] = useState<TFontSize>(storage.getFontSize())
+  const [advancedMode, setAdvancedMode] = useState<boolean>(storage.getAdvancedMode())
   const [muteMedia, setMuteMedia] = useState(true)
   const [sidebarCollapse, setSidebarCollapse] = useState(storage.getSidebarCollapse())
   const [enableSingleColumnLayout, setEnableSingleColumnLayout] = useState(
@@ -91,11 +103,53 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
     storage.setAllowInsecureConnection(allow)
   }
 
+  const updateFont = (font: TFont) => {
+    setFont(font)
+    storage.setFont(font)
+    const fontFamilies: Record<TFont, string> = {
+      default:
+        'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      monospace:
+        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      opendyslexic: '"OpenDyslexic"',
+      sourcesans:
+        '"Source Sans 3", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    }
+    document.documentElement.style.setProperty('font-family', fontFamilies[font])
+  }
+
+  const updateFontSize = (fontSize: TFontSize) => {
+    setFontSize(fontSize)
+    storage.setFontSize(fontSize)
+    const fontSizes: Record<TFontSize, string> = {
+      default: '100%',
+      medium: '112.5%',
+      large: '125%'
+    }
+    document.documentElement.style.setProperty('font-size', fontSizes[fontSize])
+  }
+
+  const updateAdvancedMode = (enabled: boolean) => {
+    setAdvancedMode(enabled)
+    storage.setAdvancedMode(enabled)
+  }
+
+  useEffect(() => {
+    updateFont(font)
+    updateFontSize(fontSize)
+  }, [])
+
   return (
     <UserPreferencesContext.Provider
       value={{
         notificationListStyle,
         updateNotificationListStyle,
+        font,
+        updateFont,
+        fontSize,
+        updateFontSize,
+        advancedMode,
+        updateAdvancedMode,
         muteMedia,
         updateMuteMedia: setMuteMedia,
         sidebarCollapse,

@@ -48,6 +48,9 @@ export const StorageKey = {
   QUICK_REACTION: 'quickReaction',
   QUICK_REACTION_EMOJI: 'quickReactionEmoji',
   NSFW_DISPLAY_POLICY: 'nsfwDisplayPolicy',
+  FONT: 'font',
+  FONT_SIZE: 'fontSize',
+  ADVANCED_MODE: 'advancedMode',
   DEFAULT_RELAY_URLS: 'defaultRelayUrls',
   MUTED_WORDS: 'mutedWords',
   MIN_TRUST_SCORE: 'minTrustScore',
@@ -152,7 +155,8 @@ export const X_URL_REGEX =
   /https?:\/\/(?:www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)(?:[?#].*)?/i
 
 export const ROGUEJUMBLE_PUBKEY = 'f4eb8e62add1340b9cadcd9861e669b2e907cea534e0f7f3ac974c11c758a51a'
-export const ROGUE_HASHRATE_PUBKEY = 'bc28aad5b167f31dd37c66d8c95d400c6411d83275ed12c504f60965d1f9eec6'
+export const ROGUE_HASHRATE_PUBKEY =
+  'bc28aad5b167f31dd37c66d8c95d400c6411d83275ed12c504f60965d1f9eec6'
 
 export const NIP_96_SERVICE = [
   'https://mockingyou.com',
@@ -199,6 +203,21 @@ export const NSFW_DISPLAY_POLICY = {
   HIDE_CONTENT: 'hide_content',
   SHOW: 'show'
 } as const
+
+export const FONT = {
+  DEFAULT: 'default',
+  MONOSPACE: 'monospace',
+  OPENDYSLEXIC: 'opendyslexic',
+  SOURCESANS: 'sourcesans'
+} as const
+export type TFont = (typeof FONT)[keyof typeof FONT]
+
+export const FONT_SIZE = {
+  DEFAULT: 'default',
+  MEDIUM: 'medium',
+  LARGE: 'large'
+} as const
+export type TFontSize = (typeof FONT_SIZE)[keyof typeof FONT_SIZE]
 
 export const MAX_PINNED_NOTES = 10
 

@@ -1,5 +1,7 @@
 import { Event, Filter, VerifiedEvent } from 'nostr-tools'
 import {
+  FONT,
+  FONT_SIZE,
   MEDIA_AUTO_LOAD_POLICY,
   NOTIFICATION_LIST_STYLE,
   NSFW_DISPLAY_POLICY,
@@ -139,7 +141,13 @@ export type TPublishOptions = {
   minPow?: number
 }
 
-export type TNoteListMode = 'posts' | 'postsAndReplies' | 'you' | '24h' | 'imageMode' | 'textOnlyMode'
+export type TNoteListMode =
+  | 'posts'
+  | 'postsAndReplies'
+  | 'you'
+  | '24h'
+  | 'imageMode'
+  | 'textOnlyMode'
 
 export type TNotificationType = 'all' | 'mentions' | 'reactions' | 'zaps'
 
@@ -223,3 +231,7 @@ export type TProfilePictureAutoLoadPolicy =
   (typeof PROFILE_PICTURE_AUTO_LOAD_POLICY)[keyof typeof PROFILE_PICTURE_AUTO_LOAD_POLICY]
 
 export type TNsfwDisplayPolicy = (typeof NSFW_DISPLAY_POLICY)[keyof typeof NSFW_DISPLAY_POLICY]
+
+export type TFont = (typeof FONT)[keyof typeof FONT]
+
+export type TFontSize = (typeof FONT_SIZE)[keyof typeof FONT_SIZE]
