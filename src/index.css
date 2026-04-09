@@ -9,12 +9,23 @@
   }
 
   html {
-    @apply font-sans antialiased;
+    font-family: var(--font-family, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     --bc-color-brand: hsl(var(--primary));
     --bc-color-brand-dark: hsl(var(--primary));
     --bc-brand-mix: 100%;
     --bc-color-brand-button-text: hsl(var(--primary-foreground));
     --bc-color-brand-button-text-dark: hsl(var(--primary-foreground));
+  }
+
+  body {
+    font-family: inherit;
+    @apply bg-background text-foreground;
+    -webkit-overflow-scrolling: touch;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    user-select: none;
   }
 
   input,
@@ -23,14 +34,7 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    -webkit-overflow-scrolling: touch;
-    text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-    user-select: none;
+    font-family: inherit;
   }
 
   body,

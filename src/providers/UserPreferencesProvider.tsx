@@ -111,11 +111,11 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       monospace:
         'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-      opendyslexic: '"OpenDyslexic"',
+      opendyslexic: '"OpenDyslexicRegular", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       sourcesans:
-        '"Source Sans 3", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+        '"Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     }
-    document.documentElement.style.setProperty('font-family', fontFamilies[font])
+    document.documentElement.style.setProperty('--font-family', fontFamilies[font])
   }
 
   const updateFontSize = (fontSize: TFontSize) => {

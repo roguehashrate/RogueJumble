@@ -20,7 +20,7 @@ const NOTIFICATION_STYLES = [
 ] as const
 
 const FONTS = [
-  { key: FONT.DEFAULT, label: 'Sans-serif', preview: <Type className="size-5" /> },
+  { key: FONT.DEFAULT, label: 'Default', preview: <Type className="size-5" /> },
   {
     key: FONT.MONOSPACE,
     label: 'Monospace',
@@ -29,12 +29,12 @@ const FONTS = [
   {
     key: FONT.OPENDYSLEXIC,
     label: 'OpenDyslexic',
-    preview: <span className="size-5 font-['OpenDyslexic']">Aa</span>
+    preview: <span className="size-5 font-['OpenDyslexicRegular']">Aa</span>
   },
   {
     key: FONT.SOURCESANS,
-    label: 'Source Sans',
-    preview: <span className="size-5 font-['Source_Sans_3']">Aa</span>
+    label: 'Nunito',
+    preview: <span className="size-5 font-['Nunito']">Aa</span>
   }
 ] as const
 
