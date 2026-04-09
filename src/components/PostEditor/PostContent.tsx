@@ -370,12 +370,13 @@ export default function PostContent({
             style={{
               background: 'transparent',
               border: 'none',
-              width: '36px',
-              height: '36px',
+              width: '16px',
+              height: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              margin: '0 2px'
             }}
             onClick={() => setAddClientTag(!addClientTag)}
           >
@@ -388,12 +389,13 @@ export default function PostContent({
             style={{
               background: 'transparent',
               border: 'none',
-              width: '36px',
-              height: '36px',
+              width: '16px',
+              height: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              margin: '0 2px'
             }}
             onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
           >
@@ -406,12 +408,13 @@ export default function PostContent({
             style={{
               background: 'transparent',
               border: 'none',
-              width: '36px',
-              height: '36px',
+              width: '16px',
+              height: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              margin: '0 2px'
             }}
             onClick={() => setIsNsfw(!isNsfw)}
           >
