@@ -20,21 +20,21 @@
   }
 
   html.font-default {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
   }
 
   html.font-monospace {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
   }
 
   html.font-opendyslexic {
-    font-family: "Andika", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Andika", sans-serif !important;
   }
 
   html.font-opendyslexic body,
   html.font-opendyslexic p,
   html.font-opendyslexic span,
-  html.font-opendyslexic div,
+  html.font-opendyslexic div:not(.font-monospace):not(.font-sourcesans):not(.font-default),
   html.font-opendyslexic a,
   html.font-opendyslexic button,
   html.font-opendyslexic input,
@@ -45,6 +45,7 @@
   html.font-opendyslexic h4,
   html.font-opendyslexic h5,
   html.font-opendyslexic h6 {
+    font-family: inherit !important;
     max-width: 100%;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -52,11 +53,11 @@
   }
 
   html.font-sourcesans {
-    font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Nunito", sans-serif !important;
   }
 
   body {
-    font-family: inherit;
+    font-family: inherit !important;
     @apply bg-background text-foreground;
     -webkit-overflow-scrolling: touch;
     text-size-adjust: 100%;
