@@ -2,22 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'OpenDyslexicRegular';
-  src: url('/fonts/OpenDyslexic-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'OpenDyslexicRegular';
-  src: url('/fonts/OpenDyslexic-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -44,7 +28,27 @@
   }
 
   html.font-opendyslexic {
-    font-family: "OpenDyslexicRegular", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Andika", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  html.font-opendyslexic body,
+  html.font-opendyslexic p,
+  html.font-opendyslexic span,
+  html.font-opendyslexic div,
+  html.font-opendyslexic a,
+  html.font-opendyslexic button,
+  html.font-opendyslexic input,
+  html.font-opendyslexic textarea,
+  html.font-opendyslexic h1,
+  html.font-opendyslexic h2,
+  html.font-opendyslexic h3,
+  html.font-opendyslexic h4,
+  html.font-opendyslexic h5,
+  html.font-opendyslexic h6 {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
   }
 
   html.font-sourcesans {

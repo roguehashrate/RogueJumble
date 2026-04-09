@@ -28,8 +28,8 @@ const FONTS = [
   },
   {
     key: FONT.OPENDYSLEXIC,
-    label: 'OpenDyslexic',
-    preview: <span className="size-5 font-['OpenDyslexicRegular']">Aa</span>
+    label: 'Andika',
+    preview: <span className="size-5 font-['Andika']">Aa</span>
   },
   {
     key: FONT.SOURCESANS,
