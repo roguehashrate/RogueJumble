@@ -153,17 +153,24 @@ export async function createShortTextNoteDraftEvent(
     postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
   } = {}
 ): Promise<TDraftEvent> {
-  const isMediaPost = options.postKind === 'picture' || options.postKind === 'video' || options.postKind === 'shortVideo'
+  const isPicturePost = options.postKind === 'picture'
+  const isVideoPost = options.postKind === 'video' || options.postKind === 'shortVideo'
+  const isMediaPost = isPicturePost || isVideoPost
 
-  // Extract images from original content first (before stripping)
-  const originalImages = isMediaPost ? extractImagesFromContent(content) : []
+  // Extract media from original content first (before stripping)
+  const originalImages = isPicturePost ? extractImagesFromContent(content) : []
+  const originalVideos = isVideoPost ? extractVideosFromContent(content) : []
 
   // For media posts, strip image/video URLs from content text — they go into imeta tags instead
   const textContent = isMediaPost
-    ? content.replace(/https?:\/\/[^\s"']+\.(jpg|jpeg|png|gif|webp|heic|mp4|webm|mov|avi|mkv|m4v)/gi, '').replace(/\n\s*\n/g, '\n').trim()
+    ? content
+        .replace(/https?:\/\/[^\s"']+\.(jpg|jpeg|png|gif|webp|heic|mp4|webm|mov|avi|mkv|m4v)/gi, '')
+        .replace(/\n\s*\n/g, '\n')
+        .trim()
     : content
 
-  const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(textContent)
+  const { content: transformedEmojisContent, emojiTags } =
+    transformCustomEmojisInContent(textContent)
   const { quoteTags, rootTag, parentTag } = await extractRelatedEventIds(
     transformedEmojisContent,
     options.parentEvent
@@ -172,10 +179,22 @@ export async function createShortTextNoteDraftEvent(
 
   const tags = emojiTags.concat(hashtags.map((hashtag) => buildTTag(hashtag)))
 
-  // imeta tags
-  const images = originalImages && originalImages.length ? originalImages : extractImagesFromContent(transformedEmojisContent)
+  // imeta tags for pictures (picture post)
+  const images =
+    originalImages && originalImages.length
+      ? originalImages
+      : extractImagesFromContent(transformedEmojisContent)
   if (images && images.length) {
     tags.push(...generateImetaTags(images))
+  }
+
+  // imeta tags for videos (video post)
+  const videos =
+    originalVideos && originalVideos.length
+      ? originalVideos
+      : extractVideosFromContent(transformedEmojisContent)
+  if (videos && videos.length) {
+    tags.push(...generateImetaTags(videos))
   }
 
   // q tags
@@ -206,13 +225,14 @@ export async function createShortTextNoteDraftEvent(
   }
 
   const baseDraft = {
-    kind: options.postKind === 'picture'
-      ? ExtendedKind.PICTURE
-      : options.postKind === 'video'
-        ? ExtendedKind.VIDEO
-        : options.postKind === 'shortVideo'
-          ? ExtendedKind.SHORT_VIDEO
-          : kinds.ShortTextNote,
+    kind:
+      options.postKind === 'picture'
+        ? ExtendedKind.PICTURE
+        : options.postKind === 'video'
+          ? ExtendedKind.VIDEO
+          : options.postKind === 'shortVideo'
+            ? ExtendedKind.SHORT_VIDEO
+            : kinds.ShortTextNote,
     content: transformedEmojisContent,
     tags
   }
@@ -786,6 +806,10 @@ function extractHashtags(content: string) {
 
 function extractImagesFromContent(content: string) {
   return content.match(/https?:\/\/[^\s"']+\.(jpg|jpeg|png|gif|webp|heic)/gi)
+}
+
+function extractVideosFromContent(content: string) {
+  return content.match(/https?:\/\/[^\s"']+\.(mp4|webm|mov|avi|mkv|m4v)/gi)
 }
 
 export function transformCustomEmojisInContent(content: string) {
