@@ -19,38 +19,6 @@
     --bc-color-brand-button-text-dark: hsl(var(--primary-foreground));
   }
 
-  html.font-default,
-  html.font-default body,
-  html.font-default *,
-  html.font-default *::before,
-  html.font-default *::after {
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-  }
-
-  html.font-monospace,
-  html.font-monospace body,
-  html.font-monospace *,
-  html.font-monospace *::before,
-  html.font-monospace *::after {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-  }
-
-  html.font-opendyslexic,
-  html.font-opendyslexic body,
-  html.font-opendyslexic *,
-  html.font-opendyslexic *::before,
-  html.font-opendyslexic *::after {
-    font-family: "Andika", sans-serif !important;
-  }
-
-  html.font-sourcesans,
-  html.font-sourcesans body,
-  html.font-sourcesans *,
-  html.font-sourcesans *::before,
-  html.font-sourcesans *::after {
-    font-family: "Nunito", sans-serif !important;
-  }
-
   body {
     @apply bg-background text-foreground;
     -webkit-overflow-scrolling: touch;
@@ -58,6 +26,42 @@
     -webkit-text-size-adjust: 100%;
     user-select: none;
   }
+}
+
+/* Font overrides — MUST be outside @layer so they come after Tailwind preflight */
+html.font-default,
+html.font-default body,
+html.font-default *,
+html.font-default *::before,
+html.font-default *::after {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+html.font-monospace,
+html.font-monospace body,
+html.font-monospace *,
+html.font-monospace *::before,
+html.font-monospace *::after {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+
+html.font-opendyslexic,
+html.font-opendyslexic body,
+html.font-opendyslexic *,
+html.font-opendyslexic *::before,
+html.font-opendyslexic *::after {
+  font-family: "Andika", sans-serif !important;
+}
+
+html.font-sourcesans,
+html.font-sourcesans body,
+html.font-sourcesans *,
+html.font-sourcesans *::before,
+html.font-sourcesans *::after {
+  font-family: "Nunito", sans-serif !important;
+}
+
+@layer base {
 
   input,
   textarea,
