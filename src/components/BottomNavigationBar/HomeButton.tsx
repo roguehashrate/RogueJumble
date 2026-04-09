@@ -4,10 +4,11 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 
 export default function HomeButton() {
   const { navigate, current, display } = usePrimaryPage()
+  const isActive = current === 'home' && display
 
   return (
     <BottomNavigationBarItem
-      active={current === 'home' && display}
+      active={isActive}
       onClick={() => navigate('home')}
     >
       <Home />

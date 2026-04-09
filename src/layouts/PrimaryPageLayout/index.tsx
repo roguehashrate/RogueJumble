@@ -134,7 +134,7 @@ function PrimaryPageTitlebar({
   hideBottomBorder?: boolean
 }) {
   return (
-    <Titlebar className="p-1" hideBottomBorder={hideBottomBorder}>
+    <Titlebar className="py-1 px-3" hideBottomBorder={hideBottomBorder} autoHide>
       {children}
     </Titlebar>
   )

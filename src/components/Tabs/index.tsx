@@ -90,41 +90,44 @@ export default function Tabs({
     <div
       ref={containerRef}
       className={cn(
-        'sticky top-12 z-30 flex w-full justify-between border-b bg-background px-1 transition-all duration-300',
+        'sticky top-12 z-30 flex w-full justify-between bg-background px-1 transition-all duration-300',
         deepBrowsing && lastScrollTop > threshold && !active
           ? '-translate-y-[calc(100%+12rem)]'
           : ''
       )}
     >
-      <ScrollArea className="w-0 flex-1">
-        <div className="relative flex w-fit">
-          {tabs.map((tab, index) => (
+      <div className="relative w-0 flex-1">
+        <div className="pointer-events-none absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <ScrollArea className="w-full">
+          <div className="relative flex w-fit">
+            {tabs.map((tab, index) => (
+              <div
+                key={tab.value}
+                ref={(el) => (tabRefs.current[index] = el)}
+                className={cn(
+                  `clickable my-1 w-fit cursor-pointer whitespace-nowrap rounded-xl px-4 py-2 text-center font-semibold transition-all duration-200`,
+                  value === tab.value
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                onClick={() => {
+                  onTabChange?.(tab.value)
+                }}
+              >
+                {t(tab.label)}
+              </div>
+            ))}
             <div
-              key={tab.value}
-              ref={(el) => (tabRefs.current[index] = el)}
-              className={cn(
-                `clickable my-1 w-fit cursor-pointer whitespace-nowrap rounded-xl px-4 py-2 text-center font-semibold transition-all duration-200`,
-                value === tab.value
-                  ? 'text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => {
-                onTabChange?.(tab.value)
+              className="absolute bottom-0 h-1 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300"
+              style={{
+                width: `${indicatorStyle.width}px`,
+                left: `${indicatorStyle.left}px`
               }}
-            >
-              {t(tab.label)}
-            </div>
-          ))}
-          <div
-            className="absolute bottom-0 h-1 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300"
-            style={{
-              width: `${indicatorStyle.width}px`,
-              left: `${indicatorStyle.left}px`
-            }}
-          />
-        </div>
-        <ScrollBar orientation="horizontal" className="pointer-events-none opacity-0" />
-      </ScrollArea>
+            />
+          </div>
+          <ScrollBar orientation="horizontal" className="pointer-events-none opacity-0" />
+        </ScrollArea>
+      </div>
       {options && (
         <div className="flex items-center gap-1 py-1">
           <Separator orientation="vertical" className="h-8" />

@@ -7,17 +7,20 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 export default function NotificationsButton() {
   const { checkLogin } = useNostr()
   const { navigate, current, display } = usePrimaryPage()
-  const { hasNewNotification } = useNotification()
+  const { unreadCount } = useNotification()
+  const isActive = current === 'notifications' && display
 
   return (
     <BottomNavigationBarItem
-      active={current === 'notifications' && display}
+      active={isActive}
       onClick={() => checkLogin(() => navigate('notifications'))}
     >
       <div className="relative">
         <Bell />
-        {hasNewNotification && (
-          <div className="absolute -top-0.5 right-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+        {unreadCount > 0 && (
+          <div className="absolute -top-1.5 -right-1.5 flex min-w-[16px] items-center justify-center rounded-full bg-primary px-1 py-0.5 text-[9px] font-bold text-primary-foreground ring-2 ring-background">
+            {unreadCount >= 10 ? '9+' : unreadCount}
+          </div>
         )}
       </div>
     </BottomNavigationBarItem>

@@ -125,7 +125,7 @@ export function SecondaryPageTitlebar({
 }): JSX.Element {
   if (titlebar) {
     return (
-      <Titlebar className="p-1" hideBottomBorder={hideBottomBorder}>
+      <Titlebar className="py-1 px-3" hideBottomBorder={hideBottomBorder}>
         {titlebar}
       </Titlebar>
     )

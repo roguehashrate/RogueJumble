@@ -14,6 +14,7 @@ import { useUserTrust } from './UserTrustProvider'
 
 type TNotificationContext = {
   hasNewNotification: boolean
+  unreadCount: number
   getNotificationsSeenAt: () => number
   isNotificationRead: (id: string) => boolean
   markNotificationAsRead: (id: string) => void
@@ -212,6 +213,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     <NotificationContext.Provider
       value={{
         hasNewNotification: filteredNewNotifications.length > 0,
+        unreadCount: filteredNewNotifications.length,
         getNotificationsSeenAt,
         isNotificationRead,
         markNotificationAsRead

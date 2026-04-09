@@ -7,7 +7,7 @@ import SidebarItem from './SidebarItem'
 export default function NotificationsButton({ collapse }: { collapse: boolean }) {
   const { checkLogin } = useNostr()
   const { navigate, current, display } = usePrimaryPage()
-  const { hasNewNotification } = useNotification()
+  const { unreadCount } = useNotification()
 
   return (
     <SidebarItem
@@ -18,8 +18,10 @@ export default function NotificationsButton({ collapse }: { collapse: boolean })
     >
       <div className="relative">
         <Bell />
-        {hasNewNotification && (
-          <div className="absolute -top-1 right-0 h-2 w-2 rounded-full bg-primary ring-2 ring-background" />
+        {unreadCount > 0 && (
+          <div className="absolute -top-1 -right-1 flex min-w-[14px] items-center justify-center rounded-full bg-primary px-0.5 text-[7px] font-bold text-primary-foreground ring-2 ring-background">
+            {unreadCount >= 10 ? '9+' : unreadCount}
+          </div>
         )}
       </div>
     </SidebarItem>

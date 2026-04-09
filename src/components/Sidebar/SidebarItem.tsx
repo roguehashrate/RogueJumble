@@ -16,7 +16,7 @@ const SidebarItem = forwardRef<
         collapse
           ? 'h-12 w-12 p-3 [&_svg]:size-full'
           : 'h-auto w-full justify-start px-3 py-2 [&_svg]:size-5',
-        active && 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary',
+        active && 'relative bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary',
         !active && 'hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_15px_hsl(var(--primary)/0.3)]',
         className
       )}
@@ -25,6 +25,9 @@ const SidebarItem = forwardRef<
       ref={ref}
       {...props}
     >
+      {active && (
+        <span className="absolute inset-0 -z-10 animate-pulse rounded-lg bg-primary/5" />
+      )}
       {children}
       {!collapse && <div>{t(description ?? title)}</div>}
     </Button>

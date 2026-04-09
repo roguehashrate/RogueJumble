@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { MouseEventHandler } from 'react'
+import { MouseEventHandler, useState } from 'react'
 
 export default function BottomNavigationBarItem({
   children,
@@ -15,14 +15,25 @@ export default function BottomNavigationBarItem({
   onPointerDown?: MouseEventHandler
   onPointerUp?: MouseEventHandler
 }) {
+  const [bouncing, setBouncing] = useState(false)
+
+  const handleClick: MouseEventHandler = (e) => {
+    if (!bouncing) {
+      setBouncing(true)
+      setTimeout(() => setBouncing(false), 300)
+    }
+    onClick?.(e)
+  }
+
   return (
     <Button
       className={cn(
-        'm-0 flex h-12 w-full items-center rounded-lg bg-transparent p-3 text-muted-foreground shadow-none hover:text-primary [&_svg]:size-6',
-        active && 'text-primary'
+        'group relative m-0 flex h-12 w-full items-center justify-center rounded-none bg-transparent p-3 text-muted-foreground shadow-none transition-colors hover:text-primary active:scale-95 [&_svg]:size-6',
+        active && 'text-primary',
+        bouncing && '[&>svg]:animate-icon-bounce'
       )}
       variant="ghost"
-      onClick={onClick}
+      onClick={handleClick}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >

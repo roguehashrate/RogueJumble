@@ -4,10 +4,11 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 
 export default function SettingsButton() {
   const { navigate, current, display } = usePrimaryPage()
+  const isActive = current === 'settings' && display
 
   return (
     <BottomNavigationBarItem
-      active={current === 'settings' && display}
+      active={isActive}
       onClick={() => navigate('settings')}
     >
       <Settings />
