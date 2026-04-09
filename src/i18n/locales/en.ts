@@ -711,7 +711,7 @@ export default {
     'Shows post kind dropdown when creating posts': 'Shows post kind dropdown when creating posts',
     'Sans-serif': 'Sans-serif',
     Monospace: 'Monospace',
-    OpenDyslexic: 'OpenDyslexic',
-    'Source Sans': 'Source Sans'
+    Dyslexic: 'Dyslexic',
+    'Space Grotesk': 'Space Grotesk'
   }
 }

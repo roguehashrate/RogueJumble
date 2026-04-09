@@ -5,7 +5,9 @@
       "Read(//home/roguehashrate/Downloads/android/**)",
       "Read(//home/roguehashrate/Downloads/ios/**)",
       "Bash(cp *)",
-      "Bash(identify *)"
+      "Bash(identify *)",
+      "WebSearch",
+      "WebFetch(gwfh.mranftl.com)"
     ]
   },
   "$version": 3

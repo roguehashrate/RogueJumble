@@ -23,18 +23,18 @@ const FONTS = [
   { key: FONT.DEFAULT, label: 'Default', preview: <Type className="size-5" /> },
   {
     key: FONT.MONOSPACE,
-    label: 'Monospace',
-    preview: <span className="size-5 font-mono">Aa</span>
+    label: 'JetBrains Mono',
+    preview: <span className="size-5 font-['JetBrains_Mono']">Aa</span>
   },
   {
-    key: FONT.OPENDYSLEXIC,
-    label: 'Andika',
-    preview: <span className="size-5 font-['Andika']">Aa</span>
+    key: FONT.DYSLEXIC,
+    label: 'Dyslexic',
+    preview: <span className="size-5 font-['Comic_Neue']">Aa</span>
   },
   {
     key: FONT.SOURCESANS,
-    label: 'Ubuntu',
-    preview: <span className="size-5 font-['Ubuntu']">Aa</span>
+    label: 'Space Grotesk',
+    preview: <span className="size-5 font-['Space_Grotesk']">Aa</span>
   }
 ] as const
 

@@ -1,12 +1,15 @@
 const FONT_URLS = {
-  Andika: {
-    400: 'https://fonts.gstatic.com/s/andika/v27/mem_Ya6iyW-LwqgAbQ.ttf',
-    700: 'https://fonts.gstatic.com/s/andika/v27/mem8Ya6iyW-Lwqg40ZM1Ug.ttf'
+  ComicNeue: {
+    400: 'https://fonts.gstatic.com/s/comicneue/v9/4UaHrEJDsxBrF37olUeDx60.ttf',
+    700: 'https://fonts.gstatic.com/s/comicneue/v9/4UaErEJDsxBrF37olUeD_xHMwps.ttf'
   },
-  Ubuntu: {
-    400: 'https://fonts.gstatic.com/s/ubuntu/v21/4iCs6KVjbNBYlgo6eA.ttf',
-    500: 'https://fonts.gstatic.com/s/ubuntu/v21/4iCv6KVjbNBYlgoCjC3Ttw.ttf',
-    700: 'https://fonts.gstatic.com/s/ubuntu/v21/4iCv6KVjbNBYlgoCxCvTtw.ttf'
+  JetBrainsMono: {
+    400: 'https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPQ.ttf',
+    700: 'https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8L6tjPQ.ttf'
+  },
+  SpaceGrotesk: {
+    400: 'https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUsj.ttf',
+    700: 'https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf'
   }
 }
 
@@ -15,9 +18,9 @@ let styleEl: HTMLStyleElement | null = null
 function applyFont(fontName: string) {
   const families: Record<string, string> = {
     default: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    monospace: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-    opendyslexic: '"Andika", sans-serif',
-    sourcesans: '"Ubuntu", sans-serif'
+    monospace: '"JetBrains Mono", monospace',
+    dyslexic: '"Comic Neue", sans-serif',
+    sourcesans: '"Space Grotesk", sans-serif'
   }
 
   const family = families[fontName] || families.default
@@ -49,10 +52,12 @@ async function loadFontFromURL(family: string, weight: string, url: string) {
 export async function initFonts() {
   // Preload Google Fonts
   await Promise.all([
-    loadFontFromURL('Andika', '400', FONT_URLS.Andika[400]),
-    loadFontFromURL('Andika', '700', FONT_URLS.Andika[700]),
-    loadFontFromURL('Ubuntu', '400', FONT_URLS.Ubuntu[400]),
-    loadFontFromURL('Ubuntu', '700', FONT_URLS.Ubuntu[700])
+    loadFontFromURL('Comic Neue', '400', FONT_URLS.ComicNeue[400]),
+    loadFontFromURL('Comic Neue', '700', FONT_URLS.ComicNeue[700]),
+    loadFontFromURL('JetBrains Mono', '400', FONT_URLS.JetBrainsMono[400]),
+    loadFontFromURL('JetBrains Mono', '700', FONT_URLS.JetBrainsMono[700]),
+    loadFontFromURL('Space Grotesk', '400', FONT_URLS.SpaceGrotesk[400]),
+    loadFontFromURL('Space Grotesk', '700', FONT_URLS.SpaceGrotesk[700])
   ])
 }
 

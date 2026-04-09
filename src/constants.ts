@@ -207,7 +207,7 @@ export const NSFW_DISPLAY_POLICY = {
 export const FONT = {
   DEFAULT: 'default',
   MONOSPACE: 'monospace',
-  OPENDYSLEXIC: 'opendyslexic',
+  DYSLEXIC: 'dyslexic',
   SOURCESANS: 'sourcesans'
 } as const
 export type TFont = (typeof FONT)[keyof typeof FONT]
