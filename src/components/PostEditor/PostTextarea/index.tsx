@@ -13,7 +13,7 @@ import Text from '@tiptap/extension-text'
 import { TextSelection } from '@tiptap/pm/state'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Event } from 'nostr-tools'
-import { ChevronDown, ImageUp, PencilLine, Tv, Video } from 'lucide-react'
+import { ChevronDown, FileText, ImageUp, ListChecks, PencilLine, Tv, Video, Users } from 'lucide-react'
 import { Dispatch, forwardRef, SetStateAction, useImperativeHandle, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClipboardAndDropHandler } from './ClipboardAndDropHandler'
@@ -52,8 +52,8 @@ const PostTextarea = forwardRef<
     onUploadProgress?: (file: File, progress: number) => void
     onUploadEnd?: (file: File) => void
     placeholder?: string
-    postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
-    setPostKind?: (kind: 'text' | 'picture' | 'video' | 'shortVideo') => void
+    postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
+    setPostKind?: (kind: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm') => void
   }
 >(
   (
@@ -76,6 +76,25 @@ const PostTextarea = forwardRef<
     const { t } = useTranslation()
     const { advancedMode } = useUserPreferences()
     const [tabValue, setTabValue] = useState('edit')
+    const placeholderText = placeholder ?? (() => {
+      switch (postKind) {
+        case 'picture':
+          return t('Add a caption...')
+        case 'video':
+          return t('Add a description...')
+        case 'shortVideo':
+          return t('Add a caption...')
+        case 'poll':
+          return t('Ask a question...')
+        case 'longForm':
+          return t('Write your article...')
+        case 'communityPost':
+          return t('Post to community...')
+        default:
+          return t('Write something...') + ' (' + t('Paste or drop media files to upload') + ')'
+      }
+    })()
+
     const editor = useEditor({
       extensions: [
         Document,
@@ -84,9 +103,7 @@ const PostTextarea = forwardRef<
         History,
         HardBreak,
         Placeholder.configure({
-          placeholder:
-            placeholder ??
-            t('Write something...') + ' (' + t('Paste or drop media files to upload') + ')'
+          placeholder: placeholderText
         }),
         Emoji.configure({
           suggestion: emojiSuggestion
@@ -222,6 +239,36 @@ const PostTextarea = forwardRef<
           <Video className="size-4" />
           {t('Short Video Post')} (kind:22)
         </div>
+        <div
+          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
+          onClick={() => {
+            setPostKind?.('poll')
+            setKindDrawerOpen(false)
+          }}
+        >
+          <ListChecks className="size-4" />
+          {t('Poll')} (kind:1068)
+        </div>
+        <div
+          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
+          onClick={() => {
+            setPostKind?.('longForm')
+            setKindDrawerOpen(false)
+          }}
+        >
+          <FileText className="size-4" />
+          {t('Long Form Article')} (kind:30023)
+        </div>
+        <div
+          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
+          onClick={() => {
+            setPostKind?.('communityPost')
+            setKindDrawerOpen(false)
+          }}
+        >
+          <Users className="size-4" />
+          {t('Community Post')} (kind:34551)
+        </div>
       </>
     )
 
@@ -268,6 +315,24 @@ const PostTextarea = forwardRef<
                         {t('Short Video')} (22)
                       </>
                     )}
+                    {postKind === 'poll' && (
+                      <>
+                        <ListChecks className="size-3.5" />
+                        {t('Poll')} (1068)
+                      </>
+                    )}
+                    {postKind === 'longForm' && (
+                      <>
+                        <FileText className="size-3.5" />
+                        {t('Long Form')} (30023)
+                      </>
+                    )}
+                    {postKind === 'communityPost' && (
+                      <>
+                        <Users className="size-3.5" />
+                        {t('Community')} (34551)
+                      </>
+                    )}
                     <ChevronDown className="size-3" />
                   </Button>
                   <DrawerContent>
@@ -305,6 +370,24 @@ const PostTextarea = forwardRef<
                           {t('Short Video')}
                         </>
                       )}
+                      {postKind === 'poll' && (
+                        <>
+                          <ListChecks className="size-3.5" />
+                          {t('Poll')}
+                        </>
+                      )}
+                      {postKind === 'longForm' && (
+                        <>
+                          <FileText className="size-3.5" />
+                          {t('Long Form')}
+                        </>
+                      )}
+                      {postKind === 'communityPost' && (
+                        <>
+                          <Users className="size-3.5" />
+                          {t('Community')}
+                        </>
+                      )}
                       <ChevronDown className="size-3" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -324,6 +407,18 @@ const PostTextarea = forwardRef<
                     <DropdownMenuItem onClick={() => setPostKind('shortVideo')}>
                       <Video className="size-4" />
                       {t('Short Video Post')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setPostKind('poll')}>
+                      <ListChecks className="size-4" />
+                      {t('Poll')} (kind:1068)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setPostKind('longForm')}>
+                      <FileText className="size-4" />
+                      {t('Long Form Article')} (kind:30023)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setPostKind('communityPost')}>
+                      <Users className="size-4" />
+                      {t('Community Post')} (kind:34551)
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

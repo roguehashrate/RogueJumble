@@ -122,7 +122,7 @@ export type TAccount = {
 
 export type TAccountPointer = Pick<TAccount, 'pubkey' | 'signerType'>
 
-export type TFeedType = 'following' | 'pinned' | 'relays' | 'relay' | 'mediaFeed' | 'textFeed'
+export type TFeedType = 'following' | 'pinned' | 'relays' | 'relay' | 'mediaFeed' | 'textFeed' | 'articleFeed'
 export type TFeedInfo = { feedType: TFeedType; id?: string; name?: string } | null
 
 export type TLanguage = 'en' | 'zh' | 'pl'

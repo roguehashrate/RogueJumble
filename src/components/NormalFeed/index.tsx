@@ -32,7 +32,7 @@ export default function NormalFeed({
   disable24hMode?: boolean
   onRefresh?: () => void
   isPubkeyFeed?: boolean
-  feedVariant?: 'following' | 'mediaFeed' | 'textFeed'
+  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed'
 }) {
   const { showKinds } = useKindFilter()
   const { getMinTrustScore } = useUserTrust()
@@ -77,20 +77,28 @@ export default function NormalFeed({
     if (feedVariant === 'textFeed') {
       return [kinds.ShortTextNote]
     }
+    if (feedVariant === 'articleFeed') {
+      return [kinds.LongFormArticle]
+    }
     return temporaryShowKinds
   }, [feedVariant, temporaryShowKinds])
 
   const isTextFeed = feedVariant === 'textFeed'
+  const isArticleFeed = feedVariant === 'articleFeed'
 
   return (
     <>
       <Tabs
         value={effectiveListMode}
-        tabs={[
-          { value: 'posts', label: 'Notes' },
-          { value: 'postsAndReplies', label: 'Replies' },
-          ...(!disable24hMode ? [{ value: '24h', label: '24h Pulse' }] : [])
-        ]}
+        tabs={
+          isArticleFeed
+            ? [{ value: 'posts', label: 'Articles' }]
+            : [
+                { value: 'posts', label: 'Notes' },
+                { value: 'postsAndReplies', label: 'Replies' },
+                ...(!disable24hMode ? [{ value: '24h', label: '24h Pulse' }] : [])
+              ]
+        }
         onTabChange={(mode) => {
           handleListModeChange(mode as TNoteListMode)
         }}
@@ -117,7 +125,7 @@ export default function NormalFeed({
                 onOpenChange={handleTrustFilterOpenChange}
               />
             )}
-            {!isTextFeed && showKindsFilter && (
+            {!isTextFeed && !isArticleFeed && showKindsFilter && (
               <KindFilter
                 showKinds={temporaryShowKinds}
                 onShowKindsChange={handleShowKindsChange}

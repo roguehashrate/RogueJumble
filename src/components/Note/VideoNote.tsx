@@ -17,10 +17,22 @@ export default function VideoNote({ event, className }: { event: Event; classNam
     [event, isAddressable]
   )
 
+  // Strip video URLs from caption text so Content doesn't show [Media] placeholders
+  const captionContent = useMemo(() => {
+    let text = event.content
+    videoInfos.forEach(({ url }) => {
+      text = text.replace(url, '').replace(new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '')
+    })
+    return { ...event, content: text.trim() }
+  }, [event, videoInfos])
+
   return (
     <div className={className}>
-      {metadata?.title && <div className="font-semibold">{metadata.title}</div>}
-      <Content event={event} />
+      {videoInfos.map((video) => (
+        <MediaPlayer src={video.url} key={video.url} className="mt-2" />
+      ))}
+      {metadata?.title && <div className="mt-2 font-semibold">{metadata.title}</div>}
+      {captionContent.content && <Content event={captionContent} />}
       {metadata && metadata.tags.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">
           {metadata.tags.map((tag) => (
@@ -28,9 +40,6 @@ export default function VideoNote({ event, className }: { event: Event; classNam
           ))}
         </div>
       )}
-      {videoInfos.map((video) => (
-        <MediaPlayer src={video.url} key={video.url} className="mt-2" />
-      ))}
     </div>
   )
 }

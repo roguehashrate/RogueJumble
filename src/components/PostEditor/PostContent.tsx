@@ -4,7 +4,9 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { StorageKey } from '@/constants'
 import {
   createCommentDraftEvent,
+  createCommunityPostDraftEvent,
   createHighlightDraftEvent,
+  createLongFormArticleDraftEvent,
   createPollDraftEvent,
   createShortTextNoteDraftEvent,
   deleteDraftEventCache
@@ -84,7 +86,12 @@ export default function PostContent({
     const storedDifficulty = window.localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
     return storedDifficulty ? parseInt(storedDifficulty, 10) : 16
   })
-  const [postKind, setPostKind] = useState<'text' | 'picture' | 'video' | 'shortVideo'>('text')
+  const [postKind, setPostKind] = useState<'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'>('text')
+  const [articleTitle, setArticleTitle] = useState('')
+  const [articleContent, setArticleContent] = useState('')
+  const [articleTags, setArticleTags] = useState('')
+  const [communityIdentifier, setCommunityIdentifier] = useState('')
+  const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([])
   const userDismissedProtected = useRef(false)
   const handleProtectedSuggestionChange = useCallback((suggested: boolean) => {
     if (suggested && !userDismissedProtected.current) {
@@ -101,10 +108,13 @@ export default function PostContent({
   const canPost = useMemo(() => {
     return (
       !!pubkey &&
-      (!!text || !!highlightedText) &&
+      (postKind === 'longForm'
+        ? !!articleTitle.trim() && !!articleContent.trim()
+        : !!text || !!highlightedText) &&
       !posting &&
       !uploadProgresses.length &&
-      (!isPoll || pollCreateData.options.filter((option) => !!option.trim()).length >= 2) &&
+      (!(postKind === 'poll' || isPoll) || pollCreateData.options.filter((option) => !!option.trim()).length >= 2) &&
+      (postKind !== 'communityPost' || !!communityIdentifier.trim()) &&
       (!isProtectedEvent || additionalRelayUrls.length > 0)
     )
   }, [
@@ -116,7 +126,11 @@ export default function PostContent({
     isPoll,
     pollCreateData,
     isProtectedEvent,
-    additionalRelayUrls
+    additionalRelayUrls,
+    postKind,
+    articleTitle,
+    articleContent,
+    communityIdentifier
   ])
 
   useEffect(() => {
@@ -173,7 +187,11 @@ export default function PostContent({
           addClientTag,
           isProtectedEvent,
           isNsfw,
-          postKind
+          postKind,
+          articleTitle,
+          articleContent,
+          articleTags,
+          communityIdentifier
         })
 
         const _additionalRelayUrls = [...additionalRelayUrls]
@@ -224,6 +242,18 @@ export default function PostContent({
     setUploadProgresses((prev) => prev.filter((item) => item.file !== file))
   }
 
+  const handleMediaUploadSuccess = ({ url }: { url: string }) => {
+    setUploadedMediaUrls((prev) => [...prev, url])
+    textareaRef.current?.appendText(url, true)
+  }
+
+  const removeMedia = (index: number) => {
+    const removedUrl = uploadedMediaUrls[index]
+    setUploadedMediaUrls((prev) => prev.filter((_, i) => i !== index))
+    // Also remove the URL from the textarea text
+    setText((prev) => prev.replace(removedUrl + '\n', '').replace(removedUrl, ''))
+  }
+
   return (
     <div className="space-y-2">
       {parentEvent && (
@@ -240,22 +270,162 @@ export default function PostContent({
           </div>
         </ScrollArea>
       )}
-      <PostTextarea
-        ref={textareaRef}
-        text={text}
-        setText={setText}
-        defaultContent={defaultContent}
-        parentStuff={parentStuff}
-        onSubmit={() => post()}
-        className={isPoll ? 'min-h-20' : 'min-h-52'}
-        postKind={postKind}
-        setPostKind={setPostKind}
-        onUploadStart={handleUploadStart}
-        onUploadProgress={handleUploadProgress}
-        onUploadEnd={handleUploadEnd}
-        placeholder={highlightedText ? t('Write your thoughts about this highlight...') : undefined}
-      />
-      {isPoll && (
+
+      {postKind === 'longForm' && (
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder={t('Title...')}
+            value={articleTitle}
+            onChange={(e) => setArticleTitle(e.target.value)}
+            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base font-semibold transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          />
+          <textarea
+            rows={8}
+            placeholder={t('Type your article...')}
+            value={articleContent}
+            onChange={(e) => setArticleContent(e.target.value)}
+            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          />
+          <div className="space-y-1">
+            <input
+              type="text"
+              placeholder={t('Tags (e.g. #nostr #btc #note)...')}
+              value={articleTags}
+              onChange={(e) => setArticleTags(e.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            />
+            {articleTags.trim() && (
+              <div className="flex flex-wrap gap-1.5 px-1">
+                {articleTags
+                  .trim()
+                  .split(/\s+/)
+                  .map((tag, i) => {
+                    const clean = tag.replace(/^#/, '')
+                    return clean ? (
+                      <span
+                        key={i}
+                        className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                      >
+                        #{clean}
+                      </span>
+                    ) : null
+                  })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {postKind !== 'longForm' && (
+        <>
+          {/* Media upload area + preview */}
+          {(postKind === 'picture' || postKind === 'video' || postKind === 'shortVideo') && (
+            <div className="space-y-2">
+              {uploadedMediaUrls.map((url, i) => (
+                <div key={i} className="group relative overflow-hidden rounded-xl border bg-muted/40">
+                  {postKind === 'picture' ? (
+                    <img src={url} alt="" className="h-auto max-h-[300px] w-full object-contain" />
+                  ) : (
+                    <video src={url} controls className="h-auto max-h-[300px] w-full object-contain" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeMedia(i)}
+                    className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/80"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+              ))}
+              <Uploader
+                onUploadSuccess={handleMediaUploadSuccess}
+                onUploadStart={handleUploadStart}
+                onUploadEnd={handleUploadEnd}
+                onProgress={handleUploadProgress}
+                accept={postKind === 'picture' ? 'image/*' : 'video/*'}
+              >
+                <div className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 bg-muted/20 px-4 py-6 transition-colors hover:border-primary/40 hover:bg-muted/40">
+                  <div className="flex cursor-pointer items-center gap-2 text-muted-foreground hover:text-primary">
+                    <ImageUp className="size-5" />
+                    <span className="text-sm font-medium">
+                      {postKind === 'picture'
+                        ? t('Tap to add a picture')
+                        : postKind === 'video'
+                          ? t('Tap to add a video')
+                          : t('Tap to add a short video')}
+                    </span>
+                  </div>
+                  <span className="mt-1 text-xs text-muted-foreground/60">
+                    {postKind === 'picture' ? 'JPG, PNG, GIF, WEBP' : 'MP4, WEBM, MOV'}
+                  </span>
+                </div>
+              </Uploader>
+            </div>
+          )}
+
+          {postKind === 'picture' && (
+            <PostTextarea
+              ref={textareaRef}
+              text={text}
+              setText={setText}
+              defaultContent={defaultContent}
+              parentStuff={parentStuff}
+              onSubmit={() => post()}
+              className="min-h-32"
+              postKind={postKind}
+              setPostKind={setPostKind}
+              onUploadStart={handleUploadStart}
+              onUploadProgress={handleUploadProgress}
+              onUploadEnd={handleUploadEnd}
+              placeholder={highlightedText ? t('Write your thoughts about this highlight...') : undefined}
+            />
+          )}
+          {(postKind === 'video' || postKind === 'shortVideo') && (
+            <PostTextarea
+              ref={textareaRef}
+              text={text}
+              setText={setText}
+              defaultContent={defaultContent}
+              parentStuff={parentStuff}
+              onSubmit={() => post()}
+              className="min-h-32"
+              postKind={postKind}
+              setPostKind={setPostKind}
+              onUploadStart={handleUploadStart}
+              onUploadProgress={handleUploadProgress}
+              onUploadEnd={handleUploadEnd}
+              placeholder={highlightedText ? t('Write your thoughts about this highlight...') : undefined}
+            />
+          )}
+          {postKind !== 'picture' && postKind !== 'video' && postKind !== 'shortVideo' && (
+            <PostTextarea
+              ref={textareaRef}
+              text={text}
+              setText={setText}
+              defaultContent={defaultContent}
+              parentStuff={parentStuff}
+              onSubmit={() => post()}
+              className={postKind === 'poll' || isPoll ? 'min-h-20' : 'min-h-52'}
+              postKind={postKind}
+              setPostKind={setPostKind}
+              onUploadStart={handleUploadStart}
+              onUploadProgress={handleUploadProgress}
+              onUploadEnd={handleUploadEnd}
+              placeholder={highlightedText ? t('Write your thoughts about this highlight...') : undefined}
+            />
+          )}
+
+          {/* Kind-specific fields for non-longForm kinds */}
+      {postKind === 'communityPost' && (
+        <input
+          type="text"
+          placeholder={t('Community identifier (d-tag)...')}
+          value={communityIdentifier}
+          onChange={(e) => setCommunityIdentifier(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+        />
+      )}
+      {(postKind === 'poll' || isPoll) && (
         <PollEditor
           pollCreateData={pollCreateData}
           setPollCreateData={setPollCreateData}
@@ -321,6 +491,8 @@ export default function PostContent({
             </Popover>
           </div>
         </div>
+      )}
+        </>
       )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -476,7 +648,11 @@ async function createDraftEvent({
   isProtectedEvent,
   isNsfw,
   highlightedText,
-  postKind = 'text'
+  postKind = 'text',
+  articleTitle,
+  articleContent,
+  articleTags,
+  communityIdentifier
 }: {
   parentStuff: Event | string | undefined
   text: string
@@ -488,7 +664,11 @@ async function createDraftEvent({
   isProtectedEvent: boolean
   isNsfw: boolean
   highlightedText?: string
-  postKind?: 'text' | 'picture' | 'video' | 'shortVideo'
+  postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
+  articleTitle?: string
+  articleContent?: string
+  articleTags?: string
+  communityIdentifier?: string
 }) {
   const { parentEvent, externalContent } =
     typeof parentStuff === 'string'
@@ -511,9 +691,25 @@ async function createDraftEvent({
     })
   }
 
-  if (isPoll) {
+  if (postKind === 'poll' || isPoll) {
     return await createPollDraftEvent(pubkey, text, mentions, pollCreateData, {
       addClientTag,
+      isNsfw
+    })
+  }
+
+  if (postKind === 'longForm') {
+    return await createLongFormArticleDraftEvent(articleContent ?? '', articleTitle ?? '', articleTags ?? '', mentions, {
+      addClientTag,
+      protectedEvent: isProtectedEvent,
+      isNsfw
+    })
+  }
+
+  if (postKind === 'communityPost') {
+    return await createCommunityPostDraftEvent(text, communityIdentifier ?? '', mentions, {
+      addClientTag,
+      protectedEvent: isProtectedEvent,
       isNsfw
     })
   }

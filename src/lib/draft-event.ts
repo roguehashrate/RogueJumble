@@ -580,6 +580,112 @@ export async function createPollDraftEvent(
   return setDraftEventCache(baseDraft)
 }
 
+// NIP-23: Long Form Article (kind 30023)
+export async function createLongFormArticleDraftEvent(
+  content: string,
+  title: string,
+  tagsInput: string,
+  mentions: string[],
+  options: {
+    addClientTag?: boolean
+    protectedEvent?: boolean
+    isNsfw?: boolean
+  } = {}
+): Promise<TDraftEvent> {
+  const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(content)
+
+  const tags: string[][] = [...emojiTags]
+
+  // Parse space-separated hashtags from tags input
+  if (tagsInput.trim()) {
+    const tagList = tagsInput
+      .trim()
+      .split(/\s+/)
+      .map((t) => t.replace(/^#/, ''))
+      .filter(Boolean)
+    tagList.forEach((hashtag) => {
+      tags.push(buildTTag(hashtag.toLowerCase()))
+    })
+  }
+
+  tags.push(buildDTag(`article-${dayjs().unix()}`))
+  tags.push(buildTitleTag(title))
+
+  // imeta tags
+  const images = extractImagesFromContent(transformedEmojisContent)
+  if (images && images.length) {
+    tags.push(...generateImetaTags(images))
+  }
+
+  // p tags
+  tags.push(...mentions.map((pubkey) => buildPTag(pubkey)))
+
+  if (options.addClientTag) {
+    tags.push(buildClientTag())
+  }
+
+  if (options.isNsfw) {
+    tags.push(buildNsfwTag())
+  }
+
+  if (options.protectedEvent) {
+    tags.push(buildProtectedTag())
+  }
+
+  const baseDraft = {
+    kind: kinds.LongFormArticle,
+    content: transformedEmojisContent,
+    tags
+  }
+  return setDraftEventCache(baseDraft)
+}
+
+// NIP-72: Community Post (kind 34551)
+export async function createCommunityPostDraftEvent(
+  content: string,
+  communityIdentifier: string,
+  mentions: string[],
+  options: {
+    addClientTag?: boolean
+    protectedEvent?: boolean
+    isNsfw?: boolean
+  } = {}
+): Promise<TDraftEvent> {
+  const { content: transformedEmojisContent, emojiTags } = transformCustomEmojisInContent(content)
+  const hashtags = extractHashtags(transformedEmojisContent)
+
+  const tags = emojiTags.concat(hashtags.map((hashtag) => buildTTag(hashtag)))
+  tags.push(['community', communityIdentifier])
+
+  // imeta tags
+  const images = extractImagesFromContent(transformedEmojisContent)
+  if (images && images.length) {
+    tags.push(...generateImetaTags(images))
+  }
+
+  // p tags
+  tags.push(...mentions.map((pubkey) => buildPTag(pubkey)))
+
+  if (options.addClientTag) {
+    tags.push(buildClientTag())
+  }
+
+  if (options.isNsfw) {
+    tags.push(buildNsfwTag())
+  }
+
+  if (options.protectedEvent) {
+    tags.push(buildProtectedTag())
+  }
+
+  const baseDraft = {
+    kind: ExtendedKind.COMMUNITY_POST,
+    content: transformedEmojisContent,
+    tags
+  }
+  return setDraftEventCache(baseDraft)
+}
+
 export function createPollResponseDraftEvent(
   pollEvent: Event,
   selectedOptionIds: string[]

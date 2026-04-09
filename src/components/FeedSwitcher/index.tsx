@@ -6,7 +6,7 @@ import { SecondaryPageLink } from '@/PageManager'
 import { useFavoriteRelays } from '@/providers/FavoriteRelaysProvider'
 import { useFeed } from '@/providers/FeedProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { Image, Settings2, UsersRound } from 'lucide-react'
+import { Image, BookOpen, Settings2, UsersRound } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import RelayIcon from '../RelayIcon'
@@ -110,6 +110,23 @@ export default function FeedSwitcher({ close }: { close?: () => void }) {
                 <UsersRound className="size-5" />
               </div>
               <div className="flex-1">{t('Text Only')}</div>
+            </div>
+          </FeedSwitcherItem>
+
+          <FeedSwitcherItem
+            isActive={feedInfo?.feedType === 'articleFeed'}
+            disabled={!pubkey}
+            onClick={() => {
+              if (!pubkey) return
+              switchFeed('articleFeed', { pubkey })
+              close?.()
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex size-6 shrink-0 items-center justify-center">
+                <BookOpen className="size-5" />
+              </div>
+              <div className="flex-1">{t('Articles')}</div>
             </div>
           </FeedSwitcherItem>
         </div>

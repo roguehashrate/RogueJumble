@@ -65,12 +65,17 @@ const NoteListPage = forwardRef<TPageRef>((_, ref) => {
   } else if (feedInfo.feedType === 'textFeed' && !pubkey) {
     switchFeed(null)
     return null
+  } else if (feedInfo.feedType === 'articleFeed' && !pubkey) {
+    switchFeed(null)
+    return null
   } else if (feedInfo.feedType === 'following') {
     content = <FollowingFeed />
   } else if (feedInfo.feedType === 'mediaFeed') {
     content = <FollowingFeed feedVariant="mediaFeed" />
   } else if (feedInfo.feedType === 'textFeed') {
     content = <FollowingFeed feedVariant="textFeed" />
+  } else if (feedInfo.feedType === 'articleFeed') {
+    content = <FollowingFeed feedVariant="articleFeed" />
   } else {
     content = (
       <>

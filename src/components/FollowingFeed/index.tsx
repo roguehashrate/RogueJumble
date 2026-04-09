@@ -9,7 +9,7 @@ import { Compass, Search, UserPlus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export default function FollowingFeed({ feedVariant = 'following' }: { feedVariant?: 'following' | 'mediaFeed' | 'textFeed' }) {
+export default function FollowingFeed({ feedVariant = 'following' }: { feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed' }) {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
   const { followingSet } = useFollowList()
