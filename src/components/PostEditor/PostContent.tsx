@@ -137,7 +137,7 @@ export default function PostContent({
             relays: []
           }
         )
-        setAddClientTag(cachedSettings.addClientTag ?? false)
+        setAddClientTag(cachedSettings.addClientTag ?? true)
       }
       return
     }
@@ -364,58 +364,29 @@ export default function PostContent({
             </Button>
           )}
           <Button
-            type="button"
             variant="ghost"
             size="icon"
             title={t('Client Tag')}
-            className={cn(
-              'text-muted-foreground hover:text-muted-foreground',
-              addClientTag && 'text-primary'
-            )}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setAddClientTag(!addClientTag)
-            }}
+            className={addClientTag ? 'text-primary' : 'text-muted-foreground'}
+            onClick={() => setAddClientTag(!addClientTag)}
           >
             <Tag />
           </Button>
           <Button
-            type="button"
             variant="ghost"
             size="icon"
             title={t('Proof of Work')}
-            className={cn(
-              'text-muted-foreground hover:text-muted-foreground',
-              minPow > 0 && 'text-primary'
-            )}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              if (minPow > 0) {
-                setMinPow(0)
-              } else {
-                const stored = localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
-                setMinPow(stored ? parseInt(stored, 10) : 16)
-              }
-            }}
+            className={minPow > 0 ? 'text-primary' : 'text-muted-foreground'}
+            onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
           >
             <Pickaxe />
           </Button>
           <Button
-            type="button"
             variant="ghost"
             size="icon"
             title={t('NSFW')}
-            className={cn(
-              'text-muted-foreground hover:text-muted-foreground',
-              isNsfw && 'text-primary'
-            )}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setIsNsfw(!isNsfw)
-            }}
+            className={isNsfw ? 'text-primary' : 'text-muted-foreground'}
+            onClick={() => setIsNsfw(!isNsfw)}
           >
             <Ban />
           </Button>
