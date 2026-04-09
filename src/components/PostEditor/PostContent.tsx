@@ -364,19 +364,21 @@ export default function PostContent({
             </Button>
           )}
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             title={t('Client Tag')}
-            className={cn(addClientTag ? 'text-primary' : 'text-muted-foreground')}
+            className={cn('text-muted-foreground', addClientTag && 'text-primary')}
             onClick={() => setAddClientTag(!addClientTag)}
           >
             <Tag />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             title={t('Proof of Work')}
-            className={cn(minPow > 0 ? 'text-primary' : 'text-muted-foreground')}
+            className={cn('text-muted-foreground', minPow > 0 && 'text-primary')}
             onClick={() => {
               if (minPow > 0) {
                 setMinPow(0)
@@ -389,10 +391,11 @@ export default function PostContent({
             <Pickaxe />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             title={t('NSFW')}
-            className={cn(isNsfw ? 'text-primary' : 'text-muted-foreground')}
+            className={cn('text-muted-foreground', isNsfw && 'text-primary')}
             onClick={() => setIsNsfw(!isNsfw)}
           >
             <Ban />
