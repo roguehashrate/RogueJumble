@@ -3,11 +3,10 @@ const FONT_URLS = {
     400: 'https://fonts.gstatic.com/s/andika/v27/mem_Ya6iyW-LwqgAbQ.ttf',
     700: 'https://fonts.gstatic.com/s/andika/v27/mem8Ya6iyW-Lwqg40ZM1Ug.ttf'
   },
-  Nunito: {
-    400: 'https://fonts.gstatic.com/s/nunito/v26/XRXV3I6li0IbkJIOKR4wWxUPbA.ttf',
-    500: 'https://fonts.gstatic.com/s/nunito/v26/XRXV3I6li0IbkJIOKR4wWxUPbQ.ttf',
-    600: 'https://fonts.gstatic.com/s/nunito/v26/XRXV3I6li0IbkJIOKR4wWxUPYw.ttf',
-    700: 'https://fonts.gstatic.com/s/nunito/v26/XRXV3I6li0IbkJIOKR4wWxUPdg.ttf'
+  Ubuntu: {
+    400: 'https://fonts.gstatic.com/s/ubuntu/v21/4iCs6KVjbNBYlgo6eA.ttf',
+    500: 'https://fonts.gstatic.com/s/ubuntu/v21/4iCv6KVjbNBYlgoCjC3Ttw.ttf',
+    700: 'https://fonts.gstatic.com/s/ubuntu/v21/4iCv6KVjbNBYlgoCxCvTtw.ttf'
   }
 }
 
@@ -18,7 +17,7 @@ function applyFont(fontName: string) {
     default: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     monospace: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
     opendyslexic: '"Andika", sans-serif',
-    sourcesans: '"Nunito", sans-serif'
+    sourcesans: '"Ubuntu", sans-serif'
   }
 
   const family = families[fontName] || families.default
@@ -52,8 +51,8 @@ export async function initFonts() {
   await Promise.all([
     loadFontFromURL('Andika', '400', FONT_URLS.Andika[400]),
     loadFontFromURL('Andika', '700', FONT_URLS.Andika[700]),
-    loadFontFromURL('Nunito', '400', FONT_URLS.Nunito[400]),
-    loadFontFromURL('Nunito', '700', FONT_URLS.Nunito[700])
+    loadFontFromURL('Ubuntu', '400', FONT_URLS.Ubuntu[400]),
+    loadFontFromURL('Ubuntu', '700', FONT_URLS.Ubuntu[700])
   ])
 }
 

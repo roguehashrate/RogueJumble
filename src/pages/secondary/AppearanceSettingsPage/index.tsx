@@ -33,8 +33,8 @@ const FONTS = [
   },
   {
     key: FONT.SOURCESANS,
-    label: 'Nunito',
-    preview: <span className="size-5 font-['Nunito']">Aa</span>
+    label: 'Ubuntu',
+    preview: <span className="size-5 font-['Ubuntu']">Aa</span>
   }
 ] as const
 
