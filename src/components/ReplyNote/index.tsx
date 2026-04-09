@@ -20,6 +20,7 @@ import { FormattedTimestamp } from '../FormattedTimestamp'
 import Nip05 from '../Nip05'
 import NoteOptions from '../NoteOptions'
 import ParentNotePreview from '../ParentNotePreview'
+import PoWIndicator from '../NoteCard/PoWIndicator'
 import StuffStats from '../StuffStats'
 import TranslateButton from '../TranslateButton'
 import TrustScoreBadge from '../TrustScoreBadge'
@@ -120,6 +121,7 @@ export default function ReplyNote({
                   />
                   <TrustScoreBadge pubkey={event.pubkey} className="!size-3.5" />
                   <ClientTag event={event} />
+                  <PoWIndicator event={event} />
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Nip05 pubkey={event.pubkey} append="·" />
