@@ -1,12 +1,13 @@
 import { ExtendedKind } from '@/constants'
 import { getImetaInfosFromEvent } from '@/lib/event'
 import { TImetaInfo } from '@/types'
-import { generateBech32IdFromETag, tagNameEquals } from '@/lib/tag'
+import { getNoteBech32Id } from '@/lib/event'
+import { toNote } from '@/lib/link'
+import { useSecondaryPage } from '@/PageManager'
 import client from '@/services/client.service'
 import { Event, kinds } from 'nostr-tools'
 import { useEffect, useMemo, useState } from 'react'
 import Image from '../Image'
-import MediaPlayer from '../MediaPlayer'
 
 export default function GalleryGrid({ pubkey }: { pubkey: string }) {
   const [mediaEvents, setMediaEvents] = useState<Event[]>([])
@@ -73,8 +74,7 @@ export default function GalleryGrid({ pubkey }: { pubkey: string }) {
         /\.(mp4|webm|mov|avi|mkv|m4v)$/i.test(vid.url || '')
       )
 
-      const eTag = event.tags.find(tagNameEquals('e'))
-      const noteId = eTag ? generateBech32IdFromETag(eTag) : undefined
+      const noteId = getNoteBech32Id(event)
 
       return {
         event,
@@ -124,20 +124,40 @@ function GalleryItem({
     video?: TImetaInfo
   }
 }) {
-  const [showVideo, setShowVideo] = useState(false)
+  const { push } = useSecondaryPage()
 
-  if (item.isVideo && item.video && !showVideo) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (item.noteId) {
+      push(toNote(item.noteId))
+    }
+  }
+
+  if (item.isVideo && item.video) {
     return (
-      <button
-        className="relative aspect-square w-full overflow-hidden bg-muted"
-        onClick={() => setShowVideo(true)}
+      <div
+        className="relative aspect-square w-full cursor-pointer touch-manipulation overflow-hidden bg-muted"
+        onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleClick(e as any)
+          }
+        }}
       >
-        {item.image && (
+        {item.image ? (
           <Image
             image={item.image}
             className="h-full w-full object-cover"
             classNames={{ wrapper: 'h-full w-full' }}
           />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-zinc-800">
+            <svg className="h-12 w-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/80">
@@ -146,25 +166,21 @@ function GalleryItem({
             </svg>
           </div>
         </div>
-      </button>
-    )
-  }
-
-  if (item.isVideo && item.video?.url) {
-    return (
-      <div className="aspect-square">
-        <MediaPlayer src={item.video.url} className="h-full w-full object-cover" />
       </div>
     )
   }
 
   if (item.image) {
     return (
-      <a
-        href={item.noteId ? `/${item.noteId}` : undefined}
-        className="block aspect-square"
-        onClick={(e) => {
-          if (!item.noteId) e.preventDefault()
+      <div
+        className="aspect-square w-full cursor-pointer touch-manipulation"
+        onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleClick(e as any)
+          }
         }}
       >
         <Image
@@ -172,7 +188,7 @@ function GalleryItem({
           className="h-full w-full object-cover"
           classNames={{ wrapper: 'h-full w-full' }}
         />
-      </a>
+      </div>
     )
   }
 
