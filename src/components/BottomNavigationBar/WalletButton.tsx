@@ -1,10 +1,11 @@
-import { usePrimaryPage } from '@/PageManager'
+import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
 import { Wallet } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import BottomNavigationBarItem from './BottomNavigationBarItem'
 
 export default function WalletButton() {
   const { display } = usePrimaryPage()
+  const { push } = useSecondaryPage()
   const [isActive, setIsActive] = useState(false)
 
   useEffect(() => {
@@ -16,12 +17,8 @@ export default function WalletButton() {
     return () => window.removeEventListener('popstate', checkActive)
   }, [])
 
-  const handleClick = () => {
-    window.location.href = '/settings/wallet'
-  }
-
   return (
-    <BottomNavigationBarItem active={isActive && !display} onClick={handleClick}>
+    <BottomNavigationBarItem active={isActive && !display} onClick={() => push('/settings/wallet')}>
       <Wallet className="size-4" />
     </BottomNavigationBarItem>
   )
