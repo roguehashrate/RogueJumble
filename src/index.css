@@ -9,7 +9,6 @@
   }
 
   html {
-    font-family: var(--font-family, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     --bc-color-brand: hsl(var(--primary));
@@ -17,6 +16,22 @@
     --bc-brand-mix: 100%;
     --bc-color-brand-button-text: hsl(var(--primary-foreground));
     --bc-color-brand-button-text-dark: hsl(var(--primary-foreground));
+  }
+
+  html.font-default {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  html.font-monospace {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  html.font-opendyslexic {
+    font-family: "OpenDyslexicRegular", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  html.font-sourcesans {
+    font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 
   body {
@@ -34,7 +49,6 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    font-family: inherit;
   }
 
   body,
