@@ -363,33 +363,60 @@ export default function PostContent({
               <ListTodo />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             title={t('Client Tag')}
-            className={addClientTag ? '!important text-primary' : 'text-muted-foreground'}
+            className={addClientTag ? 'text-primary' : 'text-white'}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer'
+            }}
             onClick={() => setAddClientTag(!addClientTag)}
           >
             <Tag />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+          </button>
+          <button
+            type="button"
             title={t('Proof of Work')}
-            className={minPow > 0 ? '!important text-primary' : 'text-muted-foreground'}
+            className={minPow > 0 ? 'text-primary' : 'text-white'}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer'
+            }}
             onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
           >
             <Pickaxe />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+          </button>
+          <button
+            type="button"
             title={t('NSFW')}
-            className={isNsfw ? '!important text-primary' : 'text-muted-foreground'}
+            className={isNsfw ? 'text-primary' : 'text-white'}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer'
+            }}
             onClick={() => setIsNsfw(!isNsfw)}
           >
             <Ban />
-          </Button>
+          </button>
         </div>
         <div className="flex items-center gap-2">
           <Mentions
