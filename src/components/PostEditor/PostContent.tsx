@@ -372,7 +372,11 @@ export default function PostContent({
               'text-muted-foreground hover:text-muted-foreground',
               addClientTag && 'text-primary'
             )}
-            onClick={() => setAddClientTag(!addClientTag)}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setAddClientTag(!addClientTag)
+            }}
           >
             <Tag />
           </Button>
@@ -385,7 +389,9 @@ export default function PostContent({
               'text-muted-foreground hover:text-muted-foreground',
               minPow > 0 && 'text-primary'
             )}
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
               if (minPow > 0) {
                 setMinPow(0)
               } else {
@@ -405,7 +411,11 @@ export default function PostContent({
               'text-muted-foreground hover:text-muted-foreground',
               isNsfw && 'text-primary'
             )}
-            onClick={() => setIsNsfw(!isNsfw)}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsNsfw(!isNsfw)
+            }}
           >
             <Ban />
           </Button>
