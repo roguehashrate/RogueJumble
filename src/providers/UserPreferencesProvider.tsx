@@ -1,3 +1,4 @@
+import { applyFont } from '@/lib/fontLoader'
 import storage from '@/services/local-storage.service'
 import { TEmoji, TFont, TFontSize, TNotificationStyle } from '@/types'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -106,9 +107,7 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const updateFont = (font: TFont) => {
     setFont(font)
     storage.setFont(font)
-    const root = document.documentElement
-    root.classList.remove('font-default', 'font-monospace', 'font-opendyslexic', 'font-sourcesans')
-    root.classList.add(`font-${font}`)
+    applyFont(font)
   }
 
   const updateFontSize = (fontSize: TFontSize) => {
