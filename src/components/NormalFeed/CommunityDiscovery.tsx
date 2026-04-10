@@ -77,25 +77,6 @@ export default function CommunityDiscovery() {
     })
   }, [communities, searchQuery])
 
-  const handleJoin = async (event: Event) => {
-    if (!pubkey) return
-    const info = communityService.extractCommunityInfo(event)
-    try {
-      const { createCommunityJoinDraftEvent, createCommunityLeaveDraftEvent } = await import('@/lib/draft-event')
-      const draftEvent = communityService.isJoined(info.coordinate)
-        ? createCommunityLeaveDraftEvent(info.coordinate)
-        : createCommunityJoinDraftEvent(info.coordinate)
-      await publish(draftEvent)
-      if (communityService.isJoined(info.coordinate)) {
-        communityService.leaveCommunity(info.coordinate)
-      } else {
-        communityService.joinCommunity(info)
-      }
-    } catch (e) {
-      console.error('Failed to join/leave community:', e)
-    }
-  }
-
   const handleCreate = async () => {
     if (!pubkey || !newName.trim()) return
     setCreating(true)
@@ -211,7 +192,6 @@ export default function CommunityDiscovery() {
               >
                 <CommunityCard
                   event={evt}
-                  onJoin={() => handleJoin(evt)}
                 />
               </SecondaryPageLink>
             )

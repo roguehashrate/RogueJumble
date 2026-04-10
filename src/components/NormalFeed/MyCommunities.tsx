@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2 } from 'lucide-react'
+import { Loader2, LogOut } from 'lucide-react'
 import { kinds } from 'nostr-tools'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { communityService, TCommunityInfo } from '@/services/community.service'
 import { useNostr } from '@/providers/NostrProvider'
 import NoteList, { TNoteListRef } from '@/components/NoteList'
 import { ExtendedKind } from '@/constants'
+import { Button } from '@/components/ui/button'
 
 export default function MyCommunities() {
   const { t } = useTranslation()
-  const { pubkey } = useNostr()
+  const { publish } = useNostr()
   const [communities, setCommunities] = useState<TCommunityInfo[]>([])
   const [selectedCommunity, setSelectedCommunity] = useState<TCommunityInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -26,7 +27,21 @@ export default function MyCommunities() {
       setSelectedCommunity(joined[0])
     }
     setLoading(false)
-  }, [pubkey])
+  }, [])
+
+  const handleLeave = async () => {
+    if (!selectedCommunity) return
+    try {
+      const { createCommunityLeaveDraftEvent } = await import('@/lib/draft-event')
+      const draftEvent = createCommunityLeaveDraftEvent(selectedCommunity.coordinate)
+      await publish(draftEvent)
+      communityService.leaveCommunity(selectedCommunity.coordinate)
+      setSelectedCommunity(null)
+      setCommunities(communityService.getJoinedCommunities())
+    } catch (e) {
+      console.error('Failed to leave community:', e)
+    }
+  }
 
   if (loading) {
     return (
@@ -67,7 +82,17 @@ export default function MyCommunities() {
 
       {/* Posts from selected community */}
       {selectedCommunity && (
-        <div className="px-4 pt-2">
+        <div className="space-y-3 px-4 pt-2">
+          {/* Leave community button */}
+          <Button
+            variant="outline"
+            className="w-full gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={handleLeave}
+          >
+            <LogOut className="size-4" />
+            {t('Leave {name}', { name: selectedCommunity.name })}
+          </Button>
+
           <NoteList
             ref={noteListRef}
             showKinds={[kinds.CommunityDefinition, ExtendedKind.COMMUNITY_POST]}

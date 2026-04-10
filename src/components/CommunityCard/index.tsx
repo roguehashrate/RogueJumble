@@ -5,11 +5,9 @@ import Image from '../Image'
 
 export default function CommunityCard({
   event,
-  onJoin,
   onClick
 }: {
   event: Event
-  onJoin?: () => void
   onClick?: () => void
 }) {
   const info = useMemo(() => communityService.extractCommunityInfo(event), [event])
@@ -41,20 +39,10 @@ export default function CommunityCard({
           </div>
         )}
       </div>
-      {onJoin && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onJoin()
-          }}
-          className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            joined
-              ? 'bg-muted text-muted-foreground'
-              : 'bg-primary text-primary-foreground hover:bg-primary-hover'
-          }`}
-        >
-          {joined ? 'Joined' : 'Join'}
-        </button>
+      {joined && (
+        <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          Joined
+        </span>
       )}
     </div>
   )
