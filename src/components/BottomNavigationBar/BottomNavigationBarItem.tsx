@@ -30,7 +30,8 @@ export default function BottomNavigationBarItem({
       className={cn(
         'group relative m-0 flex h-12 w-full items-center justify-center rounded-none bg-transparent p-3 text-muted-foreground shadow-none transition-colors hover:text-primary active:scale-95 [&_svg]:size-6',
         active && 'text-primary',
-        bouncing && '[&>svg]:animate-icon-bounce'
+        bouncing && '[&>svg]:animate-icon-bounce',
+        'navbar-btn'
       )}
       variant="ghost"
       onClick={handleClick}

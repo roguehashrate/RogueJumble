@@ -131,6 +131,11 @@
     }
   }
 
+  /* Override .clickable active state for navbar buttons */
+  .navbar-btn:active {
+    background-color: transparent !important;
+  }
+
   @keyframes shimmer {
     0% {
       background-position: 400% 0;
