@@ -31,7 +31,6 @@ import emojiSuggestion from './Emoji/suggestion'
 import Mention from './Mention'
 import mentionSuggestion from './Mention/suggestion'
 import Preview from './Preview'
-import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 
 export type TPostTextareaHandle = {
   appendText: (text: string, addNewline?: boolean) => void
@@ -74,7 +73,6 @@ const PostTextarea = forwardRef<
     ref
   ) => {
     const { t } = useTranslation()
-    const { advancedMode } = useUserPreferences()
     const [tabValue, setTabValue] = useState('edit')
     const placeholderText = placeholder ?? (() => {
       switch (postKind) {
@@ -281,7 +279,7 @@ const PostTextarea = forwardRef<
               <TabsTrigger value="preview">{t('Preview')}</TabsTrigger>
             </TabsList>
           </Tabs>
-          {setPostKind && !parentStuff && advancedMode && (
+          {setPostKind && !parentStuff && (
             <>
               {isTouch ? (
                 <Drawer open={kindDrawerOpen} onOpenChange={setKindDrawerOpen}>

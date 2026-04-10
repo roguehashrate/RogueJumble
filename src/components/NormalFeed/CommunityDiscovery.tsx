@@ -128,7 +128,7 @@ export default function CommunityDiscovery() {
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 px-4 pt-4 pb-4">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

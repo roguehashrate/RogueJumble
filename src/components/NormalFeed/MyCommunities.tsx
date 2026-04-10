@@ -46,13 +46,15 @@ export default function MyCommunities() {
 
   return (
     <div className="space-y-4">
-      {/* Community selector */}
-      <div className="flex gap-2 overflow-x-auto px-4 pb-2">
+      {/* Community selector - horizontally scrollable */}
+      <div className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {communities.map((c) => (
           <button
             key={c.coordinate}
             onClick={() => setSelectedCommunity(c)}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
               selectedCommunity?.coordinate === c.coordinate
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -65,7 +67,7 @@ export default function MyCommunities() {
 
       {/* Posts from selected community */}
       {selectedCommunity && (
-        <div className="px-4">
+        <div className="px-4 pt-2">
           <NoteList
             ref={noteListRef}
             showKinds={[kinds.CommunityDefinition, ExtendedKind.COMMUNITY_POST]}
