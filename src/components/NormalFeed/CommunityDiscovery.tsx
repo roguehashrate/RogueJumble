@@ -77,6 +77,19 @@ export default function CommunityDiscovery() {
     })
   }, [communities, searchQuery])
 
+  const handleJoin = async (event: Event) => {
+    if (!pubkey) return
+    const info = communityService.extractCommunityInfo(event)
+    try {
+      const { createCommunityJoinDraftEvent } = await import('@/lib/draft-event')
+      const draftEvent = createCommunityJoinDraftEvent(info.coordinate)
+      await publish(draftEvent)
+      communityService.joinCommunity(info)
+    } catch (e) {
+      console.error('Failed to join community:', e)
+    }
+  }
+
   const handleCreate = async () => {
     if (!pubkey || !newName.trim()) return
     setCreating(true)
@@ -192,6 +205,7 @@ export default function CommunityDiscovery() {
               >
                 <CommunityCard
                   event={evt}
+                  onJoin={() => handleJoin(evt)}
                 />
               </SecondaryPageLink>
             )
