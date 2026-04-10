@@ -48,29 +48,21 @@ export default function UserStatusBubble({ pubkey }: { pubkey: string }) {
 
   return (
     <div className="absolute -top-20 left-[123px] z-10 max-w-[240px]">
-      <div className="relative">
-        {/* Colored glow behind the entire thought bubble */}
-        <div
-          className="absolute -bottom-6 left-[10px] -right-1 -top-1 rounded-xl bg-primary/30 blur-md"
-          aria-hidden="true"
-        />
-        {/* Thought bubble body */}
-        <div className="relative rounded-2xl bg-card/70 px-4 py-3 text-sm shadow-md shadow-primary/10 ring-1 ring-border backdrop-blur-sm">
-          <div className="relative">
-            <p className="line-clamp-3 leading-snug text-foreground">
-              {status}
-            </p>
-            {expiration && (
-              <span className="mt-1 block text-[10px] font-medium text-muted-foreground">
-                {formatTimeRemaining(expiration)}
-              </span>
-            )}
-          </div>
-          {/* Thought bubble dots — trail toward profile picture */}
-          <div className="absolute -left-2 bottom-2">
-            <div className="h-2 w-2 rounded-full bg-card/70" />
-            <div className="absolute -bottom-2 -left-2 h-1.5 w-1.5 rounded-full bg-card/70" />
-          </div>
+      <div className="relative rounded-2xl bg-card/70 px-4 py-3 text-sm backdrop-blur-sm">
+        <div className="relative">
+          <p className="line-clamp-3 leading-snug text-foreground">
+            {status}
+          </p>
+          {expiration && (
+            <span className="mt-1 block text-[10px] font-medium text-muted-foreground">
+              {formatTimeRemaining(expiration)}
+            </span>
+          )}
+        </div>
+        {/* Thought bubble dots — trail toward profile picture */}
+        <div className="absolute -left-2 bottom-2">
+          <div className="h-2 w-2 rounded-full bg-card/70" />
+          <div className="absolute -bottom-2 -left-2 h-1.5 w-1.5 rounded-full bg-card/70" />
         </div>
       </div>
     </div>
