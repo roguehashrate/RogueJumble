@@ -47,7 +47,7 @@ export default function MyCommunities() {
   return (
     <div className="space-y-4">
       {/* Community selector - horizontally scrollable */}
-      <div className="flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide"
+      <div className="flex gap-2 overflow-x-auto px-4 pt-2 pb-2 scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {communities.map((c) => (
