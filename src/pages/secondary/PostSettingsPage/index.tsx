@@ -3,10 +3,6 @@ import { StorageKey } from '@/constants'
 import { Pickaxe } from 'lucide-react'
 import { forwardRef, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useUserPreferences } from '@/providers/UserPreferencesProvider'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { ChevronDown } from 'lucide-react'
 import MediaUploadServiceSetting from './MediaUploadServiceSetting'
 
 const DEFAULT_POST_DIFFICULTY = 16
@@ -39,10 +35,8 @@ function PowSlider({ value, onChange }: { value: number; onChange: (v: number) =
 
 const PostSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
-  const { advancedMode, updateAdvancedMode } = useUserPreferences()
   const [postDifficulty, setPostDifficulty] = useState(DEFAULT_POST_DIFFICULTY)
   const [reactionDifficulty, setReactionDifficulty] = useState(DEFAULT_REACTION_DIFFICULTY)
-  const [advancedExpanded, setAdvancedExpanded] = useState(false)
 
   useEffect(() => {
     const cachedPost = localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
@@ -99,33 +93,6 @@ const PostSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
               </div>
             </div>
           </div>
-        </div>
-        <div className="border-t" />
-        <div className="space-y-2">
-          <button
-            className="flex w-full items-center justify-between"
-            onClick={() => setAdvancedExpanded(!advancedExpanded)}
-          >
-            <span className="text-base font-medium">{t('Advanced')}</span>
-            <ChevronDown
-              className={`size-5 text-muted-foreground transition-transform ${
-                advancedExpanded ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-          {advancedExpanded && (
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between rounded-lg border bg-card p-4">
-                <div className="space-y-1">
-                  <Label className="text-sm">{t('Post type selector')}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t('Shows post kind dropdown when creating posts')}
-                  </p>
-                </div>
-                <Switch checked={advancedMode} onCheckedChange={updateAdvancedMode} />
-              </div>
-            </div>
-          )}
         </div>
         <div className="border-t" />
         <MediaUploadServiceSetting />

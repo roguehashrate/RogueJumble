@@ -14,9 +14,6 @@ type TUserPreferencesContext = {
   fontSize: TFontSize
   updateFontSize: (fontSize: TFontSize) => void
 
-  advancedMode: boolean
-  updateAdvancedMode: (enabled: boolean) => void
-
   muteMedia: boolean
   updateMuteMedia: (mute: boolean) => void
 
@@ -53,7 +50,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   )
   const [font, setFont] = useState<TFont>(storage.getFont())
   const [fontSize, setFontSize] = useState<TFontSize>(storage.getFontSize())
-  const [advancedMode, setAdvancedMode] = useState<boolean>(storage.getAdvancedMode())
   const [muteMedia, setMuteMedia] = useState(true)
   const [sidebarCollapse, setSidebarCollapse] = useState(storage.getSidebarCollapse())
   const [enableSingleColumnLayout, setEnableSingleColumnLayout] = useState(
@@ -121,11 +117,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
     document.documentElement.style.setProperty('font-size', fontSizes[fontSize])
   }
 
-  const updateAdvancedMode = (enabled: boolean) => {
-    setAdvancedMode(enabled)
-    storage.setAdvancedMode(enabled)
-  }
-
   useEffect(() => {
     updateFont(font)
     updateFontSize(fontSize)
@@ -140,8 +131,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         updateFont,
         fontSize,
         updateFontSize,
-        advancedMode,
-        updateAdvancedMode,
         muteMedia,
         updateMuteMedia: setMuteMedia,
         sidebarCollapse,

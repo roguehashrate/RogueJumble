@@ -74,7 +74,6 @@ class LocalStorageService {
   private nsfwDisplayPolicy: TNsfwDisplayPolicy = NSFW_DISPLAY_POLICY.HIDE_CONTENT
   private font: TFont = FONT.DEFAULT
   private fontSize: TFontSize = FONT_SIZE.DEFAULT
-  private advancedMode: boolean = false
   private defaultRelayUrls: string[] = BIG_RELAY_URLS
   private searchRelayUrls: string[] = SEARCHABLE_RELAY_URLS
   private mutedWords: string[] = []
@@ -197,9 +196,6 @@ class LocalStorageService {
       this.fontSize = FONT_SIZE.DEFAULT
       window.localStorage.setItem(StorageKey.FONT_SIZE, this.fontSize)
     }
-
-    const advancedModeStr = window.localStorage.getItem(StorageKey.ADVANCED_MODE)
-    this.advancedMode = advancedModeStr === 'true'
 
     this.dismissedTooManyRelaysAlert =
       window.localStorage.getItem(StorageKey.DISMISSED_TOO_MANY_RELAYS_ALERT) === 'true'
@@ -649,15 +645,6 @@ class LocalStorageService {
   setFontSize(fontSize: TFontSize) {
     this.fontSize = fontSize
     window.localStorage.setItem(StorageKey.FONT_SIZE, fontSize)
-  }
-
-  getAdvancedMode() {
-    return this.advancedMode
-  }
-
-  setAdvancedMode(enabled: boolean) {
-    this.advancedMode = enabled
-    window.localStorage.setItem(StorageKey.ADVANCED_MODE, enabled.toString())
   }
 
   hasShownCreateWalletGuideToast(pubkey: string) {

@@ -18,7 +18,7 @@ export default function NotificationsButton() {
       <div className="relative">
         <Bell />
         {unreadCount > 0 && (
-          <div className="absolute -right-0.5 -top-0.5 min-w-[16px] rounded-full bg-primary/90 px-1 py-0.5 text-center text-[9px] font-bold text-primary-foreground">
+          <div className="absolute -right-1 -top-1 size-4 rounded-full bg-primary/90 text-center text-[8px] font-bold text-primary-foreground">
             {unreadCount >= 10 ? '9+' : unreadCount}
           </div>
         )}
