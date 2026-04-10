@@ -13,19 +13,9 @@ import Text from '@tiptap/extension-text'
 import { TextSelection } from '@tiptap/pm/state'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { Event } from 'nostr-tools'
-import { ChevronDown, FileText, ImageUp, ListChecks, PencilLine, Tv, Video, Users } from 'lucide-react'
-import { Dispatch, forwardRef, SetStateAction, useImperativeHandle, useState, useMemo } from 'react'
+import { Dispatch, forwardRef, SetStateAction, useImperativeHandle, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClipboardAndDropHandler } from './ClipboardAndDropHandler'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import { Drawer, DrawerContent } from '@/components/ui/drawer'
-import { isTouchDevice } from '@/lib/utils'
 import Emoji from './Emoji'
 import emojiSuggestion from './Emoji/suggestion'
 import Mention from './Mention'
@@ -52,7 +42,6 @@ const PostTextarea = forwardRef<
     onUploadEnd?: (file: File) => void
     placeholder?: string
     postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
-    setPostKind?: (kind: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm') => void
   }
 >(
   (
@@ -67,8 +56,7 @@ const PostTextarea = forwardRef<
       onUploadProgress,
       onUploadEnd,
       placeholder,
-      postKind = 'text',
-      setPostKind
+      postKind = 'text'
     },
     ref
   ) => {
@@ -188,242 +176,18 @@ const PostTextarea = forwardRef<
       }
     }))
 
-    const isTouch = useMemo(() => isTouchDevice(), [])
-    const [kindDrawerOpen, setKindDrawerOpen] = useState(false)
-
     if (!editor) {
       return null
     }
 
-    const PostKindOptions = () => (
-      <>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('text')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <PencilLine className="size-4" />
-          {t('Text Post')} (kind:1)
-        </div>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('picture')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <ImageUp className="size-4" />
-          {t('Picture Post')} (kind:20)
-        </div>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('video')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <Tv className="size-4" />
-          {t('Video Post')} (kind:21)
-        </div>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('shortVideo')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <Video className="size-4" />
-          {t('Short Video Post')} (kind:22)
-        </div>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('poll')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <ListChecks className="size-4" />
-          {t('Poll')} (kind:1068)
-        </div>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('longForm')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <FileText className="size-4" />
-          {t('Long Form Article')} (kind:30023)
-        </div>
-        <div
-          className="clickable flex items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            setPostKind?.('communityPost')
-            setKindDrawerOpen(false)
-          }}
-        >
-          <Users className="size-4" />
-          {t('Community Post')} (kind:34551)
-        </div>
-      </>
-    )
-
     return (
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <Tabs defaultValue="edit" value={tabValue} onValueChange={(v) => setTabValue(v)}>
-            <TabsList>
-              <TabsTrigger value="edit">{t('Edit')}</TabsTrigger>
-              <TabsTrigger value="preview">{t('Preview')}</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {setPostKind && !parentStuff && (
-            <>
-              {isTouch ? (
-                <Drawer open={kindDrawerOpen} onOpenChange={setKindDrawerOpen}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1 text-xs"
-                    onClick={() => setKindDrawerOpen(true)}
-                  >
-                    {postKind === 'text' && (
-                      <>
-                        <PencilLine className="size-3.5" />
-                        {t('Text')} (1)
-                      </>
-                    )}
-                    {postKind === 'picture' && (
-                      <>
-                        <ImageUp className="size-3.5" />
-                        {t('Picture')} (20)
-                      </>
-                    )}
-                    {postKind === 'video' && (
-                      <>
-                        <Tv className="size-3.5" />
-                        {t('Video')} (21)
-                      </>
-                    )}
-                    {postKind === 'shortVideo' && (
-                      <>
-                        <Video className="size-3.5" />
-                        {t('Short Video')} (22)
-                      </>
-                    )}
-                    {postKind === 'poll' && (
-                      <>
-                        <ListChecks className="size-3.5" />
-                        {t('Poll')} (1068)
-                      </>
-                    )}
-                    {postKind === 'longForm' && (
-                      <>
-                        <FileText className="size-3.5" />
-                        {t('Long Form')} (30023)
-                      </>
-                    )}
-                    {postKind === 'communityPost' && (
-                      <>
-                        <Users className="size-3.5" />
-                        {t('Community')} (34551)
-                      </>
-                    )}
-                    <ChevronDown className="size-3" />
-                  </Button>
-                  <DrawerContent>
-                    <div className="pb-4">
-                      <div className="px-4 py-3 text-sm font-semibold">{t('Post Type')}</div>
-                      <PostKindOptions />
-                    </div>
-                  </DrawerContent>
-                </Drawer>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1 text-xs">
-                      {postKind === 'text' && (
-                        <>
-                          <PencilLine className="size-3.5" />
-                          {t('Text')}
-                        </>
-                      )}
-                      {postKind === 'picture' && (
-                        <>
-                          <ImageUp className="size-3.5" />
-                          {t('Picture')}
-                        </>
-                      )}
-                      {postKind === 'video' && (
-                        <>
-                          <Tv className="size-3.5" />
-                          {t('Video')}
-                        </>
-                      )}
-                      {postKind === 'shortVideo' && (
-                        <>
-                          <Video className="size-3.5" />
-                          {t('Short Video')}
-                        </>
-                      )}
-                      {postKind === 'poll' && (
-                        <>
-                          <ListChecks className="size-3.5" />
-                          {t('Poll')}
-                        </>
-                      )}
-                      {postKind === 'longForm' && (
-                        <>
-                          <FileText className="size-3.5" />
-                          {t('Long Form')}
-                        </>
-                      )}
-                      {postKind === 'communityPost' && (
-                        <>
-                          <Users className="size-3.5" />
-                          {t('Community')}
-                        </>
-                      )}
-                      <ChevronDown className="size-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setPostKind('text')}>
-                      <PencilLine className="size-4" />
-                      {t('Text Post')} (kind:1)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPostKind('picture')}>
-                      <ImageUp className="size-4" />
-                      {t('Picture Post')} (kind:20)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPostKind('video')}>
-                      <Tv className="size-4" />
-                      {t('Video Post')} (kind:21)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPostKind('shortVideo')}>
-                      <Video className="size-4" />
-                      {t('Short Video Post')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPostKind('poll')}>
-                      <ListChecks className="size-4" />
-                      {t('Poll')} (kind:1068)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPostKind('longForm')}>
-                      <FileText className="size-4" />
-                      {t('Long Form Article')} (kind:30023)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setPostKind('communityPost')}>
-                      <Users className="size-4" />
-                      {t('Community Post')} (kind:34551)
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </>
-          )}
-        </div>
+        <Tabs defaultValue="edit" value={tabValue} onValueChange={(v) => setTabValue(v)}>
+          <TabsList>
+            <TabsTrigger value="edit">{t('Edit')}</TabsTrigger>
+            <TabsTrigger value="preview">{t('Preview')}</TabsTrigger>
+          </TabsList>
+        </Tabs>
         <Tabs value={tabValue} onValueChange={(v) => setTabValue(v)}>
           <TabsContent value="edit" className="mt-0">
             <EditorContent className="tiptap" editor={editor} />

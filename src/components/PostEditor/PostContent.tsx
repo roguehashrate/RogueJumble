@@ -39,6 +39,7 @@ import EmojiPickerDialog from '../EmojiPickerDialog'
 import CommunityPicker from '../CommunityPicker'
 import Mentions from './Mentions'
 import PollEditor from './PollEditor'
+import PostKindSelector from './PostKindSelector'
 import PostRelaySelector from './PostRelaySelector'
 import PostTextarea, { TPostTextareaHandle } from './PostTextarea'
 import Uploader from './Uploader'
@@ -272,6 +273,16 @@ export default function PostContent({
         </ScrollArea>
       )}
 
+      {/* Post kind selector - always visible */}
+      {!parentStuff && (
+        <div className="flex justify-end">
+          <PostKindSelector
+            value={postKind}
+            onChange={setPostKind}
+          />
+        </div>
+      )}
+
       {postKind === 'longForm' && (
         <div className="space-y-2">
           <input
@@ -374,7 +385,6 @@ export default function PostContent({
               onSubmit={() => post()}
               className="min-h-32"
               postKind={postKind}
-              setPostKind={setPostKind}
               onUploadStart={handleUploadStart}
               onUploadProgress={handleUploadProgress}
               onUploadEnd={handleUploadEnd}
@@ -391,7 +401,6 @@ export default function PostContent({
               onSubmit={() => post()}
               className="min-h-32"
               postKind={postKind}
-              setPostKind={setPostKind}
               onUploadStart={handleUploadStart}
               onUploadProgress={handleUploadProgress}
               onUploadEnd={handleUploadEnd}
@@ -408,7 +417,6 @@ export default function PostContent({
               onSubmit={() => post()}
               className={postKind === 'poll' || isPoll ? 'min-h-20' : 'min-h-52'}
               postKind={postKind}
-              setPostKind={setPostKind}
               onUploadStart={handleUploadStart}
               onUploadProgress={handleUploadProgress}
               onUploadEnd={handleUploadEnd}
