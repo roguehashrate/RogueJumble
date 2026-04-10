@@ -1,6 +1,7 @@
 import {
   EmbeddedEmojiParser,
   EmbeddedHashtagParser,
+  EmbeddedLegacyMentionParser,
   EmbeddedMentionParser,
   EmbeddedUrlParser,
   EmbeddedWebsocketUrlParser,
@@ -19,11 +20,13 @@ import ExternalLink from '../ExternalLink'
 export default function ProfileAbout({
   about,
   emojis,
-  className
+  className,
+  showTranslateButton = false
 }: {
   about?: string
   emojis?: TEmoji[]
   className?: string
+  showTranslateButton?: boolean
 }) {
   const { t, i18n } = useTranslation()
   const { translateText } = useTranslationService()
@@ -40,6 +43,7 @@ export default function ProfileAbout({
 
     const nodes = parseContent(translatedAbout ?? about, [
       EmbeddedMentionParser,
+      EmbeddedLegacyMentionParser,
       EmbeddedWebsocketUrlParser,
       EmbeddedUrlParser,
       EmbeddedHashtagParser,
@@ -62,8 +66,9 @@ export default function ProfileAbout({
       if (node.type === 'hashtag') {
         return <EmbeddedHashtag key={index} hashtag={node.data} />
       }
-      if (node.type === 'mention') {
-        return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
+      if (node.type === 'mention' || node.type === 'legacy-mention') {
+        const id = node.data.startsWith('nostr:') ? node.data.split(':')[1] : node.data
+        return <EmbeddedMention key={index} userId={id} />
       }
       if (node.type === 'emoji') {
         const shortcode = node.data.split(':')[1]
@@ -100,7 +105,7 @@ export default function ProfileAbout({
   return (
     <div>
       <div className={className}>{aboutNodes}</div>
-      {needTranslation && (
+      {needTranslation && showTranslateButton && (
         <div className="mt-2 text-sm">
           {translating ? (
             <div className="text-muted-foreground">{t('Translating...')}</div>

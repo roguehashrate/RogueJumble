@@ -13,14 +13,12 @@ import AudioPlayer from '../AudioPlayer'
 import ClientTag from '../ClientTag'
 import Content from '../Content'
 import FollowingBadge from '../FollowingBadge'
-import UserStatusBadge from '../UserStatusBadge'
 import PoWIndicator from '../NoteCard/PoWIndicator'
 import ProtectedBadge from '../ProtectedBadge'
 import { FormattedTimestamp } from '../FormattedTimestamp'
 import Nip05 from '../Nip05'
 import NoteOptions from '../NoteOptions'
 import ParentNotePreview from '../ParentNotePreview'
-import TranslateButton from '../TranslateButton'
 import TrustScoreBadge from '../TrustScoreBadge'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
@@ -149,11 +147,10 @@ export default function Note({
             <div className="flex items-center gap-2">
               <Username
                 userId={event.pubkey}
-                className={`flex truncate font-semibold ${size === 'small' ? 'text-sm' : ''}`}
+                className={`w-0 flex-1 truncate font-semibold ${size === 'small' ? 'text-sm' : ''}`}
                 skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
               />
               <FollowingBadge pubkey={event.pubkey} />
-              <UserStatusBadge pubkey={event.pubkey} />
               <TrustScoreBadge pubkey={event.pubkey} />
               <ProtectedBadge event={event} />
               <ClientTag event={event} />
@@ -170,7 +167,6 @@ export default function Note({
           </div>
         </div>
         <div className="flex items-center">
-          <TranslateButton event={event} className={size === 'normal' ? '' : 'pr-0'} />
           {size === 'normal' && (
             <NoteOptions event={event} className="shrink-0 py-1 [&_svg]:size-5" />
           )}
