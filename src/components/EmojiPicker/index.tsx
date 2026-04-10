@@ -35,8 +35,13 @@ export default function EmojiPicker({
       }
       suggestedEmojisMode={SuggestionMode.FREQUENT}
       onEmojiClick={(data, e) => {
-        const emoji = parseEmojiPickerUnified(data.unified)
-        onEmojiClick(emoji, e)
+        if (data.isCustom && data.imageUrl) {
+          const emojiName = data.names?.[0]?.replace(/^:|:$/g, '')
+          onEmojiClick({ shortcode: emojiName, url: data.imageUrl }, e)
+        } else {
+          const emoji = parseEmojiPickerUnified(data.unified)
+          onEmojiClick(emoji, e)
+        }
       }}
       customEmojis={customEmojiService.getAllCustomEmojisForPicker()}
     />
