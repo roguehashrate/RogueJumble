@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { MouseEventHandler, useState } from 'react'
 
@@ -26,19 +25,24 @@ export default function BottomNavigationBarItem({
   }
 
   return (
-    <Button
+    <button
+      type="button"
       className={cn(
-        'group relative m-0 flex h-12 w-full items-center justify-center rounded-none bg-transparent p-3 text-muted-foreground shadow-none transition-colors hover:text-primary active:scale-95 [&_svg]:size-6',
+        'group relative m-0 flex h-12 w-full items-center justify-center rounded-none p-3 text-muted-foreground outline-none [&_svg]:size-6',
         active && 'text-primary',
-        bouncing && '[&>svg]:animate-icon-bounce',
-        'navbar-btn'
+        bouncing && '[&>svg]:animate-icon-bounce'
       )}
-      variant="ghost"
+      style={{
+        WebkitTapHighlightColor: 'transparent',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        outline: 'none'
+      }}
       onClick={handleClick}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
       {children}
-    </Button>
+    </button>
   )
 }

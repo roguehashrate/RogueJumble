@@ -43,45 +43,6 @@
     overscroll-behavior-x: none;
   }
 
-  /* Disable all hover effects on touch devices to prevent touch issues */
-  @media (hover: none) and (pointer: coarse) {
-    *:hover {
-      background-color: inherit !important;
-      color: inherit !important;
-      border-color: inherit !important;
-      opacity: inherit !important;
-      box-shadow: none !important;
-      text-decoration: inherit !important;
-      transform: none !important;
-      ring: none !important;
-      --tw-ring-color: inherit !important;
-      --tw-shadow: 0 0 #0000 !important;
-      --tw-shadow-colored: 0 0 #0000 !important;
-    }
-
-    * {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Allow hover on interactive elements that need visual feedback via :active */
-    button:hover,
-    [role='button']:hover,
-    a:hover {
-      cursor: pointer;
-    }
-
-    /* Active state feedback for touch */
-    button:active,
-    [role='button']:active,
-    a:active {
-      opacity: 0.7 !important;
-      transform: scale(0.98) !important;
-    }
-  }
-
   /* Safe area insets for notched devices */
   @supports (padding: max(0px)) {
     body {
@@ -129,11 +90,6 @@
     .clickable:hover {
       background-color: hsl(var(--note-hover));
     }
-  }
-
-  /* Override .clickable active state for navbar buttons */
-  .navbar-btn:active {
-    background-color: transparent !important;
   }
 
   @keyframes shimmer {
@@ -269,44 +225,6 @@
   }
   90% {
     transform: translate(-1px, -1px) rotate(-1deg);
-  }
-}
-
-@keyframes pageSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pageSlideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.page-enter {
-  animation: pageSlideIn 0.2s ease-out;
-}
-
-.page-slide-enter {
-  animation: pageSlideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Native-like transitions for PWA */
-@media (display-mode: standalone) {
-  .page-enter,
-  .page-slide-enter {
-    animation-duration: 0.15s;
   }
 }
 

@@ -10,8 +10,15 @@ export default function PostButton() {
   return (
     <>
       <button
-        className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md shadow-primary/40 transition-all duration-200 hover:shadow-lg hover:shadow-primary/50 active:scale-95 hover:bg-primary-hover"
-        style={{ transform: 'translateY(-8px)' }}
+        type="button"
+        className="group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary-foreground outline-none"
+        style={{
+          transform: 'translateY(-8px)',
+          WebkitTapHighlightColor: 'transparent',
+          backgroundColor: 'hsl(var(--primary))',
+          boxShadow: '0 4px 12px hsl(var(--primary) / 0.4)',
+          outline: 'none'
+        }}
         onClick={() => {
           checkLogin(() => {
             setOpen(true)
