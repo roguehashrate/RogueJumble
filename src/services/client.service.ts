@@ -1170,6 +1170,11 @@ class ClientService extends EventTarget {
     ])
   }
 
+  /** =========== User status (NIP-38) =========== */
+  async fetchUserStatus(pubkey: string): Promise<NEvent | null | undefined> {
+    return await this.replaceableEventFromBigRelaysDataloader.load({ pubkey, kind: 30315 })
+  }
+
   /** =========== Relay list =========== */
 
   async fetchRelayList(pubkey: string): Promise<TRelayList> {

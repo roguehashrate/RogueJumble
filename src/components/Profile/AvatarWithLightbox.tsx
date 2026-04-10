@@ -3,6 +3,7 @@ import { useFetchProfile } from '@/hooks'
 import { generateImageByPubkey } from '@/lib/pubkey'
 import { useMemo } from 'react'
 import ImageWithLightbox from '../ImageWithLightbox'
+import UserStatusBubble from '../UserStatusBubble'
 
 export default function AvatarWithLightbox({ userId }: { userId: string }) {
   const { profile } = useFetchProfile(userId)
@@ -19,15 +20,18 @@ export default function AvatarWithLightbox({ userId }: { userId: string }) {
   const { avatar, pubkey } = profile || {}
 
   return (
-    <ImageWithLightbox
-      image={{ url: avatar ?? defaultAvatar, pubkey }}
-      errorPlaceholder={defaultAvatar}
-      className="object-cover object-center"
-      classNames={{
-        wrapper:
-          'shrink-0 rounded-full bg-background w-24 h-24 absolute left-3 bottom-0 translate-y-1/2 border-4 border-background'
-      }}
-      ignoreAutoLoadPolicy
-    />
+    <div className="relative">
+      <ImageWithLightbox
+        image={{ url: avatar ?? defaultAvatar, pubkey }}
+        errorPlaceholder={defaultAvatar}
+        className="object-cover object-center"
+        classNames={{
+          wrapper:
+            'shrink-0 rounded-full bg-background w-24 h-24 absolute left-3 bottom-0 translate-y-1/2 border-4 border-background'
+        }}
+        ignoreAutoLoadPolicy
+      />
+      <UserStatusBubble pubkey={pubkey} />
+    </div>
   )
 }

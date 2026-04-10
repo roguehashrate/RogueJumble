@@ -4,15 +4,25 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { createProfileDraftEvent } from '@/lib/draft-event'
+import { createProfileDraftEvent, createUserStatusDraftEvent } from '@/lib/draft-event'
+import { getUserStatusFromEvent } from '@/lib/event-metadata'
 import { formatError } from '@/lib/error'
+import client from '@/services/client.service'
 import { generateImageByPubkey } from '@/lib/pubkey'
 import { isEmail } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import { Loader, Upload } from 'lucide-react'
+import dayjs from 'dayjs'
 import { forwardRef, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -32,6 +42,8 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
   const [lightningAddressError, setLightningAddressError] = useState<string>('')
   const [silentPaymentAddress, setSilentPaymentAddress] = useState<string>('')
   const [silentPaymentAddressError, setSilentPaymentAddressError] = useState<string>('')
+  const [status, setStatus] = useState<string>('')
+  const [expireTimestamp, setExpireTimestamp] = useState<string | undefined>(undefined)
   const [hasChanged, setHasChanged] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
@@ -61,7 +73,26 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       setLightningAddress('')
       setSilentPaymentAddress('')
     }
-  }, [profile])
+
+    const loadUserStatus = async () => {
+      if (!account) return
+      try {
+        const statusEvent = await client.fetchUserStatus(account.pubkey)
+        if (statusEvent) {
+          const userStatus = getUserStatusFromEvent(statusEvent)
+          if (userStatus) {
+            setStatus(userStatus.content)
+            if (userStatus.expiration) {
+              setExpireTimestamp(String(userStatus.expiration))
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user status:', error)
+      }
+    }
+    loadUserStatus()
+  }, [profile, account])
 
   if (!account || !profile) return null
 
@@ -117,6 +148,17 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
     try {
       const newProfileEvent = await publish(profileDraftEvent)
       await updateProfileEvent(newProfileEvent)
+
+      if (status) {
+        const statusExpireTimestamp = expireTimestamp ? parseInt(expireTimestamp, 10) : undefined
+        const statusDraftEvent = createUserStatusDraftEvent(
+          status,
+          undefined,
+          statusExpireTimestamp
+        )
+        await publish(statusDraftEvent)
+      }
+
       setSaving(false)
       pop()
     } catch (error) {
@@ -244,9 +286,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           )}
         </Item>
         <Item>
-          <Label htmlFor="profile-sp-address-input">
-            {t('Silent Payment Address (BIP 352)')}
-          </Label>
+          <Label htmlFor="profile-sp-address-input">{t('Silent Payment Address (BIP 352)')}</Label>
           <Input
             id="profile-sp-address-input"
             value={silentPaymentAddress}
@@ -261,6 +301,54 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           {silentPaymentAddressError && (
             <div className="pl-3 text-xs text-destructive">{silentPaymentAddressError}</div>
           )}
+        </Item>
+        <Item>
+          <Label htmlFor="profile-status-input">{t('Status')}</Label>
+          <Input
+            id="profile-status-input"
+            value={status}
+            maxLength={280}
+            placeholder={t('Set a status...')}
+            onChange={(e) => {
+              setStatus(e.target.value)
+              setHasChanged(true)
+            }}
+          />
+        </Item>
+        <Item>
+          <Label htmlFor="profile-status-expiration">{t('Expires')}</Label>
+          <Select
+            value={expireTimestamp || 'never'}
+            onValueChange={(value) => {
+              setExpireTimestamp(value === 'never' ? undefined : value)
+              setHasChanged(true)
+            }}
+          >
+            <SelectTrigger id="profile-status-expiration">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="never">{t('Never')}</SelectItem>
+              <SelectItem value={String(dayjs().add(5, 'minute').unix())}>
+                {t('5 minutes')}
+              </SelectItem>
+              <SelectItem value={String(dayjs().add(15, 'minute').unix())}>
+                {t('15 minutes')}
+              </SelectItem>
+              <SelectItem value={String(dayjs().add(1, 'hour').unix())}>{t('1 hour')}</SelectItem>
+              <SelectItem value={String(dayjs().add(4, 'hour').unix())}>{t('4 hours')}</SelectItem>
+              <SelectItem value={String(dayjs().add(1, 'day').unix())}>{t('1 day')}</SelectItem>
+              <SelectItem value={String(dayjs().add(1, 'week').unix())}>{t('1 week')}</SelectItem>
+              <SelectItem value={String(dayjs().add(1, 'month').unix())}>{t('1 month')}</SelectItem>
+              <SelectItem value={String(dayjs().add(3, 'month').unix())}>
+                {t('3 months')}
+              </SelectItem>
+              <SelectItem value={String(dayjs().add(6, 'month').unix())}>
+                {t('6 months')}
+              </SelectItem>
+              <SelectItem value={String(dayjs().add(1, 'year').unix())}>{t('1 year')}</SelectItem>
+            </SelectContent>
+          </Select>
         </Item>
       </div>
     </SecondaryPageLayout>

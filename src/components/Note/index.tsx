@@ -13,6 +13,7 @@ import AudioPlayer from '../AudioPlayer'
 import ClientTag from '../ClientTag'
 import Content from '../Content'
 import FollowingBadge from '../FollowingBadge'
+import UserStatusBadge from '../UserStatusBadge'
 import PoWIndicator from '../NoteCard/PoWIndicator'
 import ProtectedBadge from '../ProtectedBadge'
 import { FormattedTimestamp } from '../FormattedTimestamp'
@@ -152,6 +153,7 @@ export default function Note({
                 skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
               />
               <FollowingBadge pubkey={event.pubkey} />
+              <UserStatusBadge pubkey={event.pubkey} />
               <TrustScoreBadge pubkey={event.pubkey} />
               <ProtectedBadge event={event} />
               <ClientTag event={event} />

@@ -448,6 +448,26 @@ export function createProfileDraftEvent(content: string, tags: string[][] = []):
   }
 }
 
+export function createUserStatusDraftEvent(
+  content: string,
+  link?: string,
+  expiration?: number
+): TDraftEvent {
+  const tags: string[][] = [['d', 'general']]
+  if (link) {
+    tags.push(['r', link])
+  }
+  if (expiration) {
+    tags.push(['expiration', expiration.toString()])
+  }
+  return {
+    kind: 30315,
+    content,
+    tags,
+    created_at: dayjs().unix()
+  }
+}
+
 export function createFavoriteRelaysDraftEvent(
   favoriteRelays: string[],
   relaySetEventsOrATags: Event[] | string[][]
@@ -725,10 +745,7 @@ export function createCommunityJoinDraftEvent(communityCoordinate: string): TDra
   return {
     kind: 28934,
     created_at: Math.floor(Date.now() / 1000),
-    tags: [
-      ['a', communityCoordinate],
-      ['-']
-    ],
+    tags: [['a', communityCoordinate], ['-']],
     content: ''
   }
 }
@@ -738,10 +755,7 @@ export function createCommunityLeaveDraftEvent(communityCoordinate: string): TDr
   return {
     kind: 28936,
     created_at: Math.floor(Date.now() / 1000),
-    tags: [
-      ['a', communityCoordinate],
-      ['-']
-    ],
+    tags: [['a', communityCoordinate], ['-']],
     content: ''
   }
 }

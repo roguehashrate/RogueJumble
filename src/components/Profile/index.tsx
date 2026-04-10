@@ -230,10 +230,7 @@ function SpCopy({ sp }: { sp: string }) {
   }
 
   return (
-    <div
-      className="clickable flex w-fit items-center gap-1 font-mono text-xs"
-      onClick={copy}
-    >
+    <div className="clickable flex w-fit items-center gap-1 font-mono text-xs" onClick={copy}>
       <div>{truncated}</div>
       {copied ? <Check size={14} /> : <Copy size={14} />}
     </div>

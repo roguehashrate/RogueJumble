@@ -1,6 +1,7 @@
 import { MAX_PINNED_NOTES, POLL_TYPE } from '@/constants'
-import { TEmoji, TPollType, TRelayList, TRelaySet } from '@/types'
+import { TEmoji, TPollType, TRelayList, TRelaySet, TUserStatus } from '@/types'
 import { Event, kinds } from 'nostr-tools'
+import dayjs from 'dayjs'
 import { buildATag } from './draft-event'
 import { getReplaceableEventIdentifier } from './event'
 import { getAmountFromInvoice, getLightningAddressFromProfile } from './lightning'
@@ -221,6 +222,29 @@ export function getLiveEventMetadataFromEvent(event: Event) {
   }
 
   return { title, summary, image, status, tags: Array.from(tags) }
+}
+
+export function getUserStatusFromEvent(event: Event): TUserStatus | null {
+  if (event.kind !== 30315) return null
+
+  const dTag = event.tags.find(tagNameEquals('d'))?.[1]
+  if (dTag !== 'general') return null
+
+  const expiration = event.tags.find(tagNameEquals('expiration'))?.[1]
+  const expirationTimestamp = expiration ? parseInt(expiration, 10) : undefined
+  if (expirationTimestamp && expirationTimestamp < dayjs().unix()) {
+    return null
+  }
+
+  const link = event.tags.find(tagNameEquals('r'))?.[1]
+
+  return {
+    content: event.content,
+    type: 'general',
+    expiration: expirationTimestamp,
+    link,
+    updated_at: event.created_at
+  }
 }
 
 export function getGroupMetadataFromEvent(event: Event) {

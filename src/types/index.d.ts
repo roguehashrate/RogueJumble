@@ -33,6 +33,13 @@ export type TProfile = {
   created_at?: number
   emojis?: TEmoji[]
 }
+export type TUserStatus = {
+  content: string
+  type: 'general'
+  expiration?: number
+  link?: string
+  updated_at: number
+}
 export type TMailboxRelayScope = 'read' | 'write' | 'both'
 export type TMailboxRelay = {
   url: string
@@ -122,7 +129,15 @@ export type TAccount = {
 
 export type TAccountPointer = Pick<TAccount, 'pubkey' | 'signerType'>
 
-export type TFeedType = 'following' | 'pinned' | 'relays' | 'relay' | 'mediaFeed' | 'textFeed' | 'articleFeed' | 'communityFeed'
+export type TFeedType =
+  | 'following'
+  | 'pinned'
+  | 'relays'
+  | 'relay'
+  | 'mediaFeed'
+  | 'textFeed'
+  | 'articleFeed'
+  | 'communityFeed'
 export type TFeedInfo = { feedType: TFeedType; id?: string; name?: string } | null
 
 export type TLanguage = 'en' | 'zh' | 'pl'

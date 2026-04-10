@@ -716,6 +716,19 @@ export default {
     Communities: 'Communities',
     'Search communities...': 'Search communities...',
     'No communities found': 'No communities found',
-    'No communities yet': 'No communities yet'
+    'No communities yet': 'No communities yet',
+    'User status': 'Status',
+    'Set a status...': 'Set a status...',
+    'Status expires': 'Expires in',
+    '5 minutes': '5 minutes',
+    '15 minutes': '15 minutes',
+    '1 hour': '1 hour',
+    '4 hours': '4 hours',
+    '1 day': '1 day',
+    '1 week': '1 week',
+    '1 month': '1 month',
+    '3 months': '3 months',
+    '6 months': '6 months',
+    '1 year': '1 year'
   }
 }
