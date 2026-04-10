@@ -3,6 +3,7 @@ import Tabs from '@/components/Tabs'
 import TrustScoreFilter from '@/components/TrustScoreFilter'
 import UserAggregationList, { TUserAggregationListRef } from '@/components/UserAggregationList'
 import { ExtendedKind } from '@/constants'
+import { getDefaultRelayUrls } from '@/lib/relay'
 import { isTouchDevice } from '@/lib/utils'
 import { useKindFilter } from '@/providers/KindFilterProvider'
 import { useUserTrust } from '@/providers/UserTrustProvider'
@@ -12,6 +13,10 @@ import { useMemo, useRef, useState } from 'react'
 import { kinds } from 'nostr-tools'
 import KindFilter from '../KindFilter'
 import { RefreshButton } from '../RefreshButton'
+import CommunityDiscovery from './CommunityDiscovery'
+import MyCommunities from './MyCommunities'
+
+type TCommunityTab = 'discover' | 'create' | 'myCommunities'
 
 export default function NormalFeed({
   trustScoreFilterId,
@@ -32,12 +37,14 @@ export default function NormalFeed({
   disable24hMode?: boolean
   onRefresh?: () => void
   isPubkeyFeed?: boolean
-  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed'
+  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed' | 'communityFeed'
 }) {
   const { showKinds } = useKindFilter()
   const { getMinTrustScore } = useUserTrust()
   const [temporaryShowKinds, setTemporaryShowKinds] = useState(showKinds)
   const [listMode, setListMode] = useState<TNoteListMode>(() => storage.getNoteListMode())
+  const [scope, setScope] = useState<'following' | 'global'>('following')
+  const [communityTab, setCommunityTab] = useState<TCommunityTab>('discover')
   const supportTouch = useMemo(() => isTouchDevice(), [])
   const noteListRef = useRef<TNoteListRef>(null)
   const userAggregationListRef = useRef<TUserAggregationListRef>(null)
@@ -67,7 +74,28 @@ export default function NormalFeed({
     setTrustFilterOpen(open)
   }
 
-  const effectiveListMode = listMode === '24h' && disable24hMode ? 'posts' : listMode
+  const isTextFeed = feedVariant === 'textFeed'
+  const isArticleFeed = feedVariant === 'articleFeed'
+  const isMediaFeed = feedVariant === 'mediaFeed'
+  const isCommunityFeed = feedVariant === 'communityFeed'
+  const isScopedFeed = isArticleFeed || isMediaFeed || isTextFeed
+
+  // Global subRequests for broader feed
+  const globalSubRequests = useMemo((): TFeedSubRequest[] => {
+    const urls = getDefaultRelayUrls()
+    if (isArticleFeed) {
+      return [{ filter: { kinds: [kinds.LongFormArticle], limit: 50 }, urls }]
+    }
+    if (isMediaFeed) {
+      return [{ filter: { kinds: [ExtendedKind.PICTURE, ExtendedKind.VIDEO, ExtendedKind.SHORT_VIDEO], limit: 50 }, urls }]
+    }
+    if (isTextFeed) {
+      return [{ filter: { kinds: [kinds.ShortTextNote], limit: 50 }, urls }]
+    }
+    return subRequests
+  }, [isArticleFeed, isMediaFeed, isTextFeed, subRequests])
+
+  const activeSubRequests = scope === 'global' ? globalSubRequests : subRequests
 
   // Compute effective kinds filter based on feedVariant from dropdown
   const effectiveShowKinds = useMemo(() => {
@@ -80,44 +108,68 @@ export default function NormalFeed({
     if (feedVariant === 'articleFeed') {
       return [kinds.LongFormArticle]
     }
+    if (feedVariant === 'communityFeed') {
+      return [kinds.CommunityDefinition, 34551]
+    }
     return temporaryShowKinds
   }, [feedVariant, temporaryShowKinds])
 
-  const isTextFeed = feedVariant === 'textFeed'
-  const isArticleFeed = feedVariant === 'articleFeed'
+  // Build tabs based on feed variant
+  const tabs = useMemo(() => {
+    if (isCommunityFeed) {
+      return [
+        { value: 'discover', label: 'Discover' },
+        { value: 'myCommunities', label: 'My Communities' }
+      ]
+    }
+    if (isScopedFeed) {
+      return [
+        { value: 'following', label: 'Following' },
+        { value: 'global', label: 'Global' }
+      ]
+    }
+    return [
+      { value: 'posts', label: 'Notes' },
+      { value: 'postsAndReplies', label: 'Replies' },
+      ...(!disable24hMode ? [{ value: '24h', label: '24h' }] : [])
+    ]
+  }, [isCommunityFeed, isScopedFeed, disable24hMode])
+
+  const activeTab = isCommunityFeed ? communityTab : (isScopedFeed ? scope : (listMode === '24h' && disable24hMode ? 'posts' : listMode))
+
+  const handleTabChange = (value: string) => {
+    if (isCommunityFeed) {
+      setCommunityTab(value as TCommunityTab)
+    } else if (isScopedFeed) {
+      setScope(value as 'following' | 'global')
+    } else {
+      handleListModeChange(value as TNoteListMode)
+    }
+  }
+
+  // Refresh handler
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh()
+      return
+    }
+    if (!isScopedFeed && !isCommunityFeed && listMode === '24h') {
+      userAggregationListRef.current?.refresh()
+    } else {
+      noteListRef.current?.refresh()
+    }
+  }
 
   return (
     <>
       <Tabs
-        value={effectiveListMode}
-        tabs={
-          isArticleFeed
-            ? [{ value: 'posts', label: 'Articles' }]
-            : [
-                { value: 'posts', label: 'Notes' },
-                { value: 'postsAndReplies', label: 'Replies' },
-                ...(!disable24hMode ? [{ value: '24h', label: '24h Pulse' }] : [])
-              ]
-        }
-        onTabChange={(mode) => {
-          handleListModeChange(mode as TNoteListMode)
-        }}
+        value={activeTab}
+        tabs={tabs}
+        onTabChange={handleTabChange}
         options={
           <>
-            {!supportTouch && (
-              <RefreshButton
-                onClick={() => {
-                  if (onRefresh) {
-                    onRefresh()
-                    return
-                  }
-                  if (listMode === '24h') {
-                    userAggregationListRef.current?.refresh()
-                  } else {
-                    noteListRef.current?.refresh()
-                  }
-                }}
-              />
+            {!supportTouch && !isScopedFeed && !isCommunityFeed && (
+              <RefreshButton onClick={handleRefresh} />
             )}
             {trustScoreFilterId && (
               <TrustScoreFilter
@@ -125,7 +177,7 @@ export default function NormalFeed({
                 onOpenChange={handleTrustFilterOpenChange}
               />
             )}
-            {!isTextFeed && !isArticleFeed && showKindsFilter && (
+            {!isTextFeed && !isArticleFeed && !isScopedFeed && showKindsFilter && (
               <KindFilter
                 showKinds={temporaryShowKinds}
                 onShowKindsChange={handleShowKindsChange}
@@ -136,28 +188,53 @@ export default function NormalFeed({
         active={trustFilterOpen}
       />
       <div ref={topRef} className="scroll-mt-[calc(6rem+1px)]" />
-      {listMode === '24h' && !disable24hMode ? (
-        <UserAggregationList
-          ref={userAggregationListRef}
-          showKinds={temporaryShowKinds}
-          subRequests={subRequests}
-          areAlgoRelays={areAlgoRelays}
-          showRelayCloseReason={showRelayCloseReason}
-          isPubkeyFeed={isPubkeyFeed}
-          trustScoreThreshold={trustScoreThreshold}
-        />
-      ) : (
+
+      {/* Community feed content */}
+      {isCommunityFeed && communityTab === 'discover' && <CommunityDiscovery />}
+      {isCommunityFeed && communityTab === 'myCommunities' && <MyCommunities />}
+
+      {/* Scoped feed content (Articles/Media/Text) */}
+      {isScopedFeed && (
         <NoteList
           ref={noteListRef}
           showKinds={effectiveShowKinds}
-          subRequests={subRequests}
-          hideReplies={effectiveListMode === 'posts'}
+          subRequests={activeSubRequests}
+          hideReplies={false}
           areAlgoRelays={areAlgoRelays}
           showRelayCloseReason={showRelayCloseReason}
           isPubkeyFeed={isPubkeyFeed}
           trustScoreThreshold={trustScoreThreshold}
           displayMode={isTextFeed ? 'textOnlyMode' : undefined}
         />
+      )}
+
+      {/* Following feed content */}
+      {!isCommunityFeed && !isScopedFeed && (
+        <>
+          {listMode === '24h' && !disable24hMode ? (
+            <UserAggregationList
+              ref={userAggregationListRef}
+              showKinds={temporaryShowKinds}
+              subRequests={subRequests}
+              areAlgoRelays={areAlgoRelays}
+              showRelayCloseReason={showRelayCloseReason}
+              isPubkeyFeed={isPubkeyFeed}
+              trustScoreThreshold={trustScoreThreshold}
+            />
+          ) : (
+            <NoteList
+              ref={noteListRef}
+              showKinds={effectiveShowKinds}
+              subRequests={subRequests}
+              hideReplies={listMode === 'posts'}
+              areAlgoRelays={areAlgoRelays}
+              showRelayCloseReason={showRelayCloseReason}
+              isPubkeyFeed={isPubkeyFeed}
+              trustScoreThreshold={trustScoreThreshold}
+              displayMode={isTextFeed ? 'textOnlyMode' : undefined}
+            />
+          )}
+        </>
       )}
     </>
   )

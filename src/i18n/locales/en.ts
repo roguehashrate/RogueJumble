@@ -712,6 +712,10 @@ export default {
     'Sans-serif': 'Sans-serif',
     Monospace: 'Monospace',
     Dyslexic: 'Dyslexic',
-    'Space Grotesk': 'Space Grotesk'
+    'Space Grotesk': 'Space Grotesk',
+    Communities: 'Communities',
+    'Search communities...': 'Search communities...',
+    'No communities found': 'No communities found',
+    'No communities yet': 'No communities yet'
   }
 }

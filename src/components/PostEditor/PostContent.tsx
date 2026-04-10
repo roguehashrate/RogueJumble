@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import EmojiPickerDialog from '../EmojiPickerDialog'
+import CommunityPicker from '../CommunityPicker'
 import Mentions from './Mentions'
 import PollEditor from './PollEditor'
 import PostRelaySelector from './PostRelaySelector'
@@ -90,7 +91,7 @@ export default function PostContent({
   const [articleTitle, setArticleTitle] = useState('')
   const [articleContent, setArticleContent] = useState('')
   const [articleTags, setArticleTags] = useState('')
-  const [communityIdentifier, setCommunityIdentifier] = useState('')
+  const [communityCoordinate, setCommunityCoordinate] = useState('')
   const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([])
   const userDismissedProtected = useRef(false)
   const handleProtectedSuggestionChange = useCallback((suggested: boolean) => {
@@ -114,7 +115,7 @@ export default function PostContent({
       !posting &&
       !uploadProgresses.length &&
       (!(postKind === 'poll' || isPoll) || pollCreateData.options.filter((option) => !!option.trim()).length >= 2) &&
-      (postKind !== 'communityPost' || !!communityIdentifier.trim()) &&
+      (postKind !== 'communityPost' || !!communityCoordinate) &&
       (!isProtectedEvent || additionalRelayUrls.length > 0)
     )
   }, [
@@ -130,7 +131,7 @@ export default function PostContent({
     postKind,
     articleTitle,
     articleContent,
-    communityIdentifier
+    communityCoordinate
   ])
 
   useEffect(() => {
@@ -191,7 +192,7 @@ export default function PostContent({
           articleTitle,
           articleContent,
           articleTags,
-          communityIdentifier
+          communityCoordinate
         })
 
         const _additionalRelayUrls = [...additionalRelayUrls]
@@ -417,12 +418,9 @@ export default function PostContent({
 
           {/* Kind-specific fields for non-longForm kinds */}
       {postKind === 'communityPost' && (
-        <input
-          type="text"
-          placeholder={t('Community identifier (d-tag)...')}
-          value={communityIdentifier}
-          onChange={(e) => setCommunityIdentifier(e.target.value)}
-          className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+        <CommunityPicker
+          value={communityCoordinate}
+          onChange={(coord) => setCommunityCoordinate(coord)}
         />
       )}
       {(postKind === 'poll' || isPoll) && (
@@ -652,7 +650,7 @@ async function createDraftEvent({
   articleTitle,
   articleContent,
   articleTags,
-  communityIdentifier
+  communityCoordinate
 }: {
   parentStuff: Event | string | undefined
   text: string
@@ -668,7 +666,7 @@ async function createDraftEvent({
   articleTitle?: string
   articleContent?: string
   articleTags?: string
-  communityIdentifier?: string
+  communityCoordinate?: string
 }) {
   const { parentEvent, externalContent } =
     typeof parentStuff === 'string'
@@ -707,7 +705,7 @@ async function createDraftEvent({
   }
 
   if (postKind === 'communityPost') {
-    return await createCommunityPostDraftEvent(text, communityIdentifier ?? '', mentions, {
+    return await createCommunityPostDraftEvent(text, communityCoordinate ?? '', mentions, {
       addClientTag,
       protectedEvent: isProtectedEvent,
       isNsfw

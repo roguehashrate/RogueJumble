@@ -643,7 +643,7 @@ export async function createLongFormArticleDraftEvent(
 // NIP-72: Community Post (kind 34551)
 export async function createCommunityPostDraftEvent(
   content: string,
-  communityIdentifier: string,
+  communityCoordinate: string,
   mentions: string[],
   options: {
     addClientTag?: boolean
@@ -655,7 +655,8 @@ export async function createCommunityPostDraftEvent(
   const hashtags = extractHashtags(transformedEmojisContent)
 
   const tags = emojiTags.concat(hashtags.map((hashtag) => buildTTag(hashtag)))
-  tags.push(['community', communityIdentifier])
+  // Reference the community via an 'a' tag
+  tags.push(['a', communityCoordinate])
 
   // imeta tags
   const images = extractImagesFromContent(transformedEmojisContent)
@@ -684,6 +685,65 @@ export async function createCommunityPostDraftEvent(
     tags
   }
   return setDraftEventCache(baseDraft)
+}
+
+// NIP-72: Community Definition (kind 34550)
+export function createCommunityDefinitionDraftEvent(
+  name: string,
+  description: string,
+  image: string,
+  relays: string[],
+  moderators: string[],
+  options: {
+    addClientTag?: boolean
+  } = {}
+): TDraftEvent {
+  const tags: string[][] = [
+    buildDTag(name.toLowerCase().replace(/\s+/g, '-')),
+    buildTitleTag(name),
+    ['description', description]
+  ]
+
+  if (image) tags.push(['image', image])
+  relays.forEach((r) => tags.push(['relays', r]))
+  if (moderators.length) tags.push(['moderators', ...moderators])
+
+  if (options.addClientTag) {
+    tags.push(buildClientTag())
+  }
+
+  return {
+    kind: kinds.CommunityDefinition,
+    content: '',
+    tags,
+    created_at: Math.floor(Date.now() / 1000)
+  }
+}
+
+// NIP-72: Join Community Request (kind 28934 with community a-tag)
+export function createCommunityJoinDraftEvent(communityCoordinate: string): TDraftEvent {
+  return {
+    kind: 28934,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ['a', communityCoordinate],
+      ['-']
+    ],
+    content: ''
+  }
+}
+
+// NIP-72: Leave Community Request (kind 28936 with community a-tag)
+export function createCommunityLeaveDraftEvent(communityCoordinate: string): TDraftEvent {
+  return {
+    kind: 28936,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ['a', communityCoordinate],
+      ['-']
+    ],
+    content: ''
+  }
 }
 
 export function createPollResponseDraftEvent(

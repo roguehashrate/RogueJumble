@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { useFavoriteRelays } from '@/providers/FavoriteRelaysProvider'
 import { useFeed } from '@/providers/FeedProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { BookOpen, ChevronDown, Image, Server, UsersRound } from 'lucide-react'
+import { BookOpen, ChevronDown, Globe, Image, Server, UsersRound } from 'lucide-react'
 import { forwardRef, HTMLAttributes, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -83,6 +83,9 @@ const FeedSwitcherTrigger = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
       if (feedInfo?.feedType === 'articleFeed') {
         return t('Articles')
       }
+      if (feedInfo?.feedType === 'communityFeed') {
+        return t('Communities')
+      }
       if (relayUrls.length === 0) {
         return t('Choose a feed')
       }
@@ -99,6 +102,7 @@ const FeedSwitcherTrigger = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
       if (feedInfo?.feedType === 'mediaFeed') return <Image />
       if (feedInfo?.feedType === 'textFeed') return <UsersRound />
       if (feedInfo?.feedType === 'articleFeed') return <BookOpen />
+      if (feedInfo?.feedType === 'communityFeed') return <Globe />
       if (feedInfo?.feedType === 'relay' && feedInfo.id) {
         return <RelayIcon url={feedInfo.id} />
       }
