@@ -135,7 +135,8 @@ export const SUPPORTED_KINDS = [
   kinds.Emojisets,
   ExtendedKind.FOLLOW_PACK,
   kinds.Reaction,
-  ExtendedKind.EXTERNAL_CONTENT_REACTION
+  ExtendedKind.EXTERNAL_CONTENT_REACTION,
+  ExtendedKind.COMMUNITY_POST
 ]
 
 export const URL_REGEX =

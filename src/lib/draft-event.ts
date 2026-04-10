@@ -700,7 +700,7 @@ export function createCommunityDefinitionDraftEvent(
 ): TDraftEvent {
   const tags: string[][] = [
     buildDTag(name.toLowerCase().replace(/\s+/g, '-')),
-    buildTitleTag(name),
+    ['name', name],
     ['description', description]
   ]
 
