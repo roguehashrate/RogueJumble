@@ -90,7 +90,7 @@ export default function MyCommunities() {
             onClick={handleLeave}
           >
             <LogOut className="size-4" />
-            {t('Leave {name}', { name: selectedCommunity.name })}
+            {t('Leave')} {selectedCommunity.name}
           </Button>
 
           <NoteList
