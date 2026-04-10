@@ -15,26 +15,39 @@ export type TCommunityInfo = {
 
 class CommunityService {
   private joinedMap: Map<string, TCommunityInfo> = new Map()
+  private currentPubkey: string | null = null
 
-  constructor() {
-    this.loadFromStorage()
+  private getStorageKey(): string {
+    return this.currentPubkey ? `${STORAGE_KEY}_${this.currentPubkey}` : STORAGE_KEY
   }
 
   private loadFromStorage() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
+      const raw = localStorage.getItem(this.getStorageKey())
       if (raw) {
         const data = JSON.parse(raw) as TCommunityInfo[]
         this.joinedMap = new Map(data.map((c) => [c.coordinate, c]))
+      } else {
+        this.joinedMap.clear()
       }
     } catch {
-      // ignore
+      this.joinedMap.clear()
     }
   }
 
   private saveToStorage() {
     const data = Array.from(this.joinedMap.values())
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    localStorage.setItem(this.getStorageKey(), JSON.stringify(data))
+  }
+
+  setPubkey(pubkey: string | null) {
+    this.currentPubkey = pubkey
+    this.loadFromStorage()
+  }
+
+  clear() {
+    this.currentPubkey = null
+    this.joinedMap.clear()
   }
 
   getJoinedCommunities(): TCommunityInfo[] {

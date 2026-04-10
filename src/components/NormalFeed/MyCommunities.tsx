@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 
 export default function MyCommunities() {
   const { t } = useTranslation()
-  const { publish } = useNostr()
+  const { pubkey, publish } = useNostr()
   const [communities, setCommunities] = useState<TCommunityInfo[]>([])
   const [selectedCommunity, setSelectedCommunity] = useState<TCommunityInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,13 +21,14 @@ export default function MyCommunities() {
   }, [])
 
   useEffect(() => {
+    communityService.setPubkey(pubkey)
     const joined = communityService.getJoinedCommunities()
     setCommunities(joined)
     if (joined.length === 1) {
       setSelectedCommunity(joined[0])
     }
     setLoading(false)
-  }, [])
+  }, [pubkey])
 
   const handleLeave = async () => {
     if (!selectedCommunity) return

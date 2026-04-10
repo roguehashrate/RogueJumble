@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Event, kinds } from 'nostr-tools'
-import { Loader2, Plus, Search } from 'lucide-react'
+import { Loader2, Plus, Search, Users, Globe } from 'lucide-react'
 import client from '@/services/client.service'
 import { useNostr } from '@/providers/NostrProvider'
 import { communityService } from '@/services/community.service'
-import { SecondaryPageLink } from '@/PageManager'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import Image from '@/components/Image'
 
 export default function CommunityDiscovery() {
   const { t } = useTranslation()
@@ -27,6 +27,7 @@ export default function CommunityDiscovery() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [detailEvent, setDetailEvent] = useState<Event | null>(null)
 
   // Create community form state
   const [newName, setNewName] = useState('')
@@ -34,6 +35,10 @@ export default function CommunityDiscovery() {
   const [newImage, setNewImage] = useState('')
   const [newRelays, setNewRelays] = useState('')
   const [creating, setCreating] = useState(false)
+
+  useEffect(() => {
+    communityService.setPubkey(pubkey)
+  }, [pubkey])
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -122,7 +127,8 @@ export default function CommunityDiscovery() {
   }
 
   return (
-    <div className="space-y-4 px-4 pt-4 pb-4">
+    <>
+      <div className="space-y-4 px-4 pt-4 pb-4">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -196,22 +202,101 @@ export default function CommunityDiscovery() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredCommunities.map((evt) => {
-            const info = communityService.extractCommunityInfo(evt)
-            return (
-              <SecondaryPageLink
-                key={evt.id}
-                to={`/communities/${info.coordinate}`}
-              >
-                <CommunityCard
-                  event={evt}
-                  onJoin={() => handleJoin(evt)}
-                />
-              </SecondaryPageLink>
-            )
-          })}
+          {filteredCommunities.map((evt) => (
+            <CommunityCard
+              key={evt.id}
+              event={evt}
+              onJoin={() => handleJoin(evt)}
+              onClick={() => setDetailEvent(evt)}
+            />
+          ))}
         </div>
       )}
     </div>
+
+    {/* Community Detail Dialog */}
+    <Dialog open={!!detailEvent} onOpenChange={(open) => !open && setDetailEvent(null)}>
+      {detailEvent && <CommunityDetailDialog event={detailEvent} onClose={() => setDetailEvent(null)} />}
+    </Dialog>
+    </>
+  )
+}
+
+function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () => void }) {
+  const { t } = useTranslation()
+  const { publish } = useNostr()
+  const info = useMemo(() => communityService.extractCommunityInfo(event), [event])
+  const joined = communityService.isJoined(info.coordinate)
+
+  const handleJoin = async () => {
+    try {
+      const { createCommunityJoinDraftEvent } = await import('@/lib/draft-event')
+      const draftEvent = createCommunityJoinDraftEvent(info.coordinate)
+      await publish(draftEvent)
+      communityService.joinCommunity(info)
+    } catch (e) {
+      console.error('Failed to join community:', e)
+    }
+  }
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-3">
+          {info.image ? (
+            <Image
+              image={{ url: info.image, pubkey: event.pubkey }}
+              className="size-12 rounded-full object-cover"
+              classNames={{ wrapper: 'size-12 shrink-0 rounded-full overflow-hidden' }}
+            />
+          ) : (
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+              {info.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <span className="truncate">{info.name}</span>
+        </DialogTitle>
+      </DialogHeader>
+
+      <div className="space-y-4">
+        {info.description && (
+          <p className="text-sm text-muted-foreground">{info.description}</p>
+        )}
+
+        {info.relays && info.relays.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Globe className="size-4 text-muted-foreground" />
+              {t('Relays')}
+            </div>
+            <div className="flex flex-col gap-1">
+              {info.relays.map((relay, i) => (
+                <div key={i} className="truncate text-xs text-muted-foreground">{relay}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {info.moderators && info.moderators.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Users className="size-4 text-muted-foreground" />
+              {t('Moderators')} ({info.moderators.length})
+            </div>
+          </div>
+        )}
+
+        <Button
+          className="w-full"
+          variant={joined ? 'secondary' : 'default'}
+          onClick={() => {
+            if (!joined) handleJoin()
+            onClose()
+          }}
+        >
+          {joined ? t('Joined') : t('Join Community')}
+        </Button>
+      </div>
+    </DialogContent>
   )
 }
