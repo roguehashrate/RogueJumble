@@ -54,12 +54,22 @@ export default function UserStatusBubble({ pubkey }: { pubkey: string }) {
           className="absolute -bottom-4 left-[10px] -right-1 -top-1 rounded-xl bg-primary/30 blur-md"
           aria-hidden="true"
         />
-        <div className="relative rounded-xl bg-card px-3 py-2.5 text-sm shadow-md shadow-primary/10 ring-1 ring-border">
-          {/* Speech bubble tail — extends below the bubble body */}
-          <div
-            className="absolute -bottom-1.5 left-5 h-3 w-3 rotate-45 border-b border-r border-border bg-card"
-            style={{ borderBottomRightRadius: '1px' }}
-          />
+        <div className="relative px-3 py-2.5 text-sm" style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}>
+          {/* SVG speech bubble — single continuous shape with round corners */}
+          <svg
+            className="absolute inset-0 h-full w-full"
+            viewBox="0 0 240 78"
+            fill="none"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M22 2H218C229 2,238 11,238 22V48C238 59,229 68,218 68H98L74 80L56 68H22C11 68,2 59,2 48V22C2 11,11 2,22 2Z"
+              fill="hsl(var(--card) / 0.7)"
+              stroke="hsl(var(--border))"
+              strokeWidth="1"
+            />
+          </svg>
           <div className="relative">
             <p className="line-clamp-3 leading-snug text-foreground">
               {status}
