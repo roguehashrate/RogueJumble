@@ -2,6 +2,7 @@ import { LONG_PRESS_THRESHOLD } from '@/constants'
 import { useStuffStatsById } from '@/hooks/useStuffStatsById'
 import { useStuff } from '@/hooks/useStuff'
 import { getLightningAddressFromProfile } from '@/lib/lightning'
+import { haptic } from '@/lib/haptic'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useZap } from '@/providers/ZapProvider'
@@ -67,6 +68,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
         defaultZapSats,
         defaultZapComment
       )
+      haptic('success')
     } catch (error) {
       toast.error(`${t('Zap failed')}: ${(error as Error).message}`)
     } finally {

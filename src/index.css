@@ -38,6 +38,26 @@
   body,
   html {
     overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+  }
+
+  /* PWA standalone mode enhancements */
+  @media (display-mode: standalone) {
+    body {
+      /* Prevent rubber-band scrolling on iOS */
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+
+  /* Safe area insets for notched devices */
+  @supports (padding: max(0px)) {
+    body {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
   }
 
   .clickable {
@@ -239,8 +259,31 @@
   }
 }
 
+@keyframes pageSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .page-enter {
   animation: pageSlideIn 0.2s ease-out;
+}
+
+.page-slide-enter {
+  animation: pageSlideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Native-like transitions for PWA */
+@media (display-mode: standalone) {
+  .page-enter,
+  .page-slide-enter {
+    animation-duration: 0.15s;
+  }
 }
 
 @keyframes iconBounce {
@@ -250,6 +293,17 @@
   60% { transform: scale(1.05); }
   80% { transform: scale(0.97); }
   100% { transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-icon-bounce {

@@ -1,4 +1,5 @@
 import { usePrimaryPage } from '@/PageManager'
+import { haptic } from '@/lib/haptic'
 import { Settings } from 'lucide-react'
 import BottomNavigationBarItem from './BottomNavigationBarItem'
 
@@ -9,7 +10,10 @@ export default function SettingsButton() {
   return (
     <BottomNavigationBarItem
       active={isActive}
-      onClick={() => navigate('settings')}
+      onClick={() => {
+        haptic('click')
+        navigate('settings')
+      }}
     >
       <Settings />
     </BottomNavigationBarItem>

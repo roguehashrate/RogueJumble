@@ -84,6 +84,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     setNewNotifications([])
     updateNotificationsSeenAt(!active)
+
+    // Clear badge when viewing notifications
+    if (active && 'clearAppBadge' in navigator) {
+      navigator.clearAppBadge()
+    }
   }, [active])
 
   useEffect(() => {
@@ -158,6 +163,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       document.title = `(${newNotificationCount >= 10 ? '9+' : newNotificationCount}) RogueJumble`
     } else {
       document.title = 'RogueJumble'
+    }
+
+    // Update OS-level app badge (Badging API)
+    if ('setAppBadge' in navigator) {
+      if (newNotificationCount > 0) {
+        navigator.setAppBadge(newNotificationCount)
+      } else {
+        navigator.clearAppBadge()
+      }
     }
 
     // Update favicons

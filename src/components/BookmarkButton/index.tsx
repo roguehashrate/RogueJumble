@@ -1,5 +1,6 @@
 import { useStuff } from '@/hooks/useStuff'
 import { getReplaceableCoordinateFromEvent, isReplaceableEvent } from '@/lib/event'
+import { haptic } from '@/lib/haptic'
 import { useBookmarks } from '@/providers/BookmarksProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { BookmarkIcon, Loader } from 'lucide-react'
@@ -33,6 +34,7 @@ export default function BookmarkButton({ stuff }: { stuff: Event | string }) {
 
       setUpdating(true)
       await addBookmark(event)
+      haptic('success')
       setUpdating(false)
     })
   }
@@ -44,6 +46,7 @@ export default function BookmarkButton({ stuff }: { stuff: Event | string }) {
 
       setUpdating(true)
       await removeBookmark(event)
+      haptic('success')
       setUpdating(false)
     })
   }

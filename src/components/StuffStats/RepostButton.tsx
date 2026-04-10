@@ -10,6 +10,7 @@ import { useStuffStatsById } from '@/hooks/useStuffStatsById'
 import { useStuff } from '@/hooks/useStuff'
 import { createRepostDraftEvent } from '@/lib/draft-event'
 import { getNoteBech32Id } from '@/lib/event'
+import { haptic } from '@/lib/haptic'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
@@ -88,6 +89,7 @@ export default function RepostButton({ stuff }: { stuff: Event | string }) {
         const repost = createRepostDraftEvent(event)
         const evt = await publish(repost)
         stuffStatsService.updateStuffStatsByEvents([evt])
+        haptic('success')
       } catch (error) {
         const errors = formatError(error)
         errors.forEach((err) => {

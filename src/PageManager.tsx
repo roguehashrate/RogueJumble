@@ -294,8 +294,15 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                 secondaryStack.map((item, index) => (
                   <div
                     key={item.index}
+                    className={
+                      index === secondaryStack.length - 1 ? 'page-slide-enter' : ''
+                    }
                     style={{
-                      display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                      display: index === secondaryStack.length - 1 ? 'block' : 'none',
+                      animationFillMode: 'forwards'
+                    }}
+                    onAnimationEnd={(e) => {
+                      ;(e.target as HTMLElement).style.animation = 'none'
                     }}
                   >
                     {item.element}
@@ -304,9 +311,18 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
               {primaryPages.map(({ name, element, props }) => (
                 <div
                   key={name}
+                  className={
+                    secondaryStack.length === 0 && currentPrimaryPage === name
+                      ? 'page-enter'
+                      : ''
+                  }
                   style={{
                     display:
-                      secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
+                      secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none',
+                    animationFillMode: 'forwards'
+                  }}
+                  onAnimationEnd={(e) => {
+                    ;(e.target as HTMLElement).style.animation = 'none'
                   }}
                 >
                   {props ? cloneElement(element as React.ReactElement, props) : element}
@@ -350,8 +366,15 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                     secondaryStack.map((item, index) => (
                       <div
                         key={item.index}
+                        className={
+                          index === secondaryStack.length - 1 ? 'page-slide-enter' : ''
+                        }
                         style={{
-                          display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                          display: index === secondaryStack.length - 1 ? 'block' : 'none',
+                          animationFillMode: 'forwards'
+                        }}
+                        onAnimationEnd={(e) => {
+                          ;(e.target as HTMLElement).style.animation = 'none'
                         }}
                       >
                         {item.element}
@@ -360,11 +383,20 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                   {primaryPages.map(({ name, element, props }) => (
                     <div
                       key={name}
+                      className={
+                        secondaryStack.length === 0 && currentPrimaryPage === name
+                          ? 'page-enter'
+                          : ''
+                      }
                       style={{
                         display:
                           secondaryStack.length === 0 && currentPrimaryPage === name
                             ? 'block'
-                            : 'none'
+                            : 'none',
+                        animationFillMode: 'forwards'
+                      }}
+                      onAnimationEnd={(e) => {
+                        ;(e.target as HTMLElement).style.animation = 'none'
                       }}
                     >
                       {props ? cloneElement(element as React.ReactElement, props) : element}
@@ -412,9 +444,16 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                     {primaryPages.map(({ name, element, props }) => (
                       <div
                         key={name}
-                        className="flex h-full w-full flex-col"
+                        className={cn(
+                          'flex h-full w-full flex-col',
+                          currentPrimaryPage === name ? 'page-enter' : ''
+                        )}
                         style={{
-                          display: currentPrimaryPage === name ? 'block' : 'none'
+                          display: currentPrimaryPage === name ? 'block' : 'none',
+                          animationFillMode: 'forwards'
+                        }}
+                        onAnimationEnd={(e) => {
+                          ;(e.target as HTMLElement).style.animation = 'none'
                         }}
                       >
                         {props ? cloneElement(element as React.ReactElement, props) : element}
@@ -432,8 +471,17 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                     {secondaryStack.map((item, index) => (
                       <div
                         key={item.index}
-                        className="flex h-full w-full flex-col"
-                        style={{ display: index === secondaryStack.length - 1 ? 'block' : 'none' }}
+                        className={cn(
+                          'flex h-full w-full flex-col',
+                          index === secondaryStack.length - 1 ? 'page-slide-enter' : ''
+                        )}
+                        style={{
+                          display: index === secondaryStack.length - 1 ? 'block' : 'none',
+                          animationFillMode: 'forwards'
+                        }}
+                        onAnimationEnd={(e) => {
+                          ;(e.target as HTMLElement).style.animation = 'none'
+                        }}
                       >
                         {item.element}
                       </div>

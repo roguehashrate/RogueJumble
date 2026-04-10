@@ -13,6 +13,7 @@ import {
 } from '@/lib/draft-event'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { cn, isTouchDevice } from '@/lib/utils'
+import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import postEditorCache from '@/services/post-editor-cache.service'
 import threadService from '@/services/thread.service'
@@ -210,6 +211,7 @@ export default function PostContent({
         deleteDraftEventCache(draftEvent)
         threadService.addRepliesToThread([newEvent])
         toast.success(t('Post successful'), { duration: 2000 })
+        haptic('success')
         close()
       } catch (error) {
         const errors = formatError(error)

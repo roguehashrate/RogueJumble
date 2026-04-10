@@ -2,6 +2,7 @@ import 'yet-another-react-lightbox/styles.css'
 import './index.css'
 
 import { Toaster } from '@/components/ui/sonner'
+import InstallPrompt from '@/components/InstallPrompt'
 import { BookmarksProvider } from '@/providers/BookmarksProvider'
 import { ContentPolicyProvider } from '@/providers/ContentPolicyProvider'
 import { DeletedEventProvider } from '@/providers/DeletedEventProvider'
@@ -45,6 +46,7 @@ export default function App(): JSX.Element {
                                       <MediaUploadServiceProvider>
                                         <KindFilterProvider>
                                           <PageManager />
+                                          <InstallPrompt />
                                           <Toaster />
                                         </KindFilterProvider>
                                       </MediaUploadServiceProvider>

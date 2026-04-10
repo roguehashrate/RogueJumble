@@ -1,4 +1,5 @@
 import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
+import { haptic } from '@/lib/haptic'
 import { Wallet } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import BottomNavigationBarItem from './BottomNavigationBarItem'
@@ -18,7 +19,13 @@ export default function WalletButton() {
   }, [])
 
   return (
-    <BottomNavigationBarItem active={isActive && !display} onClick={() => push('/settings/wallet')}>
+    <BottomNavigationBarItem
+      active={isActive && !display}
+      onClick={() => {
+        haptic('click')
+        push('/settings/wallet')
+      }}
+    >
       <Wallet className="size-4" />
     </BottomNavigationBarItem>
   )

@@ -1,4 +1,5 @@
 import { usePrimaryPage } from '@/PageManager'
+import { haptic } from '@/lib/haptic'
 import { Home } from 'lucide-react'
 import BottomNavigationBarItem from './BottomNavigationBarItem'
 
@@ -9,7 +10,10 @@ export default function HomeButton() {
   return (
     <BottomNavigationBarItem
       active={isActive}
-      onClick={() => navigate('home')}
+      onClick={() => {
+        haptic('click')
+        navigate('home')
+      }}
     >
       <Home />
     </BottomNavigationBarItem>

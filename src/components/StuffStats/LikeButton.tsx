@@ -7,6 +7,7 @@ import {
   createExternalContentReactionDraftEvent,
   createReactionDraftEvent
 } from '@/lib/draft-event'
+import { haptic } from '@/lib/haptic'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
@@ -97,6 +98,7 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
           minPow
         })
         stuffStatsService.updateStuffStatsByEvents([evt])
+        haptic('success')
       } catch (error) {
         const errors = formatError(error)
         errors.forEach((err) => {

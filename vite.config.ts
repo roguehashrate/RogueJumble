@@ -98,7 +98,30 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           background_color: '#FFFFFF',
           theme_color: '#FFFFFF',
-          description: packageJson.description
+          description: packageJson.description,
+          shortcuts: [
+            {
+              name: 'New Post',
+              short_name: 'New Post',
+              description: 'Create a new post',
+              url: '/?page=home',
+              icons: [{ src: '/roguejumble-192x192.png', sizes: '192x192' }]
+            },
+            {
+              name: 'Notifications',
+              short_name: 'Notifications',
+              description: 'View your notifications',
+              url: '/?page=notifications',
+              icons: [{ src: '/roguejumble-192x192.png', sizes: '192x192' }]
+            },
+            {
+              name: 'Explore',
+              short_name: 'Explore',
+              description: 'Explore the Nostr network',
+              url: '/?page=explore',
+              icons: [{ src: '/roguejumble-192x192.png', sizes: '192x192' }]
+            }
+          ]
         }
       })
     ]

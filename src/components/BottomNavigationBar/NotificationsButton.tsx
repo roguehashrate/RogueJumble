@@ -1,4 +1,5 @@
 import { usePrimaryPage } from '@/PageManager'
+import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNotification } from '@/providers/NotificationProvider'
 import { Bell } from 'lucide-react'
@@ -13,7 +14,10 @@ export default function NotificationsButton() {
   return (
     <BottomNavigationBarItem
       active={isActive}
-      onClick={() => checkLogin(() => navigate('notifications'))}
+      onClick={() => {
+        haptic('click')
+        checkLogin(() => navigate('notifications'))
+      }}
     >
       <div className="relative">
         <Bell />
