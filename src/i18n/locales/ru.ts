@@ -711,6 +711,25 @@ export default {
     'Allow insecure connections description':
       'Разрешить загрузку ресурсов http:// и подключение к реле ws://. Может вызвать предупреждения браузера о смешанном содержимом.',
     'reacted to': 'отреагировал на',
-    Reaction: 'Реакция'
+    Reaction: 'Реакция',
+    'Show others this was sent via Jumble': 'Показать другим, что это было отправлено через RogueJumble',
+    'Enjoying Jumble?': 'Нравится RogueJumble?',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      'Ваше пожертвование помогает мне поддерживать и улучшать RogueJumble! 😊',
+    'Welcome to Jumble': 'Добро пожаловать в RogueJumble',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble - это клиент, ориентированный на просмотр ретрансляторов. Начните с изучения интересных ретрансляторов или войдите, чтобы просмотреть ленту подписок.',
+    'n users_one': '{{count}} пользователь',
+    'n users_other': '{{count}} пользователей',
+    'Welcome to Jumble!': 'Добро пожаловать в RogueJumble!',
+    'Font size': 'Размер шрифта',
+    'Advanced mode': 'Расширенный режим',
+    'Post type selector': 'Выбор типа публикации',
+    'Shows post kind dropdown when creating posts': 'Показывает раскрывающийся список типа публикации при создании публикаций',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'Поиск сообществ...',
+    'No communities found': 'Сообщества не найдены',
+    'No communities yet': 'Сообществ пока нет'
   }
 }

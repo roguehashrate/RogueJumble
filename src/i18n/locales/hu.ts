@@ -700,6 +700,25 @@ export default {
     'Allow insecure connections description':
       'http:// erőforrások betöltésének és ws:// relékhez való csatlakozás engedélyezése. Böngésző vegyes tartalom figyelmeztetéseket válthat ki.',
     'reacted to': 'reagált erre',
-    Reaction: 'Reakció'
+    Reaction: 'Reakció',
+    'Show others this was sent via Jumble': 'Mutasd másoknak, hogy ez RogueJumble-n keresztül lett elküldve',
+    'Enjoying Jumble?': 'Élvezed a RogueJumble-t?',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      'Az adományod segít nekem a RogueJumble fenntartásában és fejlesztésében! 😊',
+    'Welcome to Jumble': 'Üdvözlünk a RogueJumble-ben!',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'A RogueJumble egy csomópont böngészésére összpontosító kliens. Kezdésnek fedezz fel érdekes csomópontokat vagy jelentkezz be a követési hírfolyam megtekintéséhez.',
+    'n users_one': '{{count}} felhasználó',
+    'n users_other': '{{count}} felhasználó',
+    'Welcome to Jumble!': 'Üdvözlünk a RogueJumble-ben!',
+    'Font size': 'Betűméret',
+    'Advanced mode': 'Haladó mód',
+    'Post type selector': 'Bejegyzéstípus-választó',
+    'Shows post kind dropdown when creating posts': 'Bejegyzések létrehozásakor megjeleníti a bejegyzéstípus legördülő menüt',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'Közösségek keresése...',
+    'No communities found': 'Nem található közösség',
+    'No communities yet': 'Még nincsenek közösségek'
   }
 }

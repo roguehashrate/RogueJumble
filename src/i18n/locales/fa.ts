@@ -706,6 +706,25 @@ export default {
     'Allow insecure connections description':
       'اجازه بارگذاری منابع http:// و اتصال به رله‌های ws://. ممکن است هشدارهای محتوای مختلط مرورگر را فعال کند.',
     'reacted to': 'واکنش نشان داد به',
-    Reaction: 'واکنش'
+    Reaction: 'واکنش',
+    'Show others this was sent via Jumble': 'نمایش به دیگران که این از طریق RogueJumble ارسال شده است',
+    'Enjoying Jumble?': 'از RogueJumble لذت می‌برید؟',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      'کمک شما به من کمک می‌کند تا RogueJumble را حفظ و بهتر کنم! 😊',
+    'Welcome to Jumble': 'به RogueJumble خوش آمدید',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble یک سرویس‌گیرنده متمرکز بر مرور رله‌ها است. با کاوش در رله‌های جالب شروع کنید یا برای مشاهده خوراک دنبال‌شدگان خود وارد شوید.',
+    'n users_one': '{{count}} کاربر',
+    'n users_other': '{{count}} کاربر',
+    'Welcome to Jumble!': 'به RogueJumble خوش آمدید!',
+    'Font size': 'اندازه فونت',
+    'Advanced mode': 'حالت پیشرفته',
+    'Post type selector': 'انتخاب‌گر نوع پست',
+    'Shows post kind dropdown when creating posts': 'هنگام ایجاد پست‌ها، کشویی نوع پست را نشان می‌دهد',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'جستجوی انجمن‌ها...',
+    'No communities found': 'انجمنی یافت نشد',
+    'No communities yet': 'هنوز انجمنی وجود ندارد'
   }
 }

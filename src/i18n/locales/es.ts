@@ -711,6 +711,25 @@ export default {
     'Allow insecure connections description':
       'Permitir cargar recursos http:// y conectar a relays ws://. Puede activar advertencias de contenido mixto del navegador.',
     'reacted to': 'reaccionó a',
-    Reaction: 'Reacción'
+    Reaction: 'Reacción',
+    'Show others this was sent via Jumble': 'Mostrar a otros que esto se envió vía RogueJumble',
+    'Enjoying Jumble?': '¿Disfrutando RogueJumble?',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      '¡Tu donación me ayuda a mantener RogueJumble y mejorarlo! 😊',
+    'Welcome to Jumble': 'Bienvenido a RogueJumble',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble es un cliente centrado en explorar relays. Comienza explorando relays interesantes o inicia sesión para ver tu feed de seguidos.',
+    'n users_one': '{{count}} usuario',
+    'n users_other': '{{count}} usuarios',
+    'Welcome to Jumble!': '¡Bienvenido a RogueJumble!',
+    'Font size': 'Tamaño de fuente',
+    'Advanced mode': 'Modo avanzado',
+    'Post type selector': 'Selector de tipo de publicación',
+    'Shows post kind dropdown when creating posts': 'Muestra el menú desplegable de tipo de publicación al crear publicaciones',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'Buscar comunidades...',
+    'No communities found': 'No se encontraron comunidades',
+    'No communities yet': 'Aún no hay comunidades'
   }
 }

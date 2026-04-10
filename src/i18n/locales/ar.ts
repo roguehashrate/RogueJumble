@@ -694,6 +694,17 @@ export default {
     'Allow insecure connections description':
       'السماح بتحميل موارد http:// والاتصال بمرحلات ws://. قد يؤدي إلى تحذيرات المحتوى المختلط في المتصفح.',
     'reacted to': 'تفاعل مع',
-    Reaction: 'تفاعل'
+    Reaction: 'تفاعل',
+    'n users_one': 'مستخدم واحد',
+    'n users_other': '{{count}} مستخدمين',
+    'Font size': 'حجم الخط',
+    'Advanced mode': 'الوضع المتقدم',
+    'Post type selector': 'محدد نوع المنشور',
+    'Shows post kind dropdown when creating posts': 'يظهر قائمة منسدلة لنوع المنشور عند إنشاء المنشورات',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'البحث في المجتمعات...',
+    'No communities found': 'لم يتم العثور على مجتمعات',
+    'No communities yet': 'لا توجد مجتمعات بعد'
   }
 }

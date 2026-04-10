@@ -696,6 +696,17 @@ export default {
     'Allow insecure connections description':
       'อนุญาตให้โหลดทรัพยากร http:// และเชื่อมต่อกับรีเลย์ ws:// อาจทำให้เบราว์เซอร์แสดงคำเตือนเนื้อหาแบบผสม',
     'reacted to': 'รีแอคชันไปที่',
-    Reaction: 'รีแอคชัน'
+    Reaction: 'รีแอคชัน',
+    'n users_one': '{{count}} ผู้ใช้',
+    'n users_other': '{{count}} ผู้ใช้',
+    'Font size': 'ขนาดแบบอักษร',
+    'Advanced mode': 'โหมดขั้นสูง',
+    'Post type selector': 'ตัวเลือกประเภทโพสต์',
+    'Shows post kind dropdown when creating posts': 'แสดงดรอปดาวน์ประเภทโพสต์เมื่อสร้างโพสต์',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'ค้นหาชุมชน...',
+    'No communities found': 'ไม่พบชุมชน',
+    'No communities yet': 'ยังไม่มีชุมชน'
   }
 }

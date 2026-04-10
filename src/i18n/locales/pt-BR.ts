@@ -709,6 +709,17 @@ export default {
     'Allow insecure connections description':
       'Permitir carregar recursos http:// e conectar a relays ws://. Pode acionar avisos de conteúdo misto do navegador.',
     'reacted to': 'reagiu a',
-    Reaction: 'Reação'
+    Reaction: 'Reação',
+    'n users_one': '{{count}} usuário',
+    'n users_other': '{{count}} usuários',
+    'Font size': 'Tamanho da fonte',
+    'Advanced mode': 'Modo avançado',
+    'Post type selector': 'Seletor de tipo de publicação',
+    'Shows post kind dropdown when creating posts': 'Mostra o menu suspenso de tipo de publicação ao criar publicações',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'Pesquisar comunidades...',
+    'No communities found': 'Nenhuma comunidade encontrada',
+    'No communities yet': 'Nenhuma comunidade ainda'
   }
 }

@@ -683,6 +683,17 @@ export default {
     'Allow insecure connections description':
       '允许加载 http:// 资源和连接 ws:// relay。可能会触发浏览器混合内容警告。',
     'reacted to': '回应了',
-    Reaction: '回应'
+    Reaction: '回应',
+    'n users_one': '{{count}} 位用户',
+    'n users_other': '{{count}} 位用户',
+    'Font size': '字体大小',
+    'Advanced mode': '高级模式',
+    'Post type selector': '帖子类型选择器',
+    'Shows post kind dropdown when creating posts': '创建帖子时显示帖子类型下拉菜单',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': '搜索社区...',
+    'No communities found': '未找到社区',
+    'No communities yet': '暂无社区'
   }
 }

@@ -712,6 +712,19 @@ export default {
     'Allow insecure connections description':
       'Permitir carregar recursos http:// e ligar a relays ws://. Pode acionar avisos de conteúdo misto do navegador.',
     'reacted to': 'reagiu a',
-    Reaction: 'Reação'
+    Reaction: 'Reação',
+    'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x. If you must use a private key, please set a password for encryption at minimum.':
+      'O login com chave privada é inseguro. Recomenda-se usar uma extensão do navegador para login, como alby, nostr-keyx ou nos2x. Se precisar de usar uma chave privada, defina pelo menos uma palavra-passe para encriptação.',
+    'n users_one': '{{count}} utilizador',
+    'n users_other': '{{count}} utilizadores',
+    'Font size': 'Tamanho da fonte',
+    'Advanced mode': 'Modo avançado',
+    'Post type selector': 'Seletor de tipo de publicação',
+    'Shows post kind dropdown when creating posts': 'Mostra o menu pendente de tipo de publicação ao criar publicações',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'Pesquisar comunidades...',
+    'No communities found': 'Nenhuma comunidade encontrada',
+    'No communities yet': 'Nenhuma comunidade ainda'
   }
 }

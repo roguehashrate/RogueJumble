@@ -706,6 +706,25 @@ export default {
     'Allow insecure connections description':
       'http:// संसाधन लोड करने और ws:// रिले से कनेक्ट करने की अनुमति दें। ब्राउज़र मिश्रित सामग्री चेतावनियाँ ट्रिगर हो सकती हैं।',
     'reacted to': 'पर प्रतिक्रिया दी',
-    Reaction: 'प्रतिक्रिया'
+    Reaction: 'प्रतिक्रिया',
+    'Show others this was sent via Jumble': 'दूसरों को दिखाएं कि यह RogueJumble के माध्यम से भेजा गया था',
+    'Enjoying Jumble?': 'RogueJumble का आनंद ले रहे हैं?',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      'आपका दान मुझे RogueJumble को बनाए रखने और बेहतर बनाने में मदद करता है! 😊',
+    'Welcome to Jumble': 'RogueJumble में आपका स्वागत है',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble एक क्लाइंट है जो रिले ब्राउज़ करने पर केंद्रित है। दिलचस्प रिले की खोज करके शुरू करें या अपनी फ़ॉलोइंग फ़ीड देखने के लिए लॉगिन करें।',
+    'n users_one': '{{count}} उपयोगकर्ता',
+    'n users_other': '{{count}} उपयोगकर्ता',
+    'Welcome to Jumble!': 'RogueJumble में आपका स्वागत है!',
+    'Font size': 'फ़ॉन्ट आकार',
+    'Advanced mode': 'उन्नत मोड',
+    'Post type selector': 'पोस्ट प्रकार चयनकर्ता',
+    'Shows post kind dropdown when creating posts': 'पोस्ट बनाते समय पोस्ट प्रकार ड्रॉपडाउन दिखाता है',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'समुदाय खोजें...',
+    'No communities found': 'कोई समुदाय नहीं मिला',
+    'No communities yet': 'अभी तक कोई समुदाय नहीं'
   }
 }

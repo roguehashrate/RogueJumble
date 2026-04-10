@@ -592,6 +592,11 @@ export default {
     'Unfollow Special': '取消特別關注',
     'Personal Feeds': '個人訂閱',
     'Relay Feeds': '中繼訂閱',
+    'Create Highlight': '建立精選',
+    'Write your thoughts about this highlight...': '寫下你對這篇精選的想法...',
+    'Publish Highlight': '發佈精選',
+    'Show replies': '顯示回覆',
+    'Hide replies': '隱藏回覆',
     'Welcome to RogueJumble!': '歡迎來到 RogueJumble！',
     'Your feed is empty because you are not following anyone yet. Start by exploring interesting content and following users you like!':
       '你的動態是空的，因為你還沒有關注任何人。開始探索有趣的內容並關注你喜歡的用戶吧！',
@@ -678,6 +683,26 @@ export default {
     'Allow insecure connections description':
       '允許載入 http:// 資源和連線 ws:// relay。可能會觸發瀏覽器混合內容警告。',
     'reacted to': '回應了',
-    Reaction: '回應'
+    Reaction: '回應',
+    'Show others this was sent via Jumble': '顯示此訊息是透過 RogueJumble 傳送的',
+    'Enjoying Jumble?': '喜歡 RogueJumble 嗎？',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      '您的捐款幫助我維護 RogueJumble 並讓它更好！😊',
+    'highlighted your note': '引用了你的筆記',
+    'Welcome to Jumble': '歡迎來到 RogueJumble',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble 是一個專注於瀏覽伺服器的客戶端。從探索有趣的伺服器開始，或登入以查看您追蹤的動態。',
+    'n users_one': '{{count}} 位使用者',
+    'n users_other': '{{count}} 位使用者',
+    'Welcome to Jumble!': '歡迎來到 RogueJumble！',
+    'Font size': '字型大小',
+    'Advanced mode': '進階模式',
+    'Post type selector': '貼文類型選擇器',
+    'Shows post kind dropdown when creating posts': '建立貼文時顯示貼文類型下拉選單',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': '搜尋社群...',
+    'No communities found': '找不到社群',
+    'No communities yet': '尚無社群'
   }
 }

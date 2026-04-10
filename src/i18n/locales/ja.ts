@@ -706,6 +706,25 @@ export default {
     'Allow insecure connections description':
       'http:// リソースの読み込みと ws:// リレーへの接続を許可します。ブラウザの混合コンテンツ警告が表示される場合があります。',
     'reacted to': 'にリアクションしました',
-    Reaction: 'リアクション'
+    Reaction: 'リアクション',
+    'Show others this was sent via Jumble': 'RogueJumble経由で送信されたことを他のユーザーに表示',
+    'Enjoying Jumble?': 'RogueJumbleをお楽しみですか？',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      'あなたの寄付は、RogueJumbleの維持と改善に役立ちます！ 😊',
+    'Welcome to Jumble': 'RogueJumbleへようこそ',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumbleはリレーの閲覧に特化したクライアントです。興味深いリレーを探索することから始めるか、ログインしてフォロー中のフィードをご覧ください。',
+    'n users_one': '{{count}} ユーザー',
+    'n users_other': '{{count}} ユーザー',
+    'Welcome to Jumble!': 'RogueJumbleへようこそ！',
+    'Font size': 'フォントサイズ',
+    'Advanced mode': '上級者モード',
+    'Post type selector': '投稿タイプセレクター',
+    'Shows post kind dropdown when creating posts': '投稿作成時に投稿種類のドロップダウンを表示',
+    'Sans-serif': 'ゴシック体',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'コミュニティを検索...',
+    'No communities found': 'コミュニティが見つかりません',
+    'No communities yet': 'まだコミュニティはありません'
   }
 }

@@ -700,6 +700,25 @@ export default {
     'Allow insecure connections description':
       'http:// 리소스 로드 및 ws:// 릴레이 연결을 허용합니다. 브라우저 혼합 콘텐츠 경고가 발생할 수 있습니다.',
     'reacted to': '에 반응했습니다',
-    Reaction: '반응'
+    Reaction: '반응',
+    'Show others this was sent via Jumble': '다른 사용자에게 이것이 RogueJumble을(를) 통해 전송되었음을 표시',
+    'Enjoying Jumble?': 'RogueJumble을(를) 즐기고 계신가요?',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      '기부해 주시면 RogueJumble을(를) 유지하고 더 좋게 만드는 데 도움이 됩니다! 😊',
+    'Welcome to Jumble': 'RogueJumble에 오신 것을 환영합니다',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble은(는) 릴레이 탐색에 중점을 둔 클라이언트입니다. 흥미로운 릴레이를 탐색하거나 로그인하여 팔로잉 피드를 확인하세요.',
+    'n users_one': '{{count}} 사용자',
+    'n users_other': '{{count}} 사용자',
+    'Welcome to Jumble!': 'RogueJumble에 오신 것을 환영합니다!',
+    'Font size': '글꼴 크기',
+    'Advanced mode': '고급 모드',
+    'Post type selector': '게시물 유형 선택기',
+    'Shows post kind dropdown when creating posts': '게시물 작성 시 게시물 유형 드롭다운 표시',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': '커뮤니티 검색...',
+    'No communities found': '커뮤니티를 찾을 수 없습니다',
+    'No communities yet': '아직 커뮤니티가 없습니다'
   }
 }

@@ -712,6 +712,26 @@ export default {
     'Allow insecure connections description':
       'Zezwól na ładowanie zasobów http:// i łączenie z transmiterami ws://. Może to wywołać ostrzeżenia przeglądarki o mieszanej zawartości.',
     'reacted to': 'zareagował na',
-    Reaction: 'Reakcja'
+    Reaction: 'Reakcja',
+    'Show others this was sent via Jumble': 'Pokaż innym, że zostało to wysłane przez RogueJumble',
+    'Sorry! The note cannot be found 😔': 'Przepraszam! Nie można znaleźć wpisu 😔',
+    'Enjoying Jumble?': 'Podoba Ci się RogueJumble?',
+    'Your donation helps me maintain Jumble and make it better! 😊':
+      'Twoja darowizna pomaga mi utrzymać i ulepszyć RogueJumble! 😊',
+    'Welcome to Jumble': 'Witaj w RogueJumble',
+    'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
+      'RogueJumble to klient skupiony na przeglądaniu transmiterów. Zacznij od eksploracji interesujących transmiterów lub zaloguj się, aby zobaczyć kanał obserwowanych.',
+    'n users_one': '{{count}} użytkownik',
+    'n users_other': '{{count}} użytkowników',
+    'Welcome to Jumble!': 'Witaj w RogueJumble!',
+    'Font size': 'Rozmiar czcionki',
+    'Advanced mode': 'Tryb zaawansowany',
+    'Post type selector': 'Selektor typu wpisu',
+    'Shows post kind dropdown when creating posts': 'Wyświetla listę rozwijaną typu wpisu podczas tworzenia wpisów',
+    'Sans-serif': 'Sans-serif',
+    'Space Grotesk': 'Space Grotesk',
+    'Search communities...': 'Szukaj społeczności...',
+    'No communities found': 'Nie znaleziono społeczności',
+    'No communities yet': 'Brak społeczności'
   }
 }
