@@ -995,7 +995,7 @@ function extractVideosFromContent(content: string) {
 export function transformCustomEmojisInContent(content: string) {
   const emojiTags: string[][] = []
   let processedContent = content
-  const matches = content.match(/:[a-zA-Z0-9]+:/g)
+  const matches = content.match(/:[a-zA-Z0-9_-]+:/g)
 
   const emojiIdSet = new Set<string>()
   matches?.forEach((m) => {
