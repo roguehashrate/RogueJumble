@@ -37,13 +37,13 @@ export default function NewNotesButton({
       {newEvents.length > 0 && (
         <div
           className={cn(
-            'pointer-events-none z-40 flex w-full justify-center',
+            'pointer-events-none z-50 flex w-full justify-center',
             enableSingleColumnLayout ? 'sticky' : 'absolute'
           )}
           style={{
             bottom: isSmallScreen
-              ? `calc(${hasBackgroundAudio ? 7.35 : 4}rem + env(safe-area-inset-bottom))`
-              : '1rem'
+              ? `calc(${hasBackgroundAudio ? 7.25 : 4.25}rem + env(safe-area-inset-bottom))`
+              : `calc(${hasBackgroundAudio ? 10.25 : 7.25}rem)`
           }}
         >
           <Button
