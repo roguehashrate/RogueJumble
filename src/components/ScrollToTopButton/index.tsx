@@ -5,7 +5,7 @@ import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { hasBackgroundAudioAtom } from '@/services/media-manager.service'
 import { useAtomValue } from 'jotai'
 import { ChevronUp } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export default function ScrollToTopButton({
   scrollAreaRef,
@@ -18,8 +18,12 @@ export default function ScrollToTopButton({
   const { isSmallScreen } = useScreenSize()
   const hasBackgroundAudio = useAtomValue(hasBackgroundAudioAtom)
   const visible = useMemo(() => !deepBrowsing && lastScrollTop > 800, [deepBrowsing, lastScrollTop])
+  const [justClicked, setJustClicked] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const handleScrollToTop = () => {
+  const handleScrollToTop = useCallback(() => {
+    setJustClicked(true)
+    buttonRef.current?.blur()
     if (!scrollAreaRef) {
       // scroll to top with custom animation
       const startPosition = window.pageYOffset || document.documentElement.scrollTop
@@ -47,7 +51,20 @@ export default function ScrollToTopButton({
       return
     }
     scrollAreaRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  }, [scrollAreaRef])
+
+  useEffect(() => {
+    if (!visible) {
+      setJustClicked(false)
+    }
+  }, [visible])
+
+  useEffect(() => {
+    if (justClicked) {
+      const timer = setTimeout(() => setJustClicked(false), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [justClicked])
 
   return (
     <div
@@ -63,8 +80,16 @@ export default function ScrollToTopButton({
       }}
     >
       <Button
+        key={visible ? 'visible' : 'hidden'}
+        ref={buttonRef}
         variant="outline"
-        className="pointer-events-auto size-12 rounded-full border-border/30 bg-card/60 p-0 text-foreground backdrop-blur-md transition-all duration-200 hover:bg-primary/20 hover:border-primary/40 disabled:pointer-events-none [&_svg]:size-5"
+        className={cn(
+          'pointer-events-auto size-12 rounded-full p-0 backdrop-blur-md transition-all duration-200 disabled:pointer-events-none [&_svg]:size-5 focus-visible:ring-0',
+          justClicked
+            ? 'border-primary bg-primary text-primary-foreground'
+            : 'border-border/30 bg-card/60 text-foreground hover:bg-primary/20 hover:border-primary/40'
+        )}
+        style={{ WebkitTapHighlightColor: 'transparent' }}
         onClick={handleScrollToTop}
         disabled={!visible}
       >
