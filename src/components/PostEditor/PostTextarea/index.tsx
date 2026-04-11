@@ -26,6 +26,7 @@ export type TPostTextareaHandle = {
   appendText: (text: string, addNewline?: boolean) => void
   insertText: (text: string) => void
   insertEmoji: (emoji: string | TEmoji) => void
+  insertImageUrl: (url: string) => void
 }
 
 const PostTextarea = forwardRef<
@@ -172,6 +173,11 @@ const PostTextarea = forwardRef<
             })
             editor.chain().insertContent(emojiNode).run()
           }
+        }
+      },
+      insertImageUrl: (url: string) => {
+        if (editor) {
+          editor.chain().focus().insertContent(url).setHardBreak().run()
         }
       }
     }))

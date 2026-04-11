@@ -69,42 +69,24 @@ export const ClipboardAndDropHandler = Extension.create<ClipboardAndDropHandlerO
           },
           handlePaste(view, event) {
             const items = Array.from(event.clipboardData?.items ?? [])
-            let handled = false
 
+            // First, check for media files (images, videos, audio) - including GIFs from keyboards
             for (const item of items) {
               if (
                 item.kind === 'file' &&
                 (item.type.includes('image') || item.type.includes('video') || item.type.includes('audio'))
               ) {
+                event.preventDefault()
                 const file = item.getAsFile()
                 if (file) {
                   uploadFiles(view, [file], options)
-                  handled = true
+                  return true
                 }
-              } else if (item.kind === 'string' && item.type === 'text/plain') {
-                item.getAsString((text) => {
-                  const { schema } = view.state
-                  const parts = text.split('\n')
-                  const nodes = []
-                  for (let i = 0; i < parts.length; i++) {
-                    if (i > 0) nodes.push(schema.nodes.hardBreak.create())
-                    if (parts[i]) nodes.push(schema.text(parts[i]))
-                  }
-                  if (nodes.length > 0) {
-                    const tr = view.state.tr.replaceSelectionWith(nodes[0])
-                    for (let i = 1; i < nodes.length; i++) {
-                      tr.insert(tr.selection.from, nodes[i])
-                    }
-                    view.dispatch(tr)
-                  }
-                })
-                handled = true
               }
-
-              // Only handle the first file/string item
-              if (handled) break
             }
-            return handled
+
+            // No media file found, let TipTap handle normal text paste
+            return false
           }
         }
       })
