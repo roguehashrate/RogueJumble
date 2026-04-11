@@ -1,4 +1,3 @@
-import { Separator } from '@/components/ui/separator'
 import { toNote } from '@/lib/link'
 import { cn } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
@@ -39,26 +38,26 @@ export default function MainNoteCard({
     >
       <div
         className={cn(
-          'clickable transition-all duration-200',
-          embedded ? 'rounded-xl border bg-card p-3 sm:p-4' : 'py-3'
+          'clickable transition-colors duration-200',
+          embedded
+            ? 'rounded-2xl glass-card p-3 sm:p-4'
+            : 'rounded-2xl mx-2 mb-2 glass-card px-4 py-4'
         )}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'hsl(var(--note-hover))')}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
       >
         <Collapsible alwaysExpand={embedded}>
           {pinned && <PinnedButton event={event} />}
-          <RepostDescription className={embedded ? '' : 'px-4'} reposters={reposters} />
+          <RepostDescription className={embedded ? '' : ''} reposters={reposters} />
           <Note
-            className={embedded ? '' : 'px-4'}
+            className={embedded ? '' : ''}
             size={embedded ? 'small' : 'normal'}
             event={event}
             originalNoteId={originalNoteId}
             displayMode={displayMode}
           />
         </Collapsible>
-        {!embedded && <StuffStats className="mt-3 px-4" stuff={event} />}
+        {!embedded && <StuffStats className="mt-3" stuff={event} />}
       </div>
-      {!embedded && <Separator />}
+      {!embedded && <div className="h-px" />}
     </div>
   )
 }

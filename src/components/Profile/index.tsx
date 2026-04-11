@@ -98,14 +98,16 @@ export default function Profile({ id }: { id?: string }) {
     return (
       <>
         <div>
-          <div className="relative mb-2 bg-cover bg-center">
-            <Skeleton className="aspect-[3/1] w-full rounded-none" />
-            <Skeleton className="absolute bottom-0 left-3 h-24 w-24 translate-y-1/2 rounded-full border-4 border-background" />
+          <div className="relative bg-cover bg-center px-2 pt-2">
+            <Skeleton className="aspect-[3/1] w-full rounded-2xl" />
+            <div className="relative -mb-12 z-10 flex justify-center">
+              <Skeleton className="h-24 w-24 rounded-full border-4 border-background animate-pulse" />
+            </div>
           </div>
         </div>
-        <div className="px-4">
-          <Skeleton className="mb-1 mt-14 h-5 w-28" />
-          <Skeleton className="my-1 mt-2 h-5 w-56 rounded-full" />
+        <div className="mx-2 rounded-2xl border border-border/20 bg-card/40 backdrop-blur-sm p-4 pt-16">
+          <Skeleton className="h-5 w-28 rounded-lg" />
+          <Skeleton className="my-2 mt-3 h-5 w-56 rounded-full" />
         </div>
       </>
     )
@@ -120,8 +122,8 @@ export default function Profile({ id }: { id?: string }) {
           <BannerWithLightbox banner={banner} pubkey={pubkey} />
           <AvatarWithLightbox userId={pubkey} />
         </div>
-        <div className="px-4">
-          <div className="flex h-8 items-center justify-end gap-2">
+        <div className="mx-2 rounded-2xl border border-border/20 bg-card/70 p-4">
+          <div className="flex items-center justify-end gap-2">
             <ProfileOptions pubkey={pubkey} />
             {isSelf ? (
               <Button
@@ -147,7 +149,7 @@ export default function Profile({ id }: { id?: string }) {
               />
               <TrustScoreBadge pubkey={pubkey} />
               {isFollowingYou && (
-                <div className="h-fit shrink-0 rounded-full bg-muted px-2 text-xs text-muted-foreground">
+                <div className="h-fit shrink-0 rounded-full bg-primary/10 px-2 text-xs text-primary">
                   {t('Follows you')}
                 </div>
               )}
@@ -189,7 +191,7 @@ export default function Profile({ id }: { id?: string }) {
                 </a>
               </div>
             )}
-            <div className="mt-2 flex items-center justify-between text-sm">
+            <div className="mt-3 flex items-center justify-between text-sm">
               <div className="flex items-center gap-4">
                 <Followings pubkey={pubkey} />
                 <Relays pubkey={pubkey} />

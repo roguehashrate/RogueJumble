@@ -218,7 +218,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           </div>
         </Uploader>
       </div>
-      <div className="flex flex-col gap-4 px-4 pt-14">
+      <div className="flex flex-col gap-4 px-4 pt-14 pb-32">
         <Item>
           <Label htmlFor="profile-username-input">{t('Display Name')}</Label>
           <Input
@@ -234,7 +234,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           <Label htmlFor="profile-about-textarea">{t('Bio')}</Label>
           <Textarea
             id="profile-about-textarea"
-            className="h-44"
+            className="h-20"
             value={about}
             onChange={(e) => {
               setAbout(e.target.value)

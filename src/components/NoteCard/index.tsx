@@ -59,24 +59,27 @@ export default function NoteCard({
 
 export function NoteCardLoadingSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('px-4 py-3', className)}>
-      <div className="flex items-center space-x-2">
-        <Skeleton className="h-10 w-10 rounded-full" />
+    <div className={cn('mx-2 my-1 rounded-2xl bg-muted/30 px-4 py-5', className)}>
+      <div className="flex items-center space-x-3">
+        <Skeleton className="h-11 w-11 rounded-full" />
         <div className={`w-0 flex-1`}>
           <div className="py-1">
-            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-20 rounded-lg" />
           </div>
           <div className="py-0.5">
-            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-3.5 w-16 rounded-lg" />
           </div>
         </div>
       </div>
-      <div className="pt-2">
-        <div className="my-1">
-          <Skeleton className="my-1 mt-2 h-4 w-full" />
+      <div className="pt-3">
+        <div className="my-1.5">
+          <Skeleton className="my-1.5 mt-3 h-4 w-full rounded-lg" />
         </div>
-        <div className="my-1">
-          <Skeleton className="my-1 h-4 w-2/3" />
+        <div className="my-1.5">
+          <Skeleton className="my-1.5 h-4 w-3/4 rounded-lg" />
+        </div>
+        <div className="my-1.5">
+          <Skeleton className="my-1.5 h-4 w-1/2 rounded-lg" />
         </div>
       </div>
     </div>

@@ -29,7 +29,7 @@ export function Titlebar({
   return (
     <div
       className={cn(
-        'sticky top-0 z-40 h-12 w-full select-none bg-background px-2 [&_svg]:size-5 [&_svg]:shrink-0',
+        'sticky top-0 z-40 h-12 w-full select-none bg-background/80 px-2 [&_svg]:size-5 [&_svg]:shrink-0',
         !hideBottomBorder && 'border-b',
         'transition-transform duration-300',
         shouldHide && '-translate-y-full',
@@ -38,7 +38,7 @@ export function Titlebar({
     >
       {children}
       {!hideBottomBorder && (
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
       )}
     </div>
   )

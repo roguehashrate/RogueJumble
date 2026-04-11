@@ -43,7 +43,7 @@ const applyTheme = (themeName: TThemeName) => {
   root.style.setProperty('--comment', colors.comment)
   root.style.setProperty('--note-hover', colors.noteHover)
 
-  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst')
+  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst', 'ditto')
   root.classList.add(themeName)
 }
 

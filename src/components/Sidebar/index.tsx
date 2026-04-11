@@ -31,6 +31,8 @@ export default function PrimaryPageSidebar() {
     <div
       className={cn(
         'relative flex h-full shrink-0 flex-col justify-between pb-2 pt-3',
+        'bg-background',
+        'border-r',
         sidebarCollapse ? 'w-16 px-2' : 'w-52 px-4'
       )}
     >

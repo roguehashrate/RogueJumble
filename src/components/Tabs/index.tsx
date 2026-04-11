@@ -90,25 +90,25 @@ export default function Tabs({
     <div
       ref={containerRef}
       className={cn(
-        'sticky top-12 z-30 flex w-full justify-between bg-background px-1 transition-all duration-300',
+        'sticky top-12 z-30 flex w-full justify-between bg-background/60 px-2 backdrop-blur-2xl transition-all duration-300',
+        'border-b border-border/10',
         deepBrowsing && lastScrollTop > threshold && !active
           ? '-translate-y-[calc(100%+12rem)]'
           : ''
       )}
     >
-      <div className="relative w-0 flex-1">
-        <div className="pointer-events-none absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="relative w-0 flex-1 overflow-hidden">
         <ScrollArea className="w-full">
-          <div className="relative flex w-fit">
+          <div className="relative flex w-fit items-center pb-2 pt-2">
             {tabs.map((tab, index) => (
               <div
                 key={tab.value}
                 ref={(el) => (tabRefs.current[index] = el)}
                 className={cn(
-                  `clickable my-1 w-fit cursor-pointer whitespace-nowrap rounded-xl px-4 py-2 text-center font-semibold transition-all duration-200`,
+                  `clickable my-0.5 w-fit cursor-pointer whitespace-nowrap rounded-full px-5 py-2 text-center text-sm font-semibold transition-colors duration-200`,
                   value === tab.value
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary/15 text-primary'
+                    : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground'
                 )}
                 onClick={() => {
                   onTabChange?.(tab.value)
@@ -117,8 +117,9 @@ export default function Tabs({
                 {t(tab.label)}
               </div>
             ))}
+            {/* Active indicator — inside the container bounds */}
             <div
-              className="absolute bottom-0 h-1 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300"
+              className="absolute bottom-0 h-0.5 rounded-full bg-primary transition-all duration-200"
               style={{
                 width: `${indicatorStyle.width}px`,
                 left: `${indicatorStyle.left}px`

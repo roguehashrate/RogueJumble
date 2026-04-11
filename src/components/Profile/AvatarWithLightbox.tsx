@@ -14,20 +14,20 @@ export default function AvatarWithLightbox({ userId }: { userId: string }) {
 
   if (!profile) {
     return (
-      <Skeleton className="absolute bottom-0 left-3 h-24 w-24 shrink-0 translate-y-1/2 rounded-full border-4 border-background" />
+      <Skeleton className="absolute bottom-0 left-3 z-10 h-24 w-24 shrink-0 translate-y-1/2 rounded-full border-4 border-background" />
     )
   }
   const { avatar, pubkey } = profile || {}
 
   return (
-    <div className="relative">
+    <div className="relative z-10">
       <ImageWithLightbox
         image={{ url: avatar ?? defaultAvatar, pubkey }}
         errorPlaceholder={defaultAvatar}
         className="object-cover object-center"
         classNames={{
           wrapper:
-            'shrink-0 rounded-full bg-background w-24 h-24 absolute left-3 bottom-0 translate-y-1/2 border-4 border-background'
+            'shrink-0 rounded-full bg-background w-24 h-24 absolute left-3 bottom-0 translate-y-1/2 z-10 border-4 border-background'
         }}
         ignoreAutoLoadPolicy
       />

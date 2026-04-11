@@ -395,16 +395,10 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
       >
         <CurrentRelaysProvider>
           <NotificationProvider>
-            <div className="flex flex-col items-center bg-surface-background">
-              <div
-                className="flex h-[var(--vh)] w-full bg-surface-background"
-                style={{
-                  maxWidth: '1920px'
-                }}
-              >
-                <Sidebar />
-                <div className={cn('grid w-full grid-cols-2', 'gap-2 py-2 pr-2')}>
-                  <div className={cn('overflow-hidden bg-background', 'rounded-2xl shadow-lg')}>
+            <div className="flex h-[var(--vh)] w-full bg-surface-background" style={{ maxWidth: '1920px' }}>
+              <Sidebar />
+              <div className={cn('grid w-full grid-cols-2 h-full min-h-0', 'gap-2 py-2 pr-2')}>
+                <div className={cn('overflow-hidden bg-background min-h-0 h-full', 'rounded-2xl shadow-sm')}>
                     {primaryPages.map(({ name, props }) => (
                       <div
                         key={name}
@@ -419,9 +413,9 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                   </div>
                   <div
                     className={cn(
-                      'overflow-hidden bg-background',
+                      'overflow-hidden bg-background min-h-0 h-full',
                       'rounded-2xl',
-                      secondaryStack.length > 0 && 'shadow-lg',
+                      secondaryStack.length > 0 && 'shadow-sm',
                       secondaryStack.length === 0 ? 'bg-surface' : ''
                     )}
                   >
@@ -439,7 +433,6 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                   </div>
                 </div>
               </div>
-            </div>
             <TooManyRelaysAlertDialog />
             <BackgroundAudio className="fixed bottom-20 right-0 z-50 w-80 overflow-hidden rounded-l-full rounded-r-none border shadow-lg" />
           </NotificationProvider>
