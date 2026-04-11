@@ -622,37 +622,6 @@ export const THEME_COLORS = {
       comment: '217 91% 60%',
       noteHover: '270 15% 8%'
     }
-  },
-  ditto: {
-    name: 'Ditto',
-    colors: {
-      background: '260 30% 4%',
-      foreground: '260 20% 96%',
-      card: '260 25% 7%',
-      cardForeground: '260 20% 96%',
-      popover: '260 25% 9%',
-      popoverForeground: '260 20% 96%',
-      primary: '280 70% 65%',
-      primaryHover: '280 70% 73%',
-      primaryForeground: '260 30% 4%',
-      secondary: '260 20% 14%',
-      secondaryForeground: '260 20% 96%',
-      muted: '260 15% 12%',
-      mutedForeground: '260 12% 58%',
-      accent: '320 65% 60%',
-      accentForeground: '260 30% 4%',
-      destructive: '0 62% 30%',
-      destructiveForeground: '260 20% 96%',
-      border: '260 20% 16%',
-      input: '260 15% 14%',
-      ring: '280 70% 65%',
-      surfaceBackground: '260 30% 2%',
-      zap: '45 93% 52%',
-      repost: '160 65% 50%',
-      bookmark: '300 75% 62%',
-      comment: '200 80% 65%',
-      noteHover: '260 25% 9%'
-    }
   }
 } as const
 export type TThemeName = keyof typeof THEME_COLORS
