@@ -219,11 +219,11 @@ export default function ModerationPanel({
           {posts.map((post) => {
             const hasMyApproval = myApprovedPostIds.has(post.id)
             return (
-              <div key={post.id} className="rounded-lg border bg-card">
+              <div key={post.id} className="rounded-xl glass-card border-border/20">
                 <div className="p-3">
                   <Note event={post} />
                 </div>
-                <div className="flex items-center justify-between border-t px-3 py-2">
+                <div className="flex items-center justify-between border-t border-border/20 px-3 py-2">
                   {activeTab === 'pending' ? (
                     <>
                       <div className="flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function ModerationPanel({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="gap-1 border-destructive/50 text-destructive hover:bg-destructive/10"
+                          className="gap-1 border-destructive/30 text-destructive hover:bg-destructive/10"
                           onClick={() => handleDismiss(post.id)}
                         >
                           <X className="size-3" />
@@ -290,7 +290,7 @@ export default function ModerationPanel({
                           variant="outline"
                           size="sm"
                           disabled={processingId === post.id}
-                          className="gap-1 border-destructive/50 text-destructive hover:bg-destructive/10"
+                          className="gap-1 border-destructive/30 text-destructive hover:bg-destructive/10"
                           onClick={() => handleRevoke(post)}
                         >
                           <X className="size-3" />

@@ -130,7 +130,7 @@ export default function YourCircle() {
 
   if (moderateCoordinate) {
     return (
-      <div className="px-4 pt-4 pb-4">
+      <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
         <ModerationPanel
           communityCoordinate={moderateCoordinate}
           onClose={() => setModerateCoordinate(null)}
@@ -141,7 +141,7 @@ export default function YourCircle() {
 
   return (
     <>
-      <div className="space-y-4 px-4 pt-4 pb-4">
+      <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -211,9 +211,9 @@ function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () =
   }
 
   return (
-    <DialogContent className="sm:max-w-md flex flex-col max-h-[80vh]">
+    <DialogContent className="w-[calc(100%-1rem)] sm:max-w-md mx-auto flex flex-col max-h-[80vh] glass-card rounded-2xl border-border/20">
       <DialogHeader className="shrink-0">
-        <DialogTitle className="flex items-center gap-3">
+        <DialogTitle className="flex min-w-0 items-center gap-3">
           {info.image ? (
             <Image
               image={{ url: info.image, pubkey: event.pubkey }}
@@ -225,7 +225,7 @@ function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () =
               {info.name.charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="break-all text-base leading-snug">{info.name}</span>
+          <span className="min-w-0 truncate text-base leading-snug">{info.name}</span>
         </DialogTitle>
       </DialogHeader>
 

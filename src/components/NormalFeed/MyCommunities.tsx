@@ -131,23 +131,27 @@ export default function MyCommunities() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
       </div>
     )
   }
 
   if (communities.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground">
-        {t('You haven\'t joined any communities yet.')}
+      <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
+        <div className="py-12 text-center text-muted-foreground">
+          {t('You haven\'t joined any communities yet.')}
+        </div>
       </div>
     )
   }
 
   if (moderateCoordinate) {
     return (
-      <div className="px-4 pt-4 pb-4">
+      <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
         <ModerationPanel
           communityCoordinate={moderateCoordinate}
           onClose={() => setModerateCoordinate(null)}
@@ -157,19 +161,19 @@ export default function MyCommunities() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
       {/* Community selector - horizontally scrollable */}
-      <div className="flex gap-2 overflow-x-auto px-4 pt-2 pb-2 scrollbar-hide"
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {communities.map((c) => (
           <button
             key={c.coordinate}
             onClick={() => setSelectedCommunity(c)}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
               selectedCommunity?.coordinate === c.coordinate
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'glass-subtle text-muted-foreground hover:bg-muted/60'
             }`}
           >
             {c.name}
@@ -179,7 +183,7 @@ export default function MyCommunities() {
 
       {/* Posts from selected community */}
       {selectedCommunity && (
-        <div className="space-y-3 px-4 pt-2">
+        <div className="space-y-3 pt-3">
           <div className="flex gap-2">
             {communityService.isModerator(selectedCommunity.coordinate) && (
               <Button

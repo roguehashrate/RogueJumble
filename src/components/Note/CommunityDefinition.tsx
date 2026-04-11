@@ -1,5 +1,6 @@
 import { getCommunityDefinitionFromEvent } from '@/lib/event-metadata'
 import { useContentPolicy } from '@/providers/ContentPolicyProvider'
+import { cn } from '@/lib/utils'
 import { Event } from 'nostr-tools'
 import { useMemo } from 'react'
 import ClientSelect from '../ClientSelect'
@@ -24,12 +25,12 @@ export default function CommunityDefinition({
   )
 
   return (
-    <div className={className}>
+    <div className={cn('glass-card rounded-xl p-4', className)}>
       <div className="flex gap-4">
         {metadata.image && autoLoadMedia && (
           <Image
             image={{ url: metadata.image, pubkey: event.pubkey }}
-            className="aspect-square h-20 bg-foreground"
+            className="aspect-square h-20 rounded-lg bg-foreground"
             hideIfError
           />
         )}

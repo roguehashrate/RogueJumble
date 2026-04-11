@@ -40,7 +40,7 @@ export default function CommunityPicker({
         joinedCommunities.map((info) => (
           <div
             key={info.coordinate}
-            className="clickable flex cursor-pointer items-center gap-3 px-4 py-3"
+            className="clickable flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
             onClick={() => {
               onChange(info.coordinate, info)
               setOpen(false)
@@ -61,14 +61,14 @@ export default function CommunityPicker({
               <div className="truncate text-sm font-medium">{info.name}</div>
             </div>
             {value === info.coordinate && (
-              <div className="size-2 rounded-full bg-primary" />
+              <div className="size-2 shrink-0 rounded-full bg-primary" />
             )}
           </div>
         ))
       )}
       {onCreateNew && (
         <div
-          className="clickable flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-primary"
+          className="clickable flex cursor-pointer items-center gap-3 px-4 py-3 text-sm text-primary transition-colors hover:bg-primary/5"
           onClick={() => {
             onCreateNew()
             setOpen(false)

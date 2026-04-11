@@ -128,96 +128,96 @@ export default function CommunityDiscovery() {
 
   return (
     <>
-      <div className="space-y-4 px-4 pt-4 pb-4">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('Search communities...')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button size="icon" variant="outline" title={t('Create Community')}>
-              <Plus className="size-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{t('Create Community')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>{t('Name')}</Label>
-                <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder={t('Community name...')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('Description')}</Label>
-                <Textarea
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder={t('What is this community about?')}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('Image URL')} ({t('optional')})</Label>
-                <Input
-                  value={newImage}
-                  onChange={(e) => setNewImage(e.target.value)}
-                  placeholder="https://..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t('Relay URLs')} ({t('one per line, optional')})</Label>
-                <Textarea
-                  value={newRelays}
-                  onChange={(e) => setNewRelays(e.target.value)}
-                  placeholder={'wss://relay1.example\nwss://relay2.example'}
-                  rows={3}
-                />
-              </div>
-              <Button className="w-full" onClick={handleCreate} disabled={creating || !newName.trim()}>
-                {creating ? t('Creating...') : t('Create Community')}
+      <div className="mx-2 mt-2 rounded-2xl glass-card border-border/20 p-4">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('Search communities...')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button size="icon" variant="outline" title={t('Create Community')}>
+                <Plus className="size-4" />
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{t('Create Community')}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{t('Name')}</Label>
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder={t('Community name...')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('Description')}</Label>
+                  <Textarea
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    placeholder={t('What is this community about?')}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('Image URL')} ({t('optional')})</Label>
+                  <Input
+                    value={newImage}
+                    onChange={(e) => setNewImage(e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('Relay URLs')} ({t('one per line, optional')})</Label>
+                  <Textarea
+                    value={newRelays}
+                    onChange={(e) => setNewRelays(e.target.value)}
+                    placeholder={'wss://relay1.example\nwss://relay2.example'}
+                    rows={3}
+                  />
+                </div>
+                <Button className="w-full" onClick={handleCreate} disabled={creating || !newName.trim()}>
+                  {creating ? t('Creating...') : t('Create Community')}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : filteredCommunities.length === 0 ? (
+          <div className="py-12 text-center text-muted-foreground">
+            {searchQuery ? t('No communities found') : t('No communities yet')}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredCommunities.map((evt) => (
+              <CommunityCard
+                key={evt.id}
+                event={evt}
+                onJoin={() => handleJoin(evt)}
+                onClick={() => setDetailEvent(evt)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : filteredCommunities.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground">
-          {searchQuery ? t('No communities found') : t('No communities yet')}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredCommunities.map((evt) => (
-            <CommunityCard
-              key={evt.id}
-              event={evt}
-              onJoin={() => handleJoin(evt)}
-              onClick={() => setDetailEvent(evt)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-
-    {/* Community Detail Dialog */}
-    <Dialog open={!!detailEvent} onOpenChange={(open) => !open && setDetailEvent(null)}>
-      {detailEvent && <CommunityDetailDialog event={detailEvent} onClose={() => setDetailEvent(null)} />}
-    </Dialog>
+      {/* Community Detail Dialog */}
+      <Dialog open={!!detailEvent} onOpenChange={(open) => !open && setDetailEvent(null)}>
+        {detailEvent && <CommunityDetailDialog event={detailEvent} onClose={() => setDetailEvent(null)} />}
+      </Dialog>
     </>
   )
 }
@@ -240,9 +240,9 @@ function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () =
   }
 
   return (
-    <DialogContent className="sm:max-w-md flex flex-col max-h-[80vh]">
+    <DialogContent className="w-[calc(100%-1rem)] sm:max-w-md mx-auto flex flex-col max-h-[80vh] glass-card rounded-2xl border-border/20">
       <DialogHeader className="shrink-0">
-        <DialogTitle className="flex items-center gap-3">
+        <DialogTitle className="flex min-w-0 items-center gap-3">
           {info.image ? (
             <Image
               image={{ url: info.image, pubkey: event.pubkey }}
@@ -254,7 +254,7 @@ function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () =
               {info.name.charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="break-all text-base leading-snug">{info.name}</span>
+          <span className="min-w-0 truncate text-base leading-snug">{info.name}</span>
         </DialogTitle>
       </DialogHeader>
 

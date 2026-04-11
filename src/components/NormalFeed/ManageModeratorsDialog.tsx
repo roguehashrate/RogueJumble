@@ -178,7 +178,7 @@ export default function ManageModeratorsDialog({
                 {currentMods.map((pk) => (
                   <div
                     key={pk}
-                    className="flex items-center justify-between rounded-lg border bg-card px-3 py-2"
+                    className="glass-card flex items-center justify-between rounded-xl px-3 py-2.5"
                   >
                     <div className="flex items-center gap-2 truncate">
                       <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
@@ -230,7 +230,7 @@ export default function ManageModeratorsDialog({
             </div>
 
             {selectedPubkey && (
-              <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
+              <div className="glass-card flex items-center gap-2 rounded-xl px-3 py-2.5">
                 <Check className="size-4 text-primary" />
                 <code className="truncate text-xs text-muted-foreground">
                   {selectedPubkey.slice(0, 8)}...{selectedPubkey.slice(-4)}
@@ -267,10 +267,10 @@ export default function ManageModeratorsDialog({
                     <button
                       key={profile.pubkey}
                       onClick={() => setSelectedPubkey(profile.pubkey)}
-                      className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors ${
+                      className={`clickable flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-colors ${
                         selectedPubkey === profile.pubkey
-                          ? 'border-primary bg-primary/5'
-                          : 'hover:bg-muted/60'
+                          ? 'border-primary/40 bg-primary/5'
+                          : 'border-border/20 hover:border-primary/30 hover:bg-muted/30'
                       }`}
                     >
                       <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">

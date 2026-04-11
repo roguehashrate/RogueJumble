@@ -30,7 +30,7 @@ export default function CommunityCard({
 
   return (
     <div
-      className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/60"
+      className="glass-card clickable flex cursor-pointer items-center gap-3 rounded-xl p-3.5 transition-colors hover:bg-muted/40"
       onClick={onClick}
     >
       {info.image ? (
@@ -50,7 +50,7 @@ export default function CommunityCard({
         <div className="flex items-center gap-1.5">
           <span className="truncate font-semibold">{info.name}</span>
           {showModeratorBadge && isModerator && (
-            <span className="shrink-0 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-medium text-primary flex items-center gap-0.5">
+            <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary flex items-center gap-0.5">
               <Shield className="size-2.5" />
               Mod
             </span>
@@ -62,7 +62,7 @@ export default function CommunityCard({
           </div>
         )}
         {badge && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="mt-0.5 text-xs text-muted-foreground">
             {badge}
           </div>
         )}
@@ -84,13 +84,13 @@ export default function CommunityCard({
             e.stopPropagation()
             onJoin()
           }}
-          className="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+          className="shrink-0 rounded-full bg-primary px-3.5 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
         >
           Join
         </button>
       )}
       {joined && (
-        <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <span className="shrink-0 rounded-full bg-primary/10 px-3.5 py-1.5 text-xs font-medium text-primary">
           Joined
         </span>
       )}
