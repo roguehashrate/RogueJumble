@@ -52,19 +52,19 @@ export default function ScrollToTopButton({
   return (
     <div
       className={cn(
-        'pointer-events-none sticky z-30 flex w-full justify-end pr-3 transition-all duration-700',
+        'pointer-events-none sticky z-50 flex w-full justify-end pr-3 transition-all duration-700',
         visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
         className
       )}
       style={{
         bottom: isSmallScreen
-          ? `calc(env(safe-area-inset-bottom) + ${hasBackgroundAudio ? 7.25 : 3.85}rem)`
-          : `calc(env(safe-area-inset-bottom) + 0.85rem)`
+          ? `calc(env(safe-area-inset-bottom) + ${hasBackgroundAudio ? 8.5 : 5}rem)`
+          : `calc(env(safe-area-inset-bottom) + 1.5rem)`
       }}
     >
       <Button
-        variant="secondary-2"
-        className="pointer-events-auto size-12 rounded-full p-0 transition-all duration-200 hover:text-background disabled:pointer-events-none"
+        variant="outline"
+        className="pointer-events-auto size-12 rounded-full border-border/30 bg-card/60 p-0 text-foreground backdrop-blur-md transition-all duration-200 hover:bg-primary/20 hover:border-primary/40 disabled:pointer-events-none [&_svg]:size-5"
         onClick={handleScrollToTop}
         disabled={!visible}
       >
