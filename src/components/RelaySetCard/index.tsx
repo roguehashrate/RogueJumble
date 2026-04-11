@@ -20,10 +20,10 @@ export default function RelaySetCard({
   return (
     <div
       className={cn(
-        'group relative w-full rounded-lg border px-3 py-2.5 transition-all duration-200',
+        'group relative w-full rounded-xl border px-3.5 py-3 transition-colors duration-200',
         select
-          ? 'border-primary bg-primary/5 shadow-sm'
-          : 'clickable border-border hover:border-primary/50 hover:bg-accent/50'
+          ? 'border-primary/40 bg-primary/5'
+          : 'clickable border-border/20 hover:border-primary/30 hover:bg-muted/20'
       )}
       onClick={() => onSelectChange(!select)}
     >
