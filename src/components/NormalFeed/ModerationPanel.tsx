@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Event } from 'nostr-tools'
+import { Event, kinds } from 'nostr-tools'
 import { Loader2, Shield, Check, X, Eye } from 'lucide-react'
 import { ExtendedKind } from '@/constants'
 import client from '@/services/client.service'
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import Note from '@/components/Note'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import ManageModeratorsDialog from './ManageModeratorsDialog'
 
 type TApprovalTab = 'pending' | 'approved'
 
@@ -28,6 +29,9 @@ export default function ModerationPanel({
   const [approvalEvents, setApprovalEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [dismissedPostIds, setDismissedPostIds] = useState<Set<string>>(new Set())
+  const [manageModsOpen, setManageModsOpen] = useState(false)
+  const [communityEvent, setCommunityEvent] = useState<Event | null>(null)
 
   useEffect(() => {
     communityService.setPubkey(pubkey)
@@ -38,11 +42,15 @@ export default function ModerationPanel({
       setLoading(true)
       try {
         const relays = getDefaultRelayUrls()
+        // Parse community coordinate: "34550:<authorPubkey>:<dTag>"
+        const [, authorPubkey, dTag] = communityCoordinate.split(':')
+
         const closer = await client.subscribe(
           relays,
           [
             { kinds: [ExtendedKind.COMMUNITY_POST], '#a': [communityCoordinate], limit: 100 },
-            { kinds: [ExtendedKind.COMMUNITY_APPROVAL], '#a': [communityCoordinate], limit: 100 }
+            { kinds: [ExtendedKind.COMMUNITY_APPROVAL], '#a': [communityCoordinate], limit: 100 },
+            { kinds: [kinds.CommunityDefinition], authors: [authorPubkey], limit: 20 }
           ],
           {
             oneose: () => {},
@@ -57,6 +65,11 @@ export default function ModerationPanel({
                   if (prev.some((a) => a.id === evt.id)) return prev
                   return [...prev, evt]
                 })
+              } else if (evt.kind === kinds.CommunityDefinition) {
+                const evtDTag = evt.tags.find((t) => t[0] === 'd')?.[1]
+                if (evtDTag === dTag) {
+                  setCommunityEvent(evt)
+                }
               }
             }
           }
@@ -83,8 +96,12 @@ export default function ModerationPanel({
   }, [approvalEvents])
 
   const pendingPosts = useMemo(() => {
-    return communityPosts.filter((p) => !approvedPostIds.has(p.id))
-  }, [communityPosts, approvedPostIds])
+    return communityPosts.filter((p) => !approvedPostIds.has(p.id) && !dismissedPostIds.has(p.id))
+  }, [communityPosts, approvedPostIds, dismissedPostIds])
+
+  const handleDismiss = (postId: string) => {
+    setDismissedPostIds((prev) => new Set(prev).add(postId))
+  }
 
   const approvedPosts = useMemo(() => {
     return communityPosts.filter((p) => approvedPostIds.has(p.id))
@@ -157,9 +174,23 @@ export default function ModerationPanel({
           <Shield className="size-5 text-primary" />
           <h3 className="text-lg font-semibold">{t('Moderation Panel')}</h3>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          {t('Close')}
-        </Button>
+        <div className="flex items-center gap-1">
+          {((communityEvent && communityService.isModeratorOfEvent(communityEvent, pubkey ?? '')) ||
+            communityService.isModerator(communityCoordinate)) && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={() => setManageModsOpen(true)}
+            >
+              <Shield className="size-3" />
+              {t('Manage Mods')}
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            {t('Close')}
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TApprovalTab)}>
@@ -217,12 +248,11 @@ export default function ModerationPanel({
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={processingId === post.id}
                           className="gap-1 border-destructive/50 text-destructive hover:bg-destructive/10"
-                          onClick={() => handleRevoke(post)}
+                          onClick={() => handleDismiss(post.id)}
                         >
                           <X className="size-3" />
-                          {t('Reject')}
+                          {t('Dismiss')}
                         </Button>
                         <Button
                           variant="default"
@@ -275,6 +305,12 @@ export default function ModerationPanel({
           })}
         </div>
       )}
+
+      <ManageModeratorsDialog
+        event={communityEvent}
+        open={manageModsOpen}
+        onOpenChange={setManageModsOpen}
+      />
     </div>
   )
 }
