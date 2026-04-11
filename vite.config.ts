@@ -46,6 +46,31 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src')
       }
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'nostr-tools': ['nostr-tools', 'nostr-tools/nip57', 'nostr-tools/abstract-pool', 'nostr-tools/utils'],
+            tiptap: [
+              '@tiptap/react',
+              '@tiptap/extension-document',
+              '@tiptap/extension-paragraph',
+              '@tiptap/extension-text',
+              '@tiptap/extension-history',
+              '@tiptap/extension-hard-break',
+              '@tiptap/extension-placeholder',
+              '@tiptap/extension-emoji',
+              '@tiptap/core'
+            ],
+            'react-lightbox': ['yet-another-react-lightbox'],
+            'markdown-renderer': ['react-markdown', 'remark-gfm'],
+            'emoji-picker': ['emoji-picker-react'],
+            'bitcoin-connect': ['@getalby/bitcoin-connect-react', '@getalby/lightning-tools'],
+            'drag-drop': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities']
+          }
+        }
+      }
+    },
     plugins: [
       react(),
       VitePWA({

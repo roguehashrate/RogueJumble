@@ -3,10 +3,7 @@ import { cn } from '@/lib/utils'
 import { CurrentRelaysProvider } from '@/providers/CurrentRelaysProvider'
 import { TPageRef } from '@/types'
 import {
-  cloneElement,
   createContext,
-  createRef,
-  ReactNode,
   RefObject,
   useContext,
   useEffect,
@@ -20,8 +17,8 @@ import { normalizeUrl } from './lib/url'
 import { NotificationProvider } from './providers/NotificationProvider'
 import { useScreenSize } from './providers/ScreenSizeProvider'
 import { useUserPreferences } from './providers/UserPreferencesProvider'
-import { PRIMARY_PAGE_MAP, PRIMARY_PAGE_REF_MAP, TPrimaryPageName } from './routes/primary'
-import { SECONDARY_ROUTES } from './routes/secondary'
+import { PRIMARY_PAGE_MAP, PRIMARY_PAGE_REF_MAP, LazyPage, TPrimaryPageName } from './routes/primary'
+import { createSecondaryLazyElement } from './routes/secondary'
 import modalManager from './services/modal-manager.service'
 
 type TPrimaryPageContext = {
@@ -39,7 +36,7 @@ type TSecondaryPageContext = {
 type TStackItem = {
   index: number
   url: string
-  element: React.ReactElement | null
+  element: React.ComponentType | null
   ref: RefObject<TPageRef> | null
 }
 
@@ -66,11 +63,10 @@ export function useSecondaryPage() {
 export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
   const [currentPrimaryPage, setCurrentPrimaryPage] = useState<TPrimaryPageName>('home')
   const [primaryPages, setPrimaryPages] = useState<
-    { name: TPrimaryPageName; element: ReactNode; props?: any }[]
+    { name: TPrimaryPageName; props?: any }[]
   >([
     {
-      name: 'home',
-      element: PRIMARY_PAGE_MAP.home
+      name: 'home'
     }
   ])
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
@@ -224,7 +220,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         exists.props = props
         return [...prev]
       } else if (!exists) {
-        return [...prev, { name: page, element: PRIMARY_PAGE_MAP[page], props }]
+        return [...prev, { name: page, props }]
       }
       return prev
     })
@@ -298,10 +294,10 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                       display: index === secondaryStack.length - 1 ? 'block' : 'none'
                     }}
                   >
-                    {item.element}
+                    {item.element && <item.element />}
                   </div>
                 ))}
-              {primaryPages.map(({ name, element, props }) => (
+              {primaryPages.map(({ name, props }) => (
                 <div
                   key={name}
                   style={{
@@ -309,7 +305,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                       secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
                   }}
                 >
-                  {props ? cloneElement(element as React.ReactElement, props) : element}
+                  <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
                 </div>
               ))}
               <BottomNavigationBar />
@@ -354,10 +350,10 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                           display: index === secondaryStack.length - 1 ? 'block' : 'none'
                         }}
                       >
-                        {item.element}
+                        {item.element && <item.element />}
                       </div>
                     ))}
-                  {primaryPages.map(({ name, element, props }) => (
+                  {primaryPages.map(({ name, props }) => (
                     <div
                       key={name}
                       style={{
@@ -367,7 +363,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                             : 'none'
                       }}
                     >
-                      {props ? cloneElement(element as React.ReactElement, props) : element}
+                      <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
                     </div>
                   ))}
                 </div>
@@ -409,7 +405,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                 <Sidebar />
                 <div className={cn('grid w-full grid-cols-2', 'gap-2 py-2 pr-2')}>
                   <div className={cn('overflow-hidden bg-background', 'rounded-2xl shadow-lg')}>
-                    {primaryPages.map(({ name, element, props }) => (
+                    {primaryPages.map(({ name, props }) => (
                       <div
                         key={name}
                         className="flex h-full w-full flex-col"
@@ -417,7 +413,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                           display: currentPrimaryPage === name ? 'block' : 'none'
                         }}
                       >
-                        {props ? cloneElement(element as React.ReactElement, props) : element}
+                        <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
                       </div>
                     ))}
                   </div>
@@ -437,7 +433,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                           display: index === secondaryStack.length - 1 ? 'block' : 'none'
                         }}
                       >
-                        {item.element}
+                        {item.element && <item.element />}
                       </div>
                     ))}
                   </div>
@@ -488,17 +484,8 @@ function isCurrentPage(stack: TStackItem[], url: string) {
   return currentPage.url === url
 }
 
-function findAndCloneElement(url: string, index: number) {
-  const path = url.split('?')[0].split('#')[0]
-  for (const { matcher, element } of SECONDARY_ROUTES) {
-    const match = matcher(path)
-    if (!match) continue
-
-    if (!element) return {}
-    const ref = createRef<TPageRef>()
-    return { element: cloneElement(element, { ...match.params, index, ref } as any), ref }
-  }
-  return {}
+function findAndCloneElement(url: string, index: number): { element: React.ComponentType | null; ref: RefObject<TPageRef> | null } {
+  return createSecondaryLazyElement(url, index)
 }
 
 function pushNewPageToStack(
