@@ -67,7 +67,7 @@ export default {
       animation: {
         shimmer: 'shimmer 3s ease-in-out infinite',
         float: 'float 8s ease-in-out infinite',
-        'float-slow': 'float 12s ease-in-out infinite',
+        'float-slow': 'float-slow 20s linear infinite',
         'float-fast': 'float 6s ease-in-out infinite',
         orbit: 'orbit 20s linear infinite',
         'orbit-reverse': 'orbit-reverse 25s linear infinite',

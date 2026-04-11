@@ -11,6 +11,7 @@ import {
   useState
 } from 'react'
 import BackgroundAudio from './components/BackgroundAudio'
+import BackgroundOrbs from './components/BackgroundOrbs'
 import BottomNavigationBar from './components/BottomNavigationBar'
 import TooManyRelaysAlertDialog from './components/TooManyRelaysAlertDialog'
 import { normalizeUrl } from './lib/url'
@@ -286,6 +287,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         >
           <CurrentRelaysProvider>
             <NotificationProvider>
+              <BackgroundOrbs />
               {!!secondaryStack.length &&
                 secondaryStack.map((item, index) => (
                   <div
@@ -337,7 +339,8 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         >
           <CurrentRelaysProvider>
             <NotificationProvider>
-              <div className="flex w-full lg:justify-around">
+              <BackgroundOrbs />
+              <div className="relative flex w-full lg:justify-around">
                 <div className="sticky top-0 flex h-[var(--vh)] justify-end self-start lg:w-full">
                   <Sidebar />
                 </div>
@@ -395,7 +398,8 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
       >
         <CurrentRelaysProvider>
           <NotificationProvider>
-            <div className="flex h-[var(--vh)] w-full bg-surface-background" style={{ maxWidth: '1920px' }}>
+            <BackgroundOrbs />
+            <div className="relative flex h-[var(--vh)] w-full bg-surface-background" style={{ maxWidth: '1920px' }}>
               <Sidebar />
               <div className={cn('grid w-full grid-cols-2 h-full min-h-0', 'gap-2 py-2 pr-2')}>
                 <div className={cn('overflow-hidden bg-background min-h-0 h-full', 'rounded-2xl shadow-sm')}>

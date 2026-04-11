@@ -206,8 +206,11 @@
   }
 
   @keyframes float-slow {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(-40px) translateX(-20px); }
+    0% { transform: translate(0, 0); opacity: 0.3; }
+    25% { transform: translate(30px, -30px); opacity: 0.5; }
+    50% { transform: translate(-20px, -50px); opacity: 0.2; }
+    75% { transform: translate(-40px, -20px); opacity: 0.4; }
+    100% { transform: translate(0, 0); opacity: 0.3; }
   }
 
   @keyframes orbit {
@@ -308,7 +311,7 @@
      ============================================================ */
   .animate-shimmer { animation: shimmer 3s ease-in-out infinite; }
   .animate-float { animation: float 10s ease-in-out infinite; }
-  .animate-float-slow { animation: float-slow 16s ease-in-out infinite; }
+  .animate-float-slow { animation: float-slow 20s linear infinite; }
   .animate-pulse-glow { animation: pulse-glow 4s ease-in-out infinite; }
   .animate-gradient { animation: gradient-shift 10s ease infinite; background-size: 200% 200%; }
   .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
