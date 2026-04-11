@@ -1,6 +1,7 @@
 import { ExtendedKind, NOTIFICATION_LIST_STYLE, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
 import { useInfiniteScroll } from '@/hooks'
 import { compareEvents } from '@/lib/event'
+import { haptic } from '@/lib/haptic'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { mergeTimelines } from '@/lib/timeline'
 import { isTouchDevice } from '@/lib/utils'
@@ -303,8 +304,10 @@ const NotificationList = forwardRef((_, ref) => {
       {supportTouch ? (
         <PullToRefresh
           onRefresh={async () => {
+            haptic('medium')
             refresh()
             await new Promise((resolve) => setTimeout(resolve, 1000))
+            haptic('success')
           }}
           pullingContent=""
         >

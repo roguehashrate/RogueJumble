@@ -4,6 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatar, { SimpleUserAvatar } from '@/components/UserAvatar'
 import Username, { SimpleUsername } from '@/components/Username'
 import { isMentioningMutedUsers } from '@/lib/event'
+import { haptic } from '@/lib/haptic'
 import { toNote, toUserAggregationDetail } from '@/lib/link'
 import { mergeTimelines } from '@/lib/timeline'
 import { cn, isTouchDevice } from '@/lib/utils'
@@ -490,8 +491,10 @@ const UserAggregationList = forwardRef<
         {supportTouch ? (
           <PullToRefresh
             onRefresh={async () => {
+              haptic('medium')
               refresh()
               await new Promise((resolve) => setTimeout(resolve, 1000))
+              haptic('success')
             }}
             pullingContent=""
           >

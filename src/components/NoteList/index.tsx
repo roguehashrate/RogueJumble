@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { SPAMMER_PERCENTILE_THRESHOLD } from '@/constants'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { getEventKey, getKeyFromTag, isMentioningMutedUsers, isReplyNoteEvent } from '@/lib/event'
+import { haptic } from '@/lib/haptic'
 import { tagNameEquals } from '@/lib/tag'
 import { mergeTimelines } from '@/lib/timeline'
 import { isTouchDevice } from '@/lib/utils'
@@ -516,8 +517,10 @@ const NoteList = forwardRef<
         {supportTouch ? (
           <PullToRefresh
             onRefresh={async () => {
+              haptic('medium')
               refresh()
               await new Promise((resolve) => setTimeout(resolve, 1000))
+              haptic('success')
             }}
             pullingContent=""
           >
