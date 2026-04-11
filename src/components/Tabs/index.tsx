@@ -90,7 +90,7 @@ export default function Tabs({
     <div
       ref={containerRef}
       className={cn(
-        'sticky top-12 z-30 flex w-full justify-between bg-background/60 px-2 backdrop-blur-2xl transition-all duration-300',
+        'sticky top-12 z-30 flex w-full justify-between bg-background/70 px-2 backdrop-blur-xl transition-all duration-300',
         'border-b border-border/10',
         deepBrowsing && lastScrollTop > threshold && !active
           ? '-translate-y-[calc(100%+12rem)]'

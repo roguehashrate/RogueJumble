@@ -83,11 +83,9 @@
   .glass-card {
     background: linear-gradient(
       135deg,
-      hsl(var(--card) / 0.7) 0%,
-      hsl(var(--card) / 0.5) 100%
+      hsl(var(--card) / 0.4) 0%,
+      hsl(var(--card) / 0.25) 100%
     );
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid hsl(var(--border) / 0.15);
   }
 

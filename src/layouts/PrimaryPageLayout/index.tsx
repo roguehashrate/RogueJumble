@@ -1,5 +1,6 @@
 import ScrollToTopButton from '@/components/ScrollToTopButton'
 import { Titlebar } from '@/components/Titlebar'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { usePrimaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
@@ -101,8 +102,9 @@ const PrimaryPageLayout = forwardRef(
           active={current === pageName && display}
           scrollAreaRef={scrollAreaRef}
         >
-          <div
+          <ScrollArea
             className="h-full overflow-auto"
+            scrollBarClassName="z-30 pt-12"
             ref={scrollAreaRef}
           >
             <PrimaryPageTitlebar hideBottomBorder={hideTitlebarBottomBorder}>
@@ -110,7 +112,7 @@ const PrimaryPageLayout = forwardRef(
             </PrimaryPageTitlebar>
             {children}
             <div className="h-4" />
-          </div>
+          </ScrollArea>
           {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
         </DeepBrowsingProvider>
       </PageActiveContext.Provider>
