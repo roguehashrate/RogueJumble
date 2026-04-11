@@ -240,38 +240,40 @@ function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () =
   }
 
   return (
-    <DialogContent className="sm:max-w-md">
-      <DialogHeader>
+    <DialogContent className="sm:max-w-md flex flex-col max-h-[80vh]">
+      <DialogHeader className="shrink-0">
         <DialogTitle className="flex items-center gap-3">
           {info.image ? (
             <Image
               image={{ url: info.image, pubkey: event.pubkey }}
-              className="size-12 rounded-full object-cover"
-              classNames={{ wrapper: 'size-12 shrink-0 rounded-full overflow-hidden' }}
+              className="size-10 shrink-0 rounded-full object-cover"
+              classNames={{ wrapper: 'size-10 shrink-0 rounded-full overflow-hidden' }}
             />
           ) : (
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
               {info.name.charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="truncate">{info.name}</span>
+          <span className="break-all text-base leading-snug">{info.name}</span>
         </DialogTitle>
       </DialogHeader>
 
-      <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto space-y-4">
         {info.description && (
-          <p className="text-sm text-muted-foreground">{info.description}</p>
+          <p className="break-all text-sm text-muted-foreground">{info.description}</p>
         )}
 
         {info.relays && info.relays.length > 0 && (
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Globe className="size-4 text-muted-foreground" />
+              <Globe className="size-4 shrink-0 text-muted-foreground" />
               {t('Relays')}
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="space-y-1">
               {info.relays.map((relay, i) => (
-                <div key={i} className="truncate text-xs text-muted-foreground">{relay}</div>
+                <div key={i} className="rounded bg-muted px-2 py-1.5 text-xs font-mono text-muted-foreground break-all leading-snug">
+                  {relay}
+                </div>
               ))}
             </div>
           </div>
@@ -280,23 +282,30 @@ function CommunityDetailDialog({ event, onClose }: { event: Event; onClose: () =
         {info.moderators && info.moderators.length > 0 && (
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <Users className="size-4 text-muted-foreground" />
+              <Users className="size-4 shrink-0 text-muted-foreground" />
               {t('Moderators')} ({info.moderators.length})
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {info.moderators.map((mod, i) => (
+                <div key={i} className="rounded bg-muted px-2 py-1 text-xs font-mono text-muted-foreground">
+                  {mod.slice(0, 8)}...{mod.slice(-4)}
+                </div>
+              ))}
             </div>
           </div>
         )}
-
-        <Button
-          className="w-full"
-          variant={joined ? 'secondary' : 'default'}
-          onClick={() => {
-            if (!joined) handleJoin()
-            onClose()
-          }}
-        >
-          {joined ? t('Joined') : t('Join Community')}
-        </Button>
       </div>
+
+      <Button
+        className="w-full shrink-0"
+        variant={joined ? 'secondary' : 'default'}
+        onClick={() => {
+          if (!joined) handleJoin()
+          onClose()
+        }}
+      >
+        {joined ? t('Joined') : t('Join Community')}
+      </Button>
     </DialogContent>
   )
 }

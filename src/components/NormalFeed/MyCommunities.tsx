@@ -33,6 +33,48 @@ export default function MyCommunities() {
       setSelectedCommunity(joined[0])
     }
     setLoading(false)
+
+    // Refresh community definition events to get updated mod lists
+    const refreshCommunityDefs = async () => {
+      try {
+        const relays = getDefaultRelayUrls()
+        const closer = await client.subscribe(
+          relays,
+          [
+            {
+              kinds: [kinds.CommunityDefinition],
+              authors: [...new Set(joined.map((c) => c.pubkey))],
+              limit: joined.length * 10
+            }
+          ],
+          {
+            oneose: () => {},
+            onevent: (evt) => {
+              const evtDTag = evt.tags.find((t) => t[0] === 'd')?.[1]
+              if (evtDTag) {
+                const matchingJoined = joined.find((c) => c.dTag === evtDTag)
+                if (matchingJoined) {
+                  // Update the community in storage with fresh data
+                  const info = communityService.extractCommunityInfo(evt)
+                  communityService.joinCommunity(info)
+                  setCommunities(communityService.getJoinedCommunities())
+                  setSelectedCommunity((prev) =>
+                    prev?.coordinate === info.coordinate ? info : prev
+                  )
+                }
+              }
+            }
+          }
+        )
+        setTimeout(() => closer.close(), 10_000)
+      } catch (e) {
+        console.error('Failed to refresh community definitions:', e)
+      }
+    }
+
+    if (joined.length > 0) {
+      refreshCommunityDefs()
+    }
   }, [pubkey])
 
   // Fetch approval events when a community is selected
