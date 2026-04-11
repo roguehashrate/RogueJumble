@@ -15,8 +15,9 @@ import KindFilter from '../KindFilter'
 import { RefreshButton } from '../RefreshButton'
 import CommunityDiscovery from './CommunityDiscovery'
 import MyCommunities from './MyCommunities'
+import YourCircle from './YourCircle'
 
-type TCommunityTab = 'discover' | 'create' | 'myCommunities'
+type TCommunityTab = 'discover' | 'yourCircle' | 'myCommunities'
 
 export default function NormalFeed({
   trustScoreFilterId,
@@ -119,6 +120,7 @@ export default function NormalFeed({
     if (isCommunityFeed) {
       return [
         { value: 'discover', label: 'Discover' },
+        { value: 'yourCircle', label: 'Your Circle' },
         { value: 'myCommunities', label: 'My Communities' }
       ]
     }
@@ -191,6 +193,7 @@ export default function NormalFeed({
 
       {/* Community feed content */}
       {isCommunityFeed && communityTab === 'discover' && <CommunityDiscovery />}
+      {isCommunityFeed && communityTab === 'yourCircle' && <YourCircle />}
       {isCommunityFeed && communityTab === 'myCommunities' && <MyCommunities />}
 
       {/* Scoped feed content (Articles/Media/Text) */}

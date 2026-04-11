@@ -760,6 +760,37 @@ export function createCommunityLeaveDraftEvent(communityCoordinate: string): TDr
   }
 }
 
+// NIP-72: Community Post Approval (kind 4550)
+export function createCommunityApprovalDraftEvent(
+  communityCoordinate: string,
+  postEvent: Event,
+  approvalMode: 'e' | 'a' | 'e+a' = 'e'
+): TDraftEvent {
+  const tags: string[][] = [
+    ['a', communityCoordinate],
+    buildKTag(postEvent.kind),
+    buildPTag(postEvent.pubkey)
+  ]
+
+  if (approvalMode === 'e' || approvalMode === 'e+a') {
+    tags.push(buildETag(postEvent.id, postEvent.pubkey))
+  }
+  if (approvalMode === 'a' || approvalMode === 'e+a') {
+    const dTag = postEvent.tags.find((t) => t[0] === 'd')?.[1] ?? ''
+    tags.push(['a', `${postEvent.kind}:${postEvent.pubkey}:${dTag}`])
+  }
+
+  // Include JSON-encoded original post content in the approval
+  tags.push(['content', JSON.stringify({ content: postEvent.content, tags: postEvent.tags })])
+
+  return {
+    kind: ExtendedKind.COMMUNITY_APPROVAL,
+    created_at: Math.floor(Date.now() / 1000),
+    tags,
+    content: ''
+  }
+}
+
 export function createPollResponseDraftEvent(
   pollEvent: Event,
   selectedOptionIds: string[]
