@@ -71,11 +71,11 @@ export default function ZapDialog({
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerOverlay onClick={() => setOpen(false)} />
         <DrawerContent
-          hideOverlay
           onOpenAutoFocus={(e) => e.preventDefault()}
           ref={drawerContentRef}
-          className="mb-4 flex flex-col gap-4 px-4"
+          className="mb-4 max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl"
         >
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
           <DrawerHeader>
             <DrawerTitle className="flex items-center gap-2">
               <div className="shrink-0">{t('Zap to')}</div>
@@ -92,6 +92,7 @@ export default function ZapDialog({
             defaultAmount={defaultAmount}
             defaultComment={defaultComment}
           />
+          </div>
         </DrawerContent>
       </Drawer>
     )

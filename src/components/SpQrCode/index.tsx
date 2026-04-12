@@ -48,7 +48,11 @@ export default function SpQrCode({ sp }: { sp: string }) {
     return (
       <Drawer>
         <DrawerTrigger>{trigger}</DrawerTrigger>
-        <DrawerContent>{content}</DrawerContent>
+        <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+            {content}
+          </div>
+        </DrawerContent>
       </Drawer>
     )
   }

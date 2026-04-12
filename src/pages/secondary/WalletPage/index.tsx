@@ -87,8 +87,8 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
       >
         <Settings className="size-4" />
       </Button>
-      <DrawerContent>
-        <div className="pb-4">
+      <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
           <div className="px-4 py-3 text-sm font-semibold">{t('Balance Display Unit')}</div>
           <BalanceUnitOptions />
         </div>

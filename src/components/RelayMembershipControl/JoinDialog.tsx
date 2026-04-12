@@ -87,14 +87,16 @@ export default function JoinDialog({
   if (isSmallScreen) {
     return (
       <Drawer open={showJoinDialog} onOpenChange={setShowJoinDialog}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{t('Request to Join Relay')}</DrawerTitle>
-            <DrawerDescription>
-              {t('Enter the invite code you received from a relay member.')}
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4">{content}</div>
+        <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+            <DrawerHeader>
+              <DrawerTitle>{t('Request to Join Relay')}</DrawerTitle>
+              <DrawerDescription>
+                {t('Enter the invite code you received from a relay member.')}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4">{content}</div>
+          </div>
           <DrawerFooter>
             <Button onClick={handleJoinSubmit} disabled={isLoading || !inviteCode.trim()}>
               {isLoading ? t('Sending...') : t('Send Request')}

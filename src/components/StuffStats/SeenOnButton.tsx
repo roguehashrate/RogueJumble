@@ -63,8 +63,8 @@ export default function SeenOnButton({ stuff }: { stuff: Event | string }) {
         {trigger}
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <DrawerOverlay onClick={() => setIsDrawerOpen(false)} />
-          <DrawerContent hideOverlay>
-            <div className="py-2">
+          <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
               {relays.map((relay) => (
                 <Button
                   className="w-full justify-start gap-4 p-6 text-lg"

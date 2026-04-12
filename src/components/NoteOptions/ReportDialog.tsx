@@ -46,12 +46,12 @@ export default function ReportDialog({
           }
         }}
       >
-        <DrawerContent>
+        <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
           <DrawerHeader>
             <DrawerTitle className="hidden" />
             <DrawerDescription className="hidden" />
           </DrawerHeader>
-          <div className="p-4">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
             <ReportContent event={event} closeDialog={closeDialog} />
           </div>
         </DrawerContent>

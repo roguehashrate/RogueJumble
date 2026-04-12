@@ -105,14 +105,16 @@ export default function InviteCodeDialog({
   if (isSmallScreen) {
     return (
       <Drawer open={showInviteCodeDialog} onOpenChange={setShowInviteCodeDialog}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{t('Get Invite Code')}</DrawerTitle>
-            <DrawerDescription>
-              {t('Share this invite code with others to invite them to join this relay.')}
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4">{content}</div>
+        <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+            <DrawerHeader>
+              <DrawerTitle>{t('Get Invite Code')}</DrawerTitle>
+              <DrawerDescription>
+                {t('Share this invite code with others to invite them to join this relay.')}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4">{content}</div>
+          </div>
         </DrawerContent>
       </Drawer>
     )

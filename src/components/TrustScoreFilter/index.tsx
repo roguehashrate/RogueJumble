@@ -159,11 +159,13 @@ export default function TrustScoreFilter({
         {trigger}
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerTrigger asChild></DrawerTrigger>
-          <DrawerContent className="px-4 pb-4">
-            <DrawerHeader className="text-base font-semibold">
-              {t('trust-filter.title')}
-            </DrawerHeader>
-            <div className="space-y-4 pb-4">{content}</div>
+          <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+              <DrawerHeader className="text-base font-semibold">
+                {t('trust-filter.title')}
+              </DrawerHeader>
+              <div className="space-y-4 pb-4">{content}</div>
+            </div>
           </DrawerContent>
         </Drawer>
       </>
