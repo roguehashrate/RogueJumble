@@ -1,4 +1,3 @@
-import Icon from '@/assets/Icon'
 import { IS_COMMUNITY_MODE } from '@/constants'
 import { cn } from '@/lib/utils'
 import { usePrimaryPage } from '@/PageManager'
