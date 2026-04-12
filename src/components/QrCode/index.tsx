@@ -1,6 +1,5 @@
 import QRCodeStyling from 'qr-code-styling'
 import { useEffect, useRef } from 'react'
-import iconSvg from '../../assets/favicon.svg'
 
 export default function QrCode({ value, size = 180 }: { value: string; size?: number }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -13,7 +12,7 @@ export default function QrCode({ value, size = 180 }: { value: string; size?: nu
         qrOptions: {
           errorCorrectionLevel: 'M'
         },
-        image: iconSvg,
+        image: '/roguejumble-512x512.png',
         width: size * pixelRatio,
         height: size * pixelRatio,
         data: value,
