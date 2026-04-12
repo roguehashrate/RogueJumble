@@ -19,7 +19,7 @@ export default function PictureNote({ event, className }: { event: Event; classN
   return (
     <div className={className}>
       {imageInfos.length > 0 && <ImageGallery images={imageInfos} />}
-      {captionContent.content && <Content event={captionContent} />}
+      {captionContent.content && <Content event={captionContent} disableEmojiOnly />}
     </div>
   )
 }

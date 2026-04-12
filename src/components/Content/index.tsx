@@ -42,7 +42,8 @@ export default function Content({
   className,
   mustLoadMedia,
   enableHighlight = false,
-  displayMode
+  displayMode,
+  disableEmojiOnly = false
 }: {
   event?: Event
   content?: string
@@ -50,6 +51,7 @@ export default function Content({
   mustLoadMedia?: boolean
   enableHighlight?: boolean
   displayMode?: 'imageMode' | 'textOnlyMode'
+  disableEmojiOnly?: boolean
 }) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [showHighlightEditor, setShowHighlightEditor] = useState(false)
@@ -106,6 +108,7 @@ export default function Content({
   }, [event, resolvedContent, isMarkdown])
 
   const isEmojiOnly = useMemo(() => {
+    if (disableEmojiOnly) return false
     if (!nodes || nodes.length === 0) return false
     const nonWhitespace = nodes.filter(
       (node) => !(node.type === 'text' && /^\s*$/.test(node.data))
@@ -125,7 +128,7 @@ export default function Content({
       }
     }
     return emojiCount > 0 && emojiCount <= 3
-  }, [nodes])
+  }, [nodes, disableEmojiOnly])
 
   const handleHighlight = (text: string) => {
     setSelectedText(text)

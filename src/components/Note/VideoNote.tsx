@@ -32,7 +32,7 @@ export default function VideoNote({ event, className }: { event: Event; classNam
         <MediaPlayer src={video.url} key={video.url} className="mt-2" />
       ))}
       {metadata?.title && <div className="mt-2 font-semibold">{metadata.title}</div>}
-      {captionContent.content && <Content event={captionContent} />}
+      {captionContent.content && <Content event={captionContent} disableEmojiOnly />}
       {metadata && metadata.tags.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">
           {metadata.tags.map((tag) => (
