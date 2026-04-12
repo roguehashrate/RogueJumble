@@ -76,7 +76,7 @@ export default function StuffStats({
           <Likes stuff={stuff} />
         </>
       )}
-      <div className="flex h-5 justify-between [&_svg]:size-4">
+      <div className="flex h-6 sm:h-7 justify-between [&_svg]:size-4 sm:[&_svg]:size-5">
         <div
           className={cn('flex items-center', loading ? 'animate-pulse' : '')}
           onClick={(e) => e.stopPropagation()}

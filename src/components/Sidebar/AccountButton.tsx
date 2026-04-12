@@ -21,17 +21,17 @@ import { SimpleUserAvatar } from '../UserAvatar'
 import { SimpleUsername } from '../Username'
 import SidebarItem from './SidebarItem'
 
-export default function AccountButton({ collapse }: { collapse: boolean }) {
+export default function AccountButton({ collapse, iconRail }: { collapse: boolean; iconRail?: boolean }) {
   const { pubkey } = useNostr()
 
   if (pubkey) {
-    return <ProfileButton collapse={collapse} />
+    return <ProfileButton collapse={collapse} iconRail={iconRail} />
   } else {
-    return <LoginButton collapse={collapse} />
+    return <LoginButton collapse={collapse} iconRail={iconRail} />
   }
 }
 
-function ProfileButton({ collapse }: { collapse: boolean }) {
+function ProfileButton({ collapse, iconRail }: { collapse: boolean; iconRail?: boolean }) {
   const { t } = useTranslation()
   const { account, accounts, switchAccount } = useNostr()
   const pubkey = account?.pubkey
@@ -46,13 +46,17 @@ function ProfileButton({ collapse }: { collapse: boolean }) {
         <Button
           variant="ghost"
           className={cn(
-            'clickable flex items-center justify-start gap-4 rounded-lg bg-transparent p-2 text-lg font-semibold text-foreground shadow-none hover:text-accent-foreground',
-            collapse ? 'h-12 w-12' : 'h-auto w-full'
+            'clickable flex items-center justify-start rounded-lg bg-transparent text-foreground shadow-none hover:text-accent-foreground',
+            iconRail
+              ? 'h-14 w-14 p-2'
+              : collapse
+                ? 'h-12 w-12 p-2'
+                : 'h-auto w-full gap-4 p-2 text-lg font-semibold'
           )}
         >
-          <div className="flex w-0 flex-1 items-center gap-2">
+          <div className={cn('flex items-center', iconRail || collapse ? '' : 'w-0 flex-1 gap-2')}>
             <SimpleUserAvatar size="medium" userId={pubkey} />
-            {!collapse && (
+            {!collapse && !iconRail && (
               <SimpleUsername className="truncate text-lg font-semibold" userId={pubkey} />
             )}
           </div>
@@ -121,11 +125,11 @@ function ProfileButton({ collapse }: { collapse: boolean }) {
   )
 }
 
-function LoginButton({ collapse }: { collapse: boolean }) {
+function LoginButton({ collapse, iconRail }: { collapse: boolean; iconRail?: boolean }) {
   const { checkLogin } = useNostr()
 
   return (
-    <SidebarItem onClick={() => checkLogin()} title="Login" collapse={collapse}>
+    <SidebarItem onClick={() => checkLogin()} title="Login" collapse={collapse} iconRail={iconRail}>
       <LogIn />
     </SidebarItem>
   )

@@ -15,6 +15,7 @@ const applyTheme = (themeName: TThemeName) => {
   const root = window.document.documentElement
   const theme = THEME_COLORS[themeName]
   const colors = theme.colors
+  const style = theme.style
 
   root.style.setProperty('--background', colors.background)
   root.style.setProperty('--foreground', colors.foreground)
@@ -43,7 +44,16 @@ const applyTheme = (themeName: TThemeName) => {
   root.style.setProperty('--comment', colors.comment)
   root.style.setProperty('--note-hover', colors.noteHover)
 
-  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst')
+  // Style variables
+  root.style.setProperty('--theme-radius', style.radius)
+  root.style.setProperty('--theme-scanline', style.scanlineOpacity)
+  root.style.setProperty('--theme-bg-gradient', style.bgGradient)
+  root.style.setProperty('--theme-text-shadow', style.textShadow)
+  root.style.setProperty('--theme-font', style.fontFamily)
+  root.style.setProperty('--theme-mesh-opacity', style.meshOpacity)
+  root.style.setProperty('--theme-card-border-width', style.cardBorderWidth)
+
+  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst', 'terminal', 'midnight')
   root.classList.add(themeName)
 }
 

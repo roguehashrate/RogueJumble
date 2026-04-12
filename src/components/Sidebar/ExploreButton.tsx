@@ -3,7 +3,7 @@ import { Compass } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import SidebarItem from './SidebarItem'
 
-export default function RelaysButton({ collapse }: { collapse: boolean }) {
+export default function RelaysButton({ collapse, iconRail }: { collapse: boolean; iconRail?: boolean }) {
   const { t } = useTranslation()
   const { navigate, current, display } = usePrimaryPage()
 
@@ -13,6 +13,7 @@ export default function RelaysButton({ collapse }: { collapse: boolean }) {
       onClick={() => navigate('explore')}
       active={display && current === 'explore'}
       collapse={collapse}
+      iconRail={iconRail}
     >
       <Compass />
     </SidebarItem>

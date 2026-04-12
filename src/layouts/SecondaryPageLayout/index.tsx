@@ -1,6 +1,5 @@
 import ScrollToTopButton from '@/components/ScrollToTopButton'
 import { Titlebar } from '@/components/Titlebar'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { useSecondaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
@@ -41,12 +40,7 @@ const SecondaryPageLayout = forwardRef(
       ref,
       () => ({
         scrollToTop: (behavior: ScrollBehavior = 'smooth') => {
-          setTimeout(() => {
-            if (scrollAreaRef.current) {
-              return scrollAreaRef.current.scrollTo({ top: 0, behavior })
-            }
-            window.scrollTo({ top: 0, behavior })
-          }, 10)
+          window.scrollTo({ top: 0, behavior })
         }
       }),
       []
@@ -57,8 +51,11 @@ const SecondaryPageLayout = forwardRef(
         setTimeout(() => window.scrollTo({ top: 0 }), 10)
         return
       }
+      // Desktop: scroll to top on mount
+      setTimeout(() => window.scrollTo({ top: 0 }), 10)
     }, [])
 
+    // Mobile single-column layout (PWA)
     if (enableSingleColumnLayout) {
       return (
         <PageActiveContext.Provider value={currentIndex === index}>
@@ -83,14 +80,11 @@ const SecondaryPageLayout = forwardRef(
       )
     }
 
+    // Desktop layout - uses window scrolling
     return (
       <PageActiveContext.Provider value={currentIndex === index}>
-        <DeepBrowsingProvider active={currentIndex === index} scrollAreaRef={scrollAreaRef}>
-          <ScrollArea
-            className="h-full overflow-auto"
-            scrollBarClassName="z-30 pt-12"
-            ref={scrollAreaRef}
-          >
+        <DeepBrowsingProvider active={currentIndex === index}>
+          <div ref={scrollAreaRef}>
             <SecondaryPageTitlebar
               title={title}
               controls={controls}
@@ -99,9 +93,9 @@ const SecondaryPageLayout = forwardRef(
               titlebar={titlebar}
             />
             {children}
-            <div className="h-4" />
-          </ScrollArea>
-          {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
+            <div className="h-8" />
+          </div>
+          {displayScrollToTopButton && <ScrollToTopButton />}
         </DeepBrowsingProvider>
       </PageActiveContext.Provider>
     )

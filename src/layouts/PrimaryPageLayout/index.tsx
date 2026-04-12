@@ -1,6 +1,5 @@
 import ScrollToTopButton from '@/components/ScrollToTopButton'
 import { Titlebar } from '@/components/Titlebar'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { usePrimaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
@@ -27,7 +26,6 @@ const PrimaryPageLayout = forwardRef(
     ref
   ) => {
     const { pubkey } = useNostr()
-    const scrollAreaRef = useRef<HTMLDivElement>(null)
     const smallScreenScrollAreaRef = useRef<HTMLDivElement>(null)
     const smallScreenLastScrollTopRef = useRef(0)
     const { enableSingleColumnLayout } = useUserPreferences()
@@ -37,12 +35,7 @@ const PrimaryPageLayout = forwardRef(
       ref,
       () => ({
         scrollToTop: (behavior: ScrollBehavior = 'smooth') => {
-          setTimeout(() => {
-            if (scrollAreaRef.current) {
-              return scrollAreaRef.current.scrollTo({ top: 0, behavior })
-            }
-            window.scrollTo({ top: 0, behavior })
-          }, 10)
+          window.scrollTo({ top: 0, behavior })
         }
       }),
       []
@@ -75,6 +68,7 @@ const PrimaryPageLayout = forwardRef(
       smallScreenLastScrollTopRef.current = 0
     }, [pubkey])
 
+    // Mobile single-column layout (PWA) - uses window scrolling
     if (enableSingleColumnLayout) {
       return (
         <PageActiveContext.Provider value={current === pageName && display}>
@@ -96,24 +90,18 @@ const PrimaryPageLayout = forwardRef(
       )
     }
 
+    // Desktop layout - uses window scrolling for spacious feel
     return (
       <PageActiveContext.Provider value={current === pageName && display}>
-        <DeepBrowsingProvider
-          active={current === pageName && display}
-          scrollAreaRef={scrollAreaRef}
-        >
-          <ScrollArea
-            className="h-full overflow-auto"
-            scrollBarClassName="z-30 pt-12"
-            ref={scrollAreaRef}
-          >
+        <DeepBrowsingProvider active={current === pageName && display}>
+          <div ref={smallScreenScrollAreaRef}>
             <PrimaryPageTitlebar hideBottomBorder={hideTitlebarBottomBorder}>
               {titlebar}
             </PrimaryPageTitlebar>
             {children}
-            <div className="h-4" />
-          </ScrollArea>
-          {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
+            <div className="h-8" />
+          </div>
+          {displayScrollToTopButton && <ScrollToTopButton />}
         </DeepBrowsingProvider>
       </PageActiveContext.Provider>
     )

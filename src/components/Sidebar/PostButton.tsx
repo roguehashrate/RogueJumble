@@ -4,12 +4,12 @@ import { useNostr } from '@/providers/NostrProvider'
 import { PencilLine } from 'lucide-react'
 import SidebarItem from './SidebarItem'
 
-export default function PostButton({ collapse }: { collapse: boolean }) {
+export default function PostButton({ collapse, iconRail }: { collapse: boolean; iconRail?: boolean }) {
   const { checkLogin } = useNostr()
   const { push } = useSecondaryPage()
 
   return (
-    <div className="pt-4">
+    <div className={cn('pt-2', iconRail && 'pt-1')}>
       <SidebarItem
         title="New post"
         description="Post"
@@ -19,9 +19,12 @@ export default function PostButton({ collapse }: { collapse: boolean }) {
             push('/compose')
           })
         }}
-        variant="default"
-        className={cn('gap-2 bg-primary', !collapse && 'justify-center')}
+        className={cn(
+          'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground',
+          iconRail && 'rounded-full'
+        )}
         collapse={collapse}
+        iconRail={iconRail}
       >
         <PencilLine />
       </SidebarItem>

@@ -528,6 +528,15 @@ export const THEME_COLORS = {
       bookmark: '346 86% 56%',
       comment: '217 91% 60%',
       noteHover: '0 0% 3.5%'
+    },
+    style: {
+      radius: '1rem',
+      scanlineOpacity: '0',
+      bgGradient: 'none',
+      textShadow: 'none',
+      fontFamily: '',
+      meshOpacity: '1',
+      cardBorderWidth: '0px'
     }
   },
   emerald: {
@@ -559,6 +568,15 @@ export const THEME_COLORS = {
       bookmark: '346 86% 56%',
       comment: '217 91% 60%',
       noteHover: '150 15% 7%'
+    },
+    style: {
+      radius: '1rem',
+      scanlineOpacity: '0',
+      bgGradient: 'none',
+      textShadow: 'none',
+      fontFamily: '',
+      meshOpacity: '1',
+      cardBorderWidth: '0px'
     }
   },
   sapphire: {
@@ -590,6 +608,15 @@ export const THEME_COLORS = {
       bookmark: '346 86% 56%',
       comment: '217 91% 60%',
       noteHover: '220 20% 8%'
+    },
+    style: {
+      radius: '1rem',
+      scanlineOpacity: '0',
+      bgGradient: 'none',
+      textShadow: 'none',
+      fontFamily: '',
+      meshOpacity: '1',
+      cardBorderWidth: '0px'
     }
   },
   amethyst: {
@@ -621,6 +648,95 @@ export const THEME_COLORS = {
       bookmark: '346 86% 56%',
       comment: '217 91% 60%',
       noteHover: '270 15% 8%'
+    },
+    style: {
+      radius: '1rem',
+      scanlineOpacity: '0',
+      bgGradient: 'none',
+      textShadow: 'none',
+      fontFamily: '',
+      meshOpacity: '1',
+      cardBorderWidth: '0px'
+    }
+  },
+  terminal: {
+    name: 'Terminal',
+    colors: {
+      background: '0 0% 0%',
+      foreground: '120 30% 85%',
+      card: '120 5% 3%',
+      cardForeground: '120 30% 85%',
+      popover: '120 5% 4%',
+      popoverForeground: '120 30% 85%',
+      primary: '120 70% 45%',
+      primaryHover: '120 70% 55%',
+      primaryForeground: '0 0% 0%',
+      secondary: '120 10% 10%',
+      secondaryForeground: '120 30% 85%',
+      muted: '120 10% 8%',
+      mutedForeground: '120 15% 45%',
+      accent: '120 70% 45%',
+      accentForeground: '0 0% 0%',
+      destructive: '0 60% 30%',
+      destructiveForeground: '120 30% 85%',
+      border: '120 15% 12%',
+      input: '120 10% 8%',
+      ring: '120 70% 45%',
+      surfaceBackground: '0 0% 0%',
+      zap: '50 80% 40%',
+      repost: '120 50% 35%',
+      bookmark: '340 60% 45%',
+      comment: '180 50% 40%',
+      noteHover: '120 5% 2%'
+    },
+    style: {
+      radius: '0px',
+      scanlineOpacity: '0.08',
+      bgGradient: 'none',
+      textShadow: '0 0 4px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.2)',
+      fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
+      meshOpacity: '0.3',
+      cardBorderWidth: '1px'
+    }
+  },
+  midnight: {
+    name: 'Midnight',
+    colors: {
+      background: '230 25% 4%',
+      foreground: '220 15% 88%',
+      card: '230 20% 7%',
+      cardForeground: '220 15% 88%',
+      popover: '230 20% 8%',
+      popoverForeground: '220 15% 88%',
+      primary: '45 80% 70%',
+      primaryHover: '45 80% 78%',
+      primaryForeground: '230 25% 4%',
+      secondary: '230 10% 14%',
+      secondaryForeground: '220 15% 88%',
+      muted: '230 10% 11%',
+      mutedForeground: '230 8% 50%',
+      accent: '45 80% 70%',
+      accentForeground: '230 25% 4%',
+      destructive: '0 50% 30%',
+      destructiveForeground: '220 15% 88%',
+      border: '230 12% 15%',
+      input: '230 10% 12%',
+      ring: '45 80% 70%',
+      surfaceBackground: '230 25% 2.5%',
+      zap: '45 70% 55%',
+      repost: '160 40% 45%',
+      bookmark: '340 40% 50%',
+      comment: '210 50% 55%',
+      noteHover: '230 15% 5.5%'
+    },
+    style: {
+      radius: '1rem',
+      scanlineOpacity: '0',
+      bgGradient: 'none',
+      textShadow: 'none',
+      fontFamily: '',
+      meshOpacity: '0.8',
+      cardBorderWidth: '0px'
     }
   }
 } as const

@@ -386,7 +386,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
       value={{
         navigate: navigatePrimaryPage,
         current: currentPrimaryPage,
-        display: true
+        display: secondaryStack.length === 0
       }}
     >
       <SecondaryPageContext.Provider
@@ -399,44 +399,37 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         <CurrentRelaysProvider>
           <NotificationProvider>
             <BackgroundOrbs />
-            <div className="relative flex h-[var(--vh)] w-full bg-surface-background" style={{ maxWidth: '1920px' }}>
-              <Sidebar />
-              <div className={cn('grid w-full grid-cols-2 h-full min-h-0', 'gap-2 py-2 pr-2')}>
-                <div className={cn('overflow-hidden bg-background min-h-0 h-full', 'rounded-2xl shadow-sm')}>
-                    {primaryPages.map(({ name, props }) => (
-                      <div
-                        key={name}
-                        className="flex h-full w-full flex-col"
-                        style={{
-                          display: currentPrimaryPage === name ? 'block' : 'none'
-                        }}
-                      >
-                        <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
-                      </div>
-                    ))}
-                  </div>
-                  <div
-                    className={cn(
-                      'overflow-hidden bg-background min-h-0 h-full',
-                      'rounded-2xl',
-                      secondaryStack.length > 0 && 'shadow-sm',
-                      secondaryStack.length === 0 ? 'bg-surface' : ''
-                    )}
-                  >
-                    {secondaryStack.map((item, index) => (
-                      <div
-                        key={item.index}
-                        className="flex h-full w-full flex-col"
-                        style={{
-                          display: index === secondaryStack.length - 1 ? 'block' : 'none'
-                        }}
-                      >
-                        {item.element && <item.element />}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <div className="relative flex min-h-screen w-full">
+              <div className="sticky top-0 h-screen shrink-0">
+                <Sidebar iconRail />
               </div>
+              <div className="relative mx-auto w-full max-w-[700px] min-w-0 border-x bg-background px-4">
+                {!!secondaryStack.length &&
+                  secondaryStack.map((item, index) => (
+                    <div
+                      key={item.index}
+                      style={{
+                        display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                      }}
+                    >
+                      {item.element && <item.element />}
+                    </div>
+                  ))}
+                {primaryPages.map(({ name, props }) => (
+                  <div
+                    key={name}
+                    style={{
+                      display:
+                        secondaryStack.length === 0 && currentPrimaryPage === name
+                          ? 'block'
+                          : 'none'
+                    }}
+                  >
+                    <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
+                  </div>
+                ))}
+              </div>
+            </div>
             <TooManyRelaysAlertDialog />
             <BackgroundAudio className="fixed bottom-20 right-0 z-50 w-80 overflow-hidden rounded-l-full rounded-r-none border shadow-lg" />
           </NotificationProvider>

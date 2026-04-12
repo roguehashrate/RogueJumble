@@ -41,7 +41,7 @@ export default function MainNoteCard({
           'clickable transition-colors duration-200',
           embedded
             ? 'rounded-2xl glass-card p-3 sm:p-4'
-            : 'rounded-2xl mx-2 mb-2 glass-card px-4 py-4'
+            : 'rounded-2xl mx-1 mb-3 sm:mx-2 sm:mb-4 glass-card px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6'
         )}
       >
         <Collapsible alwaysExpand={embedded}>
@@ -55,7 +55,7 @@ export default function MainNoteCard({
             displayMode={displayMode}
           />
         </Collapsible>
-        {!embedded && <StuffStats className="mt-3" stuff={event} />}
+        {!embedded && <StuffStats className="mt-3 sm:mt-4" stuff={event} />}
       </div>
       {!embedded && <div className="h-px" />}
     </div>

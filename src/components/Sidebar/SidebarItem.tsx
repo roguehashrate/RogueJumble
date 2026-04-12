@@ -1,39 +1,75 @@
-import { Button, ButtonProps } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { forwardRef } from 'react'
+import { forwardRef, MouseEventHandler, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const SidebarItem = forwardRef<
   HTMLButtonElement,
-  ButtonProps & { title: string; collapse: boolean; description?: string; active?: boolean }
->(({ children, title, description, className, active, collapse, ...props }, ref) => {
+  {
+    children: React.ReactNode
+    title: string
+    collapse: boolean
+    iconRail?: boolean
+    description?: string
+    active?: boolean
+    onClick?: MouseEventHandler
+    className?: string
+    variant?: string
+  }
+>(({ children, title, description, className, active, collapse, iconRail, onClick, ...props }, ref) => {
   const { t } = useTranslation()
+  const [bouncing, setBouncing] = useState(false)
 
+  const handleClick: MouseEventHandler = (e) => {
+    if (!bouncing) {
+      setBouncing(true)
+      setTimeout(() => setBouncing(false), 300)
+    }
+    onClick?.(e)
+  }
+
+  // Icon rail / collapsed mode: simple icon button like mobile
+  if (iconRail || collapse) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(
+          'group relative m-0 flex size-14 items-center justify-center rounded-none p-3 text-muted-foreground outline-none [&_svg]:size-6',
+          active && 'text-primary',
+          bouncing && '[&>svg]:animate-icon-bounce',
+          className
+        )}
+        title={t(title)}
+        onClick={handleClick}
+        {...props}
+      >
+        {children}
+      </button>
+    )
+  }
+
+  // Expanded mode: icon + text label
   return (
-    <Button
+    <button
+      ref={ref}
+      type="button"
       className={cn(
-        'm-0 flex items-center gap-4 rounded-full bg-transparent text-lg font-semibold shadow-none transition-all duration-500',
-        collapse
-          ? 'h-12 w-12 p-3 [&_svg]:size-full'
-          : 'h-auto w-full justify-start px-4 py-2.5 [&_svg]:size-5',
+        'm-0 flex h-auto w-full items-center justify-start gap-4 rounded-full bg-transparent px-4 py-2.5 text-lg font-semibold shadow-none transition-all duration-500 [&_svg]:size-5',
         active
           ? 'relative bg-primary/10 text-primary'
           : 'hover:bg-primary/8 hover:text-primary',
         className
       )}
-      variant="ghost"
       title={t(title)}
-      ref={ref}
+      onClick={handleClick}
       {...props}
     >
       {active && (
-        <>
-          <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-primary" />
-        </>
+        <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-r-full bg-primary" />
       )}
       {children}
-      {!collapse && <div>{t(description ?? title)}</div>}
-    </Button>
+      <div>{t(description ?? title)}</div>
+    </button>
   )
 })
 SidebarItem.displayName = 'SidebarItem'

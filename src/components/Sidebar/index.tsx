@@ -1,5 +1,4 @@
 import Icon from '@/assets/Icon'
-import Logo from '@/assets/Logo'
 import { IS_COMMUNITY_MODE } from '@/constants'
 import { cn } from '@/lib/utils'
 import { usePrimaryPage } from '@/PageManager'
@@ -19,7 +18,20 @@ import ProfileButton from './ProfileButton'
 import SearchButton from './SearchButton'
 import SettingsButton from './SettingsButton'
 
-export default function PrimaryPageSidebar() {
+function SidebarLogo({ size }: { size: 'small' | 'normal' }) {
+  const dim = size === 'small' ? 'size-10' : 'h-12 w-12'
+  return (
+    <div className={cn('overflow-hidden rounded-full', dim)}>
+      <img
+        src="/roguejumble-96x96.png"
+        alt="RogueJumble"
+        className="size-full object-contain transition-opacity hover:opacity-80"
+      />
+    </div>
+  )
+}
+
+export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: boolean }) {
   const { isSmallScreen } = useScreenSize()
   const { sidebarCollapse, updateSidebarCollapse, enableSingleColumnLayout } = useUserPreferences()
   const { pubkey } = useNostr()
@@ -27,59 +39,70 @@ export default function PrimaryPageSidebar() {
 
   if (isSmallScreen) return null
 
+  // Icon rail mode: permanent narrow sidebar, no collapse toggle
+  const collapse = iconRail ? true : sidebarCollapse
+  const showToggle = !iconRail
+
   return (
     <div
       className={cn(
-        'relative flex h-full shrink-0 flex-col justify-between pb-2 pt-3',
+        'relative flex h-full shrink-0 flex-col justify-between',
         'bg-background',
         'border-r',
-        sidebarCollapse ? 'w-16 px-2' : 'w-52 px-4'
+        iconRail
+          ? 'w-[72px] px-2 py-4'
+          : collapse
+            ? 'w-16 px-2 pb-2 pt-3'
+            : 'w-52 px-4 pb-2 pt-3'
       )}
     >
-      <div className="space-y-2">
-        {sidebarCollapse ? (
-          <button
-            className="mb-4 w-full cursor-pointer px-3 py-1 transition-opacity hover:opacity-80"
-            onClick={() => navigate('home')}
-            aria-label="Go to home"
-          >
-            <Icon />
-          </button>
+      <div className={cn('space-y-2', iconRail && 'space-y-3')}>
+        <button
+          className={cn(
+            'flex w-full items-center justify-center transition-opacity hover:opacity-80',
+            iconRail ? 'mb-6 px-2 py-1' : collapse ? 'mb-4 px-3 py-1' : 'mb-4 px-4'
+          )}
+          onClick={() => navigate('home')}
+          aria-label="Go to home"
+        >
+          <SidebarLogo size={iconRail ? 'small' : 'normal'} />
+        </button>
+        <HomeButton collapse={collapse} iconRail={iconRail} />
+        {!IS_COMMUNITY_MODE && <RelaysButton collapse={collapse} iconRail={iconRail} />}
+        {IS_COMMUNITY_MODE && <FollowingButton collapse={collapse} iconRail={iconRail} />}
+        <NotificationsButton collapse={collapse} iconRail={iconRail} />
+        <SearchButton collapse={collapse} iconRail={iconRail} />
+        <ProfileButton collapse={collapse} iconRail={iconRail} />
+        {pubkey && <BookmarkButton collapse={collapse} iconRail={iconRail} />}
+        <SettingsButton collapse={collapse} iconRail={iconRail} />
+        <PostButton collapse={collapse} iconRail={iconRail} />
+      </div>
+      <div className={cn('space-y-4', iconRail && 'space-y-3')}>
+        {iconRail ? (
+          <div className="flex flex-col items-center space-y-3">
+            <AccountButton collapse />
+          </div>
         ) : (
-          <button
-            className="mb-4 w-full cursor-pointer px-4 transition-opacity hover:opacity-80"
-            onClick={() => navigate('home')}
-            aria-label="Go to home"
-          >
-            <Logo />
-          </button>
+          <>
+            <LayoutSwitcher collapse={collapse} />
+            <AccountButton collapse={collapse} />
+          </>
         )}
-        <HomeButton collapse={sidebarCollapse} />
-        {!IS_COMMUNITY_MODE && <RelaysButton collapse={sidebarCollapse} />}
-        {IS_COMMUNITY_MODE && <FollowingButton collapse={sidebarCollapse} />}
-        <NotificationsButton collapse={sidebarCollapse} />
-        <SearchButton collapse={sidebarCollapse} />
-        <ProfileButton collapse={sidebarCollapse} />
-        {pubkey && <BookmarkButton collapse={sidebarCollapse} />}
-        <SettingsButton collapse={sidebarCollapse} />
-        <PostButton collapse={sidebarCollapse} />
       </div>
-      <div className="space-y-4">
-        <LayoutSwitcher collapse={sidebarCollapse} />
-        <AccountButton collapse={sidebarCollapse} />
-      </div>
-      <button
-        className={cn(
-          'absolute flex h-6 w-5 flex-col items-center justify-center rounded-l-md p-0 text-muted-foreground transition-colors hover:bg-background hover:text-foreground hover:shadow-md [&_svg]:size-4',
-          enableSingleColumnLayout ? 'right-0 top-3' : '-right-0.5 top-5'
-        )}
-        onClick={(e) => {
-          e.stopPropagation()
-          updateSidebarCollapse(!sidebarCollapse)
-        }}
-      >
-        {sidebarCollapse ? <ChevronsRight /> : <ChevronsLeft />}
-      </button>
+      {showToggle && (
+        <button
+          className={cn(
+            'absolute flex h-6 w-5 flex-col items-center justify-center rounded-l-md p-0 text-muted-foreground transition-colors hover:bg-background hover:text-foreground hover:shadow-md [&_svg]:size-4',
+            enableSingleColumnLayout ? 'right-0 top-3' : '-right-0.5 top-5'
+          )}
+          onClick={(e) => {
+            e.stopPropagation()
+            updateSidebarCollapse(!sidebarCollapse)
+          }}
+        >
+          {sidebarCollapse ? <ChevronsRight /> : <ChevronsLeft />}
+        </button>
+      )}
     </div>
   )
 }

@@ -140,14 +140,19 @@ export default function Note({
 
   return (
     <div className={className}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-1 items-center space-x-2">
-          <UserAvatar userId={event.pubkey} size={size === 'small' ? 'medium' : 'normal'} />
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <div className="flex flex-1 items-center space-x-2 sm:space-x-3">
+          <UserAvatar userId={event.pubkey} size="big" className="hidden sm:block" />
+          <UserAvatar
+            userId={event.pubkey}
+            size={size === 'small' ? 'medium' : 'normal'}
+            className="sm:hidden"
+          />
           <div className="w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Username
                 userId={event.pubkey}
-                className={`w-0 flex-1 truncate font-semibold ${size === 'small' ? 'text-sm' : ''}`}
+                className={`w-0 flex-1 truncate font-semibold ${size === 'small' ? 'text-sm' : 'text-base sm:text-lg'}`}
                 skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
               />
               <FollowingBadge pubkey={event.pubkey} />
@@ -176,7 +181,7 @@ export default function Note({
         <ParentNotePreview
           eventId={parentEventId}
           externalContent={parentExternalContent}
-          className="mt-2"
+          className="mt-2 sm:mt-3"
           onClick={(e) => {
             e.stopPropagation()
             if (parentExternalContent) {
@@ -191,7 +196,7 @@ export default function Note({
         <ParentNotePreview
           eventId={reactionTargetEventId}
           label={t('reacted to')}
-          className="mt-2"
+          className="mt-2 sm:mt-3"
           onClick={(e) => {
             e.stopPropagation()
             push(toNote(reactionTargetEventId))

@@ -90,7 +90,8 @@ export default function Tabs({
     <div
       ref={containerRef}
       className={cn(
-        'sticky top-12 z-30 flex w-full justify-between bg-background/70 px-2 backdrop-blur-xl transition-all duration-300',
+        'sticky top-12 z-30 flex w-full justify-between bg-background/70 backdrop-blur-xl transition-all duration-300',
+        'px-2 sm:px-4',
         'border-b border-border/10',
         deepBrowsing && lastScrollTop > threshold && !active
           ? '-translate-y-[calc(100%+12rem)]'
@@ -105,7 +106,7 @@ export default function Tabs({
                 key={tab.value}
                 ref={(el) => (tabRefs.current[index] = el)}
                 className={cn(
-                  `clickable my-0.5 w-fit cursor-pointer whitespace-nowrap rounded-full px-5 py-2 text-center text-sm font-semibold transition-colors duration-200`,
+                  `clickable my-0.5 cursor-pointer whitespace-nowrap rounded-full px-4 py-2 text-center text-sm font-semibold transition-colors duration-200 sm:px-5`,
                   value === tab.value
                     ? 'bg-primary/15 text-primary'
                     : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground'

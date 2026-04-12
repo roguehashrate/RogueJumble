@@ -29,7 +29,7 @@ export function Titlebar({
   return (
     <div
       className={cn(
-        'sticky top-0 z-40 h-12 w-full select-none bg-background/80 backdrop-blur-xl px-2 [&_svg]:size-5 [&_svg]:shrink-0',
+        'sticky top-0 z-40 h-12 w-full select-none bg-background/80 backdrop-blur-xl px-2 sm:px-4 [&_svg]:size-5 [&_svg]:shrink-0',
         !hideBottomBorder && 'border-b border-border/10',
         'transition-transform duration-300',
         shouldHide && '-translate-y-full',
