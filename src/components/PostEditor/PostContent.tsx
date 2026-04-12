@@ -179,10 +179,14 @@ export default function PostContent({
       postingRef.current = true
       setPosting(true)
       try {
+        // Prepend uploaded media URLs to the text so they're included in the posted event
+        const mediaUrlsText = uploadedMediaUrls.length > 0 ? uploadedMediaUrls.join('\n') + '\n' : ''
+        const textWithMedia = mediaUrlsText + text
+
         const draftEvent = await createDraftEvent({
           parentStuff,
           highlightedText,
-          text,
+          text: textWithMedia,
           mentions,
           isPoll,
           pollCreateData,
@@ -248,14 +252,10 @@ export default function PostContent({
 
   const handleMediaUploadSuccess = ({ url }: { url: string }) => {
     setUploadedMediaUrls((prev) => [...prev, url])
-    textareaRef.current?.appendText(url, true)
   }
 
   const removeMedia = (index: number) => {
-    const removedUrl = uploadedMediaUrls[index]
     setUploadedMediaUrls((prev) => prev.filter((_, i) => i !== index))
-    // Also remove the URL from the textarea text
-    setText((prev) => prev.replace(removedUrl + '\n', '').replace(removedUrl, ''))
   }
 
   return (
