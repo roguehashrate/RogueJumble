@@ -40,7 +40,7 @@ export default function Username({
         onClick={(e) => e.stopPropagation()}
       >
         {showAt && '@'}
-        <TextWithEmojis text={profile.username} emojis={profile.emojis} emojiClassName="mb-1" />
+        <TextWithEmojis text={profile.username} emojis={profile.emojis} emojiClassName="mb-1" gradient />
       </SecondaryPageLink>
     </div>
   )
@@ -87,7 +87,7 @@ export function SimpleUsername({
   return (
     <div className={className}>
       {showAt && '@'}
-      <TextWithEmojis text={username} emojis={emojis} emojiClassName="mb-1" />
+      <TextWithEmojis text={username} emojis={emojis} emojiClassName="mb-1" gradient />
     </div>
   )
 }

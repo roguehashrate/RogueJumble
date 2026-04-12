@@ -25,6 +25,7 @@ export default function ProfileCard({ userId }: { userId: string }) {
             text={username || ''}
             emojis={emojis}
             className="truncate text-lg font-semibold"
+            gradient
           />
           <TrustScoreBadge pubkey={pubkey} />
         </div>
