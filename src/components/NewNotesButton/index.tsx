@@ -42,8 +42,8 @@ export default function NewNotesButton({
           )}
           style={{
             bottom: isSmallScreen
-              ? `calc(${hasBackgroundAudio ? 7.5 : 4.5}rem + env(safe-area-inset-bottom))`
-              : `calc(${hasBackgroundAudio ? 10.5 : 7.5}rem)`
+              ? `calc(env(safe-area-inset-bottom) + ${hasBackgroundAudio ? 9.9 : 6.5}rem)`
+              : `calc(env(safe-area-inset-bottom) + 3.25rem)`
           }}
         >
           <Button
