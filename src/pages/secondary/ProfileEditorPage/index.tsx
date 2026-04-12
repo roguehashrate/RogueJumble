@@ -193,7 +193,8 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
         undefined,
         statusExpiration
       )
-      await publish(statusDraftEvent)
+      const statusEvent = await publish(statusDraftEvent)
+      await client.updateProfileEventCache(statusEvent)
 
       setSaving(false)
       pop()
