@@ -4,13 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { createProfileDraftEvent, createUserStatusDraftEvent } from '@/lib/draft-event'
@@ -43,7 +37,8 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
   const [silentPaymentAddress, setSilentPaymentAddress] = useState<string>('')
   const [silentPaymentAddressError, setSilentPaymentAddressError] = useState<string>('')
   const [status, setStatus] = useState<string>('')
-  const [expireTimestamp, setExpireTimestamp] = useState<string | undefined>(undefined)
+  const [expireEnabled, setExpireEnabled] = useState(false)
+  const [expireDurationKey, setExpireDurationKey] = useState<string>('15m')
   const [hasChanged, setHasChanged] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
@@ -83,7 +78,34 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           if (userStatus) {
             setStatus(userStatus.content)
             if (userStatus.expiration) {
-              setExpireTimestamp(String(userStatus.expiration))
+              setExpireEnabled(true)
+              const now = dayjs().unix()
+              const diff = userStatus.expiration - now
+              // Find closest matching duration
+              const durations: Record<string, number> = {
+                '5m': 5 * 60,
+                '15m': 15 * 60,
+                '1h': 60 * 60,
+                '4h': 4 * 60 * 60,
+                '1d': 24 * 60 * 60,
+                '1w': 7 * 24 * 60 * 60,
+                '1mo': 30 * 24 * 60 * 60,
+                '3mo': 90 * 24 * 60 * 60,
+                '6mo': 180 * 24 * 60 * 60,
+                '1y': 365 * 24 * 60 * 60
+              }
+              let closestKey = '15m'
+              let closestDiff = Infinity
+              for (const [key, seconds] of Object.entries(durations)) {
+                const delta = Math.abs(seconds - diff)
+                if (delta < closestDiff) {
+                  closestDiff = delta
+                  closestKey = key
+                }
+              }
+              setExpireDurationKey(closestKey)
+            } else {
+              setExpireEnabled(false)
             }
           }
         }
@@ -149,15 +171,29 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       const newProfileEvent = await publish(profileDraftEvent)
       await updateProfileEvent(newProfileEvent)
 
-      if (status) {
-        const statusExpireTimestamp = expireTimestamp ? parseInt(expireTimestamp, 10) : undefined
-        const statusDraftEvent = createUserStatusDraftEvent(
-          status,
-          undefined,
-          statusExpireTimestamp
-        )
-        await publish(statusDraftEvent)
+      // Always publish status (even if empty to clear it)
+      let statusExpiration: number | undefined
+      if (expireEnabled) {
+        const durations: Record<string, number> = {
+          '5m': 5 * 60,
+          '15m': 15 * 60,
+          '1h': 60 * 60,
+          '4h': 4 * 60 * 60,
+          '1d': 24 * 60 * 60,
+          '1w': 7 * 24 * 60 * 60,
+          '1mo': 30 * 24 * 60 * 60,
+          '3mo': 90 * 24 * 60 * 60,
+          '6mo': 180 * 24 * 60 * 60,
+          '1y': 365 * 24 * 60 * 60
+        }
+        statusExpiration = dayjs().add(durations[expireDurationKey] || 15 * 60, 'second').unix()
       }
+      const statusDraftEvent = createUserStatusDraftEvent(
+        status,
+        undefined,
+        statusExpiration
+      )
+      await publish(statusDraftEvent)
 
       setSaving(false)
       pop()
@@ -303,7 +339,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           )}
         </Item>
         <Item>
-          <Label htmlFor="profile-status-input">{t('Status')}</Label>
+          <Label htmlFor="profile-status-input">{t('User status')}</Label>
           <Input
             id="profile-status-input"
             value={status}
@@ -316,39 +352,49 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           />
         </Item>
         <Item>
-          <Label htmlFor="profile-status-expiration">{t('Expires')}</Label>
-          <Select
-            value={expireTimestamp || 'never'}
-            onValueChange={(value) => {
-              setExpireTimestamp(value === 'never' ? undefined : value)
-              setHasChanged(true)
-            }}
-          >
-            <SelectTrigger id="profile-status-expiration">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="never">{t('Never')}</SelectItem>
-              <SelectItem value={String(dayjs().add(5, 'minute').unix())}>
-                {t('5 minutes')}
-              </SelectItem>
-              <SelectItem value={String(dayjs().add(15, 'minute').unix())}>
-                {t('15 minutes')}
-              </SelectItem>
-              <SelectItem value={String(dayjs().add(1, 'hour').unix())}>{t('1 hour')}</SelectItem>
-              <SelectItem value={String(dayjs().add(4, 'hour').unix())}>{t('4 hours')}</SelectItem>
-              <SelectItem value={String(dayjs().add(1, 'day').unix())}>{t('1 day')}</SelectItem>
-              <SelectItem value={String(dayjs().add(1, 'week').unix())}>{t('1 week')}</SelectItem>
-              <SelectItem value={String(dayjs().add(1, 'month').unix())}>{t('1 month')}</SelectItem>
-              <SelectItem value={String(dayjs().add(3, 'month').unix())}>
-                {t('3 months')}
-              </SelectItem>
-              <SelectItem value={String(dayjs().add(6, 'month').unix())}>
-                {t('6 months')}
-              </SelectItem>
-              <SelectItem value={String(dayjs().add(1, 'year').unix())}>{t('1 year')}</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="status-expire-toggle">{t('Expires')}</Label>
+            <Switch
+              id="status-expire-toggle"
+              checked={expireEnabled}
+              onCheckedChange={(checked) => {
+                setExpireEnabled(checked)
+                setHasChanged(true)
+              }}
+            />
+          </div>
+          {expireEnabled && (
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: '5m', label: t('5 minutes') },
+                { key: '15m', label: t('15 minutes') },
+                { key: '1h', label: t('1 hour') },
+                { key: '4h', label: t('4 hours') },
+                { key: '1d', label: t('1 day') },
+                { key: '1w', label: t('1 week') },
+                { key: '1mo', label: t('1 month') },
+                { key: '3mo', label: t('3 months') },
+                { key: '6mo', label: t('6 months') },
+                { key: '1y', label: t('1 year') }
+              ].map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                    expireDurationKey === option.key
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border/20 bg-muted/30 text-foreground hover:border-primary/30 hover:bg-muted/40'
+                  }`}
+                  onClick={() => {
+                    setExpireDurationKey(option.key)
+                    setHasChanged(true)
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
         </Item>
       </div>
     </SecondaryPageLayout>
