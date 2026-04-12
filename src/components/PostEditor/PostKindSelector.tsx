@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
-import { isTouchDevice } from '@/lib/utils'
+import { cn, isTouchDevice } from '@/lib/utils'
 
 type TPostKind = 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
 
@@ -37,20 +37,32 @@ export default function PostKindSelector({
   const Icon = current?.icon ?? PencilLine
 
   const KindList = () => (
-    <div className="py-2">
-      {KIND_OPTIONS.map(({ key, icon: KindIcon, label }) => (
-        <div
-          key={key}
-          className="clickable flex cursor-pointer items-center gap-3 px-4 py-3 text-sm"
-          onClick={() => {
-            onChange(key)
-            setOpen(false)
-          }}
-        >
-          <KindIcon className="size-4" />
-          {t(label)} (kind:{key === 'text' ? '1' : key === 'picture' ? '20' : key === 'video' ? '21' : key === 'shortVideo' ? '22' : key === 'poll' ? '1068' : key === 'longForm' ? '30023' : '34551'})
-        </div>
-      ))}
+    <div className="space-y-1.5 p-2">
+      {KIND_OPTIONS.map(({ key, icon: KindIcon, label }) => {
+        const isActive = key === value
+        return (
+          <div
+            key={key}
+            className={cn(
+              'group relative w-full rounded-xl border px-3.5 py-3 transition-colors duration-200',
+              isActive
+                ? 'border-primary/40 bg-primary/5'
+                : 'clickable border-border/20 hover:border-primary/30 hover:bg-muted/20'
+            )}
+            onClick={() => {
+              onChange(key)
+              setOpen(false)
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex size-6 shrink-0 items-center justify-center">
+                <KindIcon className="size-5" />
+              </div>
+              <div className="flex-1 font-medium">{t(label)}</div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 
@@ -68,7 +80,7 @@ export default function PostKindSelector({
             {t(current?.shortLabel ?? 'Text')}
             <ChevronDown className="size-3" />
           </Button>
-          <DrawerContent>
+          <DrawerContent className="border-t border-border/20 bg-card/90 backdrop-blur-xl">
             <div className="px-4 py-3 text-sm font-semibold">{t('Post Type')}</div>
             <KindList />
           </DrawerContent>
@@ -82,7 +94,7 @@ export default function PostKindSelector({
               <ChevronDown className="size-3" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="border-border/20">
             <KindList />
           </DropdownMenuContent>
         </DropdownMenu>
