@@ -2,13 +2,16 @@ import { useSecondaryPage } from '@/PageManager'
 import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
-import { Plus, Send, Loader2, X, Paperclip, MessageCircle } from 'lucide-react'
+import { Plus, Send, Loader2, X, Paperclip } from 'lucide-react'
 import { useRef, useState, useEffect } from 'react'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useTranslation } from 'react-i18next'
 import mediaUpload, { UPLOAD_ABORTED_ERROR_MSG } from '@/services/media-upload.service'
 import { NIP29_GROUP_KINDS } from '@/constants'
 import { toast } from 'sonner'
+import client from '@/services/client.service'
+import UserAvatar from '@/components/UserAvatar'
+import Username from '@/components/Username'
 
 type TUploadItem = {
   file: File
@@ -17,6 +20,13 @@ type TUploadItem = {
   uploading: boolean
   error?: string
   abortController: AbortController
+}
+
+type TReplyInfo = {
+  eventId: string
+  authorPubkey: string
+  content: string
+  event: any
 }
 
 export default function PostButton() {
@@ -28,13 +38,24 @@ export default function PostButton() {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [uploads, setUploads] = useState<TUploadItem[]>([])
-  const [replyingTo, setReplyingTo] = useState<{ eventId: string; authorPubkey: string; preview: string } | null>(null)
+  const [replyingTo, setReplyingTo] = useState<TReplyInfo | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Expose setReplyingTo to parent via window event
   useEffect(() => {
-    const handleSetReply = (e: CustomEvent) => {
-      setReplyingTo(e.detail)
+    const handleSetReply = async (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      const { eventId, authorPubkey } = detail
+      // Fetch the full event
+      const event = await client.fetchEvent(eventId)
+      if (event) {
+        setReplyingTo({
+          eventId,
+          authorPubkey,
+          content: event.content,
+          event
+        })
+      }
     }
     const handleClearReply = () => {
       setReplyingTo(null)
@@ -42,11 +63,11 @@ export default function PostButton() {
     const handleOpenDrawer = () => {
       setDrawerOpen(true)
     }
-    window.addEventListener('groupchat-set-reply', handleSetReply as EventListener)
+    window.addEventListener('groupchat-set-reply', handleSetReply)
     window.addEventListener('groupchat-clear-reply', handleClearReply)
     window.addEventListener('groupchat-open-drawer', handleOpenDrawer)
     return () => {
-      window.removeEventListener('groupchat-set-reply', handleSetReply as EventListener)
+      window.removeEventListener('groupchat-set-reply', handleSetReply)
       window.removeEventListener('groupchat-clear-reply', handleClearReply)
       window.removeEventListener('groupchat-open-drawer', handleOpenDrawer)
     }
@@ -258,17 +279,29 @@ export default function PostButton() {
 
               {/* Reply preview */}
               {replyingTo && (
-                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
-                  <MessageCircle className="size-4 shrink-0 text-primary" />
-                  <span className="flex-1 truncate text-xs text-muted-foreground">
-                    Replying to: {replyingTo.preview}
-                  </span>
-                  <button
-                    onClick={() => setReplyingTo(null)}
-                    className="flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="size-3" />
-                  </button>
+                <div className="rounded-lg border border-primary/30 bg-primary/5 pl-3 pr-2 py-2">
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5 h-5 w-0.5 shrink-0 rounded-full bg-primary/50" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <UserAvatar userId={replyingTo.authorPubkey} className="size-4" />
+                        <Username
+                          userId={replyingTo.authorPubkey}
+                          className="text-xs font-semibold"
+                          withoutSkeleton
+                        />
+                      </div>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                        {replyingTo.content}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setReplyingTo(null)}
+                      className="shrink-0 p-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
                 </div>
               )}
 

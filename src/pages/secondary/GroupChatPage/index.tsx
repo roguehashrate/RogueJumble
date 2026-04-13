@@ -7,7 +7,7 @@ import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
 import { useSecondaryPage } from '@/PageManager'
 import { Event, kinds } from 'nostr-tools'
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Loader2, MessageCircle, LogOut, MoreVertical, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -20,6 +20,7 @@ import { SecondaryPageLink } from '@/PageManager'
 import Content from '@/components/Content'
 import MessageActions from '@/components/GroupChat/MessageActions'
 import type { TGroupMessage as TGroupMessageType } from '@/components/GroupChat/MessageActions'
+import { ReactionPills } from '@/components/GroupChat/ReactionPills'
 import ZapDialog from '@/components/ZapDialog'
 import EmojiPicker from '@/components/EmojiPicker'
 import {
@@ -91,6 +92,7 @@ const GroupChatPage = forwardRef(
     const [loading, setLoading] = useState(true)
     const [zapTarget, setZapTarget] = useState<TGroupMessageType | null>(null)
     const [reactTarget, setReactTarget] = useState<TGroupMessageType | null>(null)
+    const [reactions, setReactions] = useState<Map<string, { emoji: string; pubkey: string; eventId: string }[]>>(new Map())
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const hasScrolledOnLoadRef = useRef(false)
 
@@ -190,6 +192,29 @@ const GroupChatPage = forwardRef(
       setZapTarget(message)
     }
 
+    // Quick react from ReactionPills
+    const handleEmojiReact = useCallback(async (messageId: string, emoji: string) => {
+      if (!pubkey) return
+      // Find the message to get the author pubkey
+      const msg = messages.find((m) => m.event.id === messageId)
+      if (!msg) return
+      
+      try {
+        const draftEvent = {
+          kind: kinds.Reaction,
+          content: emoji,
+          tags: [
+            ['e', messageId],
+            ['p', msg.pubkey]
+          ],
+          created_at: Math.floor(Date.now() / 1000)
+        }
+        await publish(draftEvent)
+      } catch (error) {
+        console.error('Failed to react:', error)
+      }
+    }, [messages, pubkey, publish])
+
     // Refresh messages when a new message is sent from the PostButton
     useEffect(() => {
       if (refreshMessages && refreshMessages > 0) {
@@ -221,6 +246,42 @@ const GroupChatPage = forwardRef(
         fetchNewMessages()
       }
     }, [refreshMessages])
+
+    // Subscribe to reactions for all messages in this group
+    useEffect(() => {
+      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      const closer = client.subscribe(
+        relayUrls,
+        {
+          kinds: [kinds.Reaction],
+          limit: 200
+        },
+        {
+          onevent: (event: Event) => {
+            // Check if this reaction is for a message in our group
+            const eTag = event.tags.find((t) => t[0] === 'e')
+            const hTag = event.tags.find((t) => t[0] === 'h')
+            if (!eTag || (hTag && hTag[1] !== groupId)) return
+
+            const messageId = eTag[1]
+            const emoji = event.content || '👍'
+            
+            setReactions((prev) => {
+              const newMap = new Map(prev)
+              const existing = newMap.get(messageId) || []
+              // Avoid duplicates
+              if (existing.some((r) => r.eventId === event.id)) return prev
+              newMap.set(messageId, [...existing, { emoji, pubkey: event.pubkey, eventId: event.id }])
+              return newMap
+            })
+          }
+        }
+      )
+
+      return () => {
+        closer?.close()
+      }
+    }, [groupId, relayDomain])
 
     // Fetch group metadata and messages
     useEffect(() => {
@@ -411,6 +472,11 @@ const GroupChatPage = forwardRef(
                     <Content
                       event={message.event}
                       className="text-sm text-white"
+                    />
+                    <ReactionPills
+                      messageId={message.event.id}
+                      reactions={reactions}
+                      onReact={handleEmojiReact}
                     />
                   </div>
                 </div>
