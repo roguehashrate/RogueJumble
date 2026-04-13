@@ -2,12 +2,23 @@ import { useSecondaryPage } from '@/PageManager'
 import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
-import { Plus, MessageCircle, Send, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, Send, Loader2, Image as ImageIcon, X, Paperclip } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useTranslation } from 'react-i18next'
 import client from '@/services/client.service'
+import mediaUpload, { UPLOAD_ABORTED_ERROR_MSG } from '@/services/media-upload.service'
 import { NIP29_GROUP_KINDS } from '@/constants'
+import { toast } from 'sonner'
+
+type TUploadItem = {
+  file: File
+  url: string | null
+  progress: number
+  uploading: boolean
+  error?: string
+  abortController: AbortController
+}
 
 export default function PostButton() {
   const { checkLogin } = useNostr()
@@ -17,28 +28,100 @@ export default function PostButton() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
+  const [uploads, setUploads] = useState<TUploadItem[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSend = async () => {
-    if (!message.trim() || !groupId || sending) return
-    
+    const hasContent = message.trim() || uploads.some((u) => u.url)
+    if (!hasContent || !groupId || sending) return
+
+    const uploadingFiles = uploads.filter((u) => u.uploading)
+    if (uploadingFiles.length > 0) {
+      toast.error(t('Please wait for uploads to finish'))
+      return
+    }
+
     setSending(true)
     try {
+      const mediaUrls = uploads.filter((u) => u.url).map((u) => u.url!)
+      const content = message.trim() + (mediaUrls.length > 0 ? '\n\n' + mediaUrls.join('\n\n') : '')
+
       const draftEvent = {
         kind: NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE,
-        content: message.trim(),
+        content: content.trim(),
         tags: [['h', groupId]],
         created_at: Math.floor(Date.now() / 1000)
       }
 
       await client.signAndPublish(draftEvent)
       setMessage('')
+      setUploads([])
       setDrawerOpen(false)
       onMessageSent()
     } catch (error) {
       console.error('Failed to send message:', error)
+      toast.error(t('Failed to send message'))
     } finally {
       setSending(false)
     }
+  }
+
+  const handleFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return
+
+    const files = Array.from(event.target.files)
+    const newUploads: TUploadItem[] = files.map((file) => ({
+      file,
+      url: null,
+      progress: 0,
+      uploading: true,
+      abortController: new AbortController()
+    }))
+
+    setUploads((prev) => [...prev, ...newUploads])
+
+    for (const upload of newUploads) {
+      try {
+        const result = await mediaUpload.upload(upload.file, {
+          onProgress: (p) => {
+            setUploads((prev) =>
+              prev.map((u) => (u.file === upload.file ? { ...u, progress: p } : u))
+            )
+          },
+          signal: upload.abortController.signal
+        })
+        setUploads((prev) =>
+          prev.map((u) => (u.file === upload.file ? { ...u, url: result.url, uploading: false } : u))
+        )
+      } catch (error) {
+        const message = (error as Error).message
+        if (message !== UPLOAD_ABORTED_ERROR_MSG) {
+          setUploads((prev) =>
+            prev.map((u) =>
+              u.file === upload.file ? { ...u, uploading: false, error: message } : u
+            )
+          )
+          toast.error(`Failed to upload: ${message}`)
+        }
+      }
+    }
+  }
+
+  const removeUpload = (file: File) => {
+    setUploads((prev) => {
+      const upload = prev.find((u) => u.file === file)
+      if (upload?.uploading) {
+        upload.abortController.abort()
+      }
+      return prev.filter((u) => u.file !== file)
+    })
   }
 
   const handleClick = () => {
@@ -72,25 +155,92 @@ export default function PostButton() {
           <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
             <div className="flex flex-col gap-4 overflow-auto p-4">
               <h3 className="text-center text-lg font-semibold">{t('Send Message')}</h3>
+
+              {/* Upload previews */}
+              {uploads.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {uploads.map((upload, idx) => (
+                    <div key={idx} className="relative rounded-lg border border-border/20 overflow-hidden bg-muted/20">
+                      {upload.url ? (
+                        <>
+                          <img
+                            src={upload.url}
+                            alt={upload.file.name}
+                            className="aspect-square w-full object-cover"
+                          />
+                          <button
+                            onClick={() => removeUpload(upload.file)}
+                            className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </>
+                      ) : upload.error ? (
+                        <div className="flex aspect-square items-center justify-center p-2 text-center text-xs text-destructive">
+                          {upload.error}
+                          <button
+                            onClick={() => removeUpload(upload.file)}
+                            className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex aspect-square flex-col items-center justify-center gap-2 p-2">
+                          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                          <div className="w-full">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full bg-primary transition-all"
+                                style={{ width: `${upload.progress}%` }}
+                              />
+                            </div>
+                            <p className="mt-1 truncate text-[10px] text-muted-foreground">
+                              {upload.file.name}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => removeUpload(upload.file)}
+                            className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Message input with attach button */}
               <div className="flex gap-2">
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                  placeholder={t('Type a message...')}
-                  rows={3}
-                  className="flex-1 resize-none rounded-xl border border-border/20 bg-muted/20 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
-                  disabled={sending}
-                  autoFocus
-                />
+                <div className="flex-1 relative">
+                  <textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSend()
+                      }
+                    }}
+                    placeholder={t('Type a message...')}
+                    rows={3}
+                    className="w-full resize-none rounded-xl border border-border/20 bg-muted/20 px-3 py-2 pr-10 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                    disabled={sending}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleFileSelect}
+                    className="absolute bottom-2 right-2 flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-primary"
+                    type="button"
+                  >
+                    <Paperclip className="size-4" />
+                  </button>
+                </div>
                 <button
                   onClick={handleSend}
-                  disabled={!message.trim() || sending}
+                  disabled={(!message.trim() && uploads.every((u) => !u.url)) || sending || uploads.some((u) => u.uploading)}
                   className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {sending ? (
@@ -100,6 +250,15 @@ export default function PostButton() {
                   )}
                 </button>
               </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+                accept="image/*,video/*"
+                multiple
+              />
             </div>
           </DrawerContent>
         </Drawer>
