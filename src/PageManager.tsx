@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { CurrentRelaysProvider } from '@/providers/CurrentRelaysProvider'
+import { GroupChatContextProvider } from '@/providers/GroupChatContextProvider'
 import { TPageRef } from '@/types'
 import {
   createContext,
@@ -268,35 +269,37 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
             : 0
         }}
       >
-        <CurrentRelaysProvider>
-          <NotificationProvider>
-            <BackgroundOrbs />
-            {!!secondaryStack.length &&
-              secondaryStack.map((item, index) => (
+        <GroupChatContextProvider>
+          <CurrentRelaysProvider>
+            <NotificationProvider>
+              <BackgroundOrbs />
+              {!!secondaryStack.length &&
+                secondaryStack.map((item, index) => (
+                  <div
+                    key={item.index}
+                    style={{
+                      display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                    }}
+                  >
+                    {item.element && <item.element />}
+                  </div>
+                ))}
+              {primaryPages.map(({ name, props }) => (
                 <div
-                  key={item.index}
+                  key={name}
                   style={{
-                    display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                    display:
+                      secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
                   }}
                 >
-                  {item.element && <item.element />}
+                  <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
                 </div>
               ))}
-            {primaryPages.map(({ name, props }) => (
-              <div
-                key={name}
-                style={{
-                  display:
-                    secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
-                }}
-              >
-                <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
-              </div>
-            ))}
-            <BottomNavigationBar />
-            <TooManyRelaysAlertDialog />
-          </NotificationProvider>
-        </CurrentRelaysProvider>
+              <BottomNavigationBar />
+              <TooManyRelaysAlertDialog />
+            </NotificationProvider>
+          </CurrentRelaysProvider>
+        </GroupChatContextProvider>
       </SecondaryPageContext.Provider>
     </PrimaryPageContext.Provider>
   )

@@ -25,9 +25,9 @@ export default function BottomNavigationBar() {
       >
         {/* Subtle top highlight */}
         <div className="relative h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        
+
         <BackgroundAudio className="rounded-none border-x-0 border-b border-t-0 bg-transparent" />
-        
+
         <div
           className="flex w-full items-center justify-around px-1 py-1.5 [&_svg]:size-5 [&_svg]:shrink-0"
           style={{ WebkitTapHighlightColor: 'transparent' }}
