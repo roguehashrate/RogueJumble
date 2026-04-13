@@ -23,7 +23,7 @@ export default function PostButton() {
   const { checkLogin, publish } = useNostr()
   const { push } = useSecondaryPage()
   const { t } = useTranslation()
-  const { groupId, onMessageSent } = useGroupChatContext()
+  const { groupId, relayUrl, onMessageSent } = useGroupChatContext()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -54,7 +54,7 @@ export default function PostButton() {
 
   const handleSend = async () => {
     const hasContent = message.trim() || uploads.some((u) => u.url)
-    console.log('[PostButton] handleSend called', { hasContent, groupId, messageLength: message.length })
+    console.log('[PostButton] handleSend called', { hasContent, groupId, relayUrl, messageLength: message.length })
     if (!hasContent) {
       toast.error(t('Message cannot be empty'))
       return
@@ -89,14 +89,21 @@ export default function PostButton() {
         created_at: Math.floor(Date.now() / 1000)
       }
 
-      await publish(draftEvent)
+      console.log('[PostButton] Publishing with relayUrl:', relayUrl)
+      // For group messages, publish directly to the group relay
+      if (relayUrl) {
+        await publish(draftEvent, { specifiedRelayUrls: [relayUrl] })
+      } else {
+        await publish(draftEvent)
+      }
+      console.log('[PostButton] Message published successfully')
       setMessage('')
       setUploads([])
       setReplyingTo(null)
       setDrawerOpen(false)
       onMessageSent()
     } catch (error) {
-      console.error('Failed to send message:', error)
+      console.error('[PostButton] Failed to send message:', error)
       toast.error(t('Failed to send message: ') + (error as Error).message)
     } finally {
       setSending(false)

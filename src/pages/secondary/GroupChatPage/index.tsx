@@ -96,13 +96,16 @@ const GroupChatPage = forwardRef(
 
     // Register this group chat with the context
     useEffect(() => {
-      console.log('[GroupChatPage] Registering group chat:', groupId)
-      registerGroupChat(groupId)
+      const normalizedRelay = relayDomain ? normalizeUrl(relayDomain) : null
+      console.log('[GroupChatPage] Registering group chat:', groupId, 'relay:', normalizedRelay)
+      if (normalizedRelay) {
+        registerGroupChat(groupId, normalizedRelay)
+      }
       return () => {
         console.log('[GroupChatPage] Unregistering group chat')
         unregisterGroupChat()
       }
-    }, [groupId, registerGroupChat, unregisterGroupChat])
+    }, [groupId, relayDomain, registerGroupChat, unregisterGroupChat])
 
     const handleLeaveGroup = async () => {
       if (!pubkey) return

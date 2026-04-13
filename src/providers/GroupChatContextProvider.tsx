@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useCallback } from 'react'
 
 type TGroupChatContext = {
   groupId: string | null
-  registerGroupChat: (groupId: string) => void
+  relayUrl: string | null
+  registerGroupChat: (groupId: string, relayUrl: string) => void
   unregisterGroupChat: () => void
   onMessageSent: () => void
   refreshMessages: number
@@ -20,14 +21,17 @@ export const useGroupChatContext = () => {
 
 export function GroupChatContextProvider({ children }: { children: React.ReactNode }) {
   const [groupId, setGroupId] = useState<string | null>(null)
+  const [relayUrl, setRelayUrl] = useState<string | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const registerGroupChat = useCallback((id: string) => {
+  const registerGroupChat = useCallback((id: string, url: string) => {
     setGroupId(id)
+    setRelayUrl(url)
   }, [])
 
   const unregisterGroupChat = useCallback(() => {
     setGroupId(null)
+    setRelayUrl(null)
   }, [])
 
   const onMessageSent = useCallback(() => {
@@ -38,6 +42,7 @@ export function GroupChatContextProvider({ children }: { children: React.ReactNo
     <GroupChatContext.Provider
       value={{
         groupId,
+        relayUrl,
         registerGroupChat,
         unregisterGroupChat,
         onMessageSent,
