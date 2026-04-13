@@ -266,36 +266,24 @@ const GroupChatPage = forwardRef(
                   <div
                     className={`max-w-[70%] rounded-xl px-3 py-2 ${
                       message.pubkey === pubkey
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/30'
+                        ? 'bg-primary/30 text-white backdrop-blur-sm'
+                        : 'bg-muted/20'
                     }`}
                   >
-                    {message.pubkey !== pubkey && (
-                      <div className="mb-1">
-                        <div className="flex items-center gap-1">
-                          <ColoredUsername pubkey={message.pubkey} />
-                          <span className="text-muted-foreground">&bull;</span>
-                          <FormattedTimestamp
-                            timestamp={message.created_at}
-                            className="text-[10px] text-muted-foreground"
-                          />
-                        </div>
-                      </div>
-                    )}
+                    <div className={`mb-1 flex items-center gap-1 ${message.pubkey === pubkey ? 'justify-end' : ''}`}>
+                      <ColoredUsername pubkey={message.pubkey} />
+                      <span className={message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'}>&bull;</span>
+                      <FormattedTimestamp
+                        timestamp={message.created_at}
+                        className={`text-[10px] ${
+                          message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'
+                        }`}
+                      />
+                    </div>
                     <Content
                       event={message.event}
-                      className={`text-sm ${
-                        message.pubkey === pubkey ? 'text-primary-foreground' : ''
-                      }`}
+                      className="text-sm text-white"
                     />
-                    {message.pubkey === pubkey && (
-                      <div className="mt-1 text-right">
-                        <FormattedTimestamp
-                          timestamp={message.created_at}
-                          className="text-[10px] opacity-70"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               ))
