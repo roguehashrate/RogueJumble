@@ -12,8 +12,43 @@ import { Send, Loader2, MessageCircle } from 'lucide-react'
 import Image from '@/components/Image'
 import UserAvatar from '@/components/UserAvatar'
 import { FormattedTimestamp } from '@/components/FormattedTimestamp'
-import Username from '@/components/Username'
+import { useFetchProfile } from '@/hooks'
+import { toProfile } from '@/lib/link'
+import { SecondaryPageLink } from '@/PageManager'
 import Content from '@/components/Content'
+
+// Derive a consistent HSL color from a pubkey
+function deriveColorFromPubkey(pubkey: string): string {
+  let hash = 0
+  for (let i = 0; i < pubkey.length; i++) {
+    hash = pubkey.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const hue = Math.abs(hash) % 360
+  return `hsl(${hue}, 70%, 65%)`
+}
+
+// Get a short display name from pubkey
+function getShortName(pubkey: string): string {
+  return pubkey.slice(0, 8)
+}
+
+// Colored username component that always shows
+function ColoredUsername({ pubkey }: { pubkey: string }) {
+  const { profile } = useFetchProfile(pubkey)
+  const displayName = profile?.username || getShortName(pubkey)
+  const color = deriveColorFromPubkey(pubkey)
+
+  return (
+    <SecondaryPageLink
+      to={toProfile(pubkey)}
+      className="cursor-pointer hover:underline"
+      style={{ color }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <span className="text-xs font-semibold" style={{ color }}>{displayName}</span>
+    </SecondaryPageLink>
+  )
+}
 
 type TGroupMessage = {
   event: Event
@@ -47,11 +82,13 @@ const GroupChatPage = forwardRef(
     const [loading, setLoading] = useState(true)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
+    const hasScrolledOnLoadRef = useRef(false)
 
     // Fetch group metadata and messages
     useEffect(() => {
       const fetchGroupData = async () => {
         setLoading(true)
+        hasScrolledOnLoadRef.current = false
         try {
           const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
 
@@ -110,10 +147,24 @@ const GroupChatPage = forwardRef(
       fetchGroupData()
     }, [relayDomain, groupId])
 
-    // Auto-scroll to bottom when new messages arrive
+    // Scroll to bottom on initial load (instant)
     useEffect(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [messages])
+      if (!loading && messages.length > 0 && !hasScrolledOnLoadRef.current) {
+        hasScrolledOnLoadRef.current = true
+        requestAnimationFrame(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' })
+        })
+      }
+    }, [loading, messages.length])
+
+    // Scroll to bottom smoothly when new messages arrive
+    useEffect(() => {
+      if (hasScrolledOnLoadRef.current && messages.length > 0) {
+        requestAnimationFrame(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+        })
+      }
+    }, [messages.length])
 
     const handleSendMessage = useCallback(async () => {
       if (!newMessage.trim() || !pubkey || sending) return
@@ -198,7 +249,7 @@ const GroupChatPage = forwardRef(
           </div>
 
           {/* Messages List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -234,15 +285,15 @@ const GroupChatPage = forwardRef(
                     }`}
                   >
                     {message.pubkey !== pubkey && (
-                      <div className="mb-1 flex items-center gap-2">
-                        <Username
-                          pubkey={message.pubkey}
-                          className="text-xs font-semibold"
-                        />
-                        <FormattedTimestamp
-                          timestamp={message.created_at}
-                          className="text-[10px] text-muted-foreground"
-                        />
+                      <div className="mb-1">
+                        <div className="flex items-center gap-1">
+                          <ColoredUsername pubkey={message.pubkey} />
+                          <span className="text-muted-foreground">&bull;</span>
+                          <FormattedTimestamp
+                            timestamp={message.created_at}
+                            className="text-[10px] text-muted-foreground"
+                          />
+                        </div>
                       </div>
                     )}
                     <Content
@@ -265,32 +316,32 @@ const GroupChatPage = forwardRef(
             )}
             <div ref={messagesEndRef} />
           </div>
+        </div>
 
-          {/* Message Input */}
-          <div className="shrink-0 border-t border-border/20 bg-card/50 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
-            <div className="flex gap-2">
-              <textarea
-                ref={inputRef}
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={t('Type a message...')}
-                rows={1}
-                className="flex-1 resize-none rounded-xl border border-border/20 bg-muted/20 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
-                disabled={sending}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || sending}
-                className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:pointer-events-none"
-              >
-                {sending ? (
-                  <Loader2 className="size-5 animate-spin" />
-                ) : (
-                  <Send className="size-5" />
-                )}
-              </button>
-            </div>
+        {/* Message Input - Fixed above navbar */}
+        <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-50 border-t border-border/20 bg-card/95 backdrop-blur-xl px-4 py-3">
+          <div className="mx-auto max-w-2xl flex gap-2">
+            <textarea
+              ref={inputRef}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={t('Type a message...')}
+              rows={1}
+              className="flex-1 resize-none rounded-xl border border-border/20 bg-muted/20 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+              disabled={sending}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim() || sending}
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:pointer-events-none"
+            >
+              {sending ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <Send className="size-5" />
+              )}
+            </button>
           </div>
         </div>
       </SecondaryPageLayout>
