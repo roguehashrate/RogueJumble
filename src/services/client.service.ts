@@ -617,8 +617,22 @@ class ClientService extends EventTarget {
     const timeline = this.timelines[key]
     let cachedEvents: NEvent[] = []
     let since: number | undefined
-    if (timeline && !Array.isArray(timeline) && timeline.refs.length && needSort) {
-      cachedEvents = (await this.eventDataLoader.loadMany(timeline.refs.map(([id]) => id))).filter(
+    
+    // Try to load timeline refs from IndexedDB if not in memory
+    if ((!timeline || (Array.isArray(timeline) || !timeline.refs.length)) && needSort) {
+      const persistedRefs = await indexedDb.getTimelineRefs(key)
+      if (persistedRefs && persistedRefs.length > 0) {
+        this.timelines[key] = {
+          refs: persistedRefs.map(({ id, created_at }) => [id, created_at] as TTimelineRef),
+          filter,
+          urls
+        }
+      }
+    }
+    
+    const currentTimeline = this.timelines[key]
+    if (currentTimeline && !Array.isArray(currentTimeline) && currentTimeline.refs.length && needSort) {
+      cachedEvents = (await this.eventDataLoader.loadMany(currentTimeline.refs.map(([id]) => id))).filter(
         (evt) => !!evt && !(evt instanceof Error)
       ) as NEvent[]
       if (cachedEvents.length) {
@@ -692,10 +706,15 @@ class ClientService extends EventTarget {
         const timeline = that.timelines[key]
         // no cache yet
         if (!timeline || Array.isArray(timeline) || !timeline.refs.length) {
+          const newRefs = events.map((evt) => [evt.id, evt.created_at]) as TTimelineRef[]
           that.timelines[key] = {
-            refs: events.map((evt) => [evt.id, evt.created_at]),
+            refs: newRefs,
             filter,
             urls
+          }
+          // Persist timeline refs to IndexedDB
+          if (needSaveToDb) {
+            indexedDb.putTimelineRefs(key, events.map((evt) => ({ event: evt, relays: that.getEventHints(evt.id) })))
           }
           return onEvents([...events], true)
         }
@@ -711,12 +730,21 @@ class ClientService extends EventTarget {
           timeline.refs = newRefs
           onEvents([...events], true)
           if (needSaveToDb) {
+            indexedDb.putTimelineRefs(key, events.map((evt) => ({ event: evt, relays: that.getEventHints(evt.id) })))
             indexedDb.deleteEvents({ ...filter, until: events[events.length - 1].created_at })
           }
         } else {
           // merge new refs with old refs
           timeline.refs = newRefs.concat(timeline.refs)
           onEvents([...events.concat(cachedEvents).slice(0, filter.limit)], true)
+          if (needSaveToDb) {
+            // Persist just the refs (events already in cache from earlier load)
+            const refsToPersist = timeline.refs.slice(0, filter.limit * 2)
+            indexedDb.putTimelineRefs(
+              key,
+              refsToPersist.map(([id, created_at]) => ({ event: { id, created_at }, relays: [] }))
+            )
+          }
         }
       },
       onclose: onClose

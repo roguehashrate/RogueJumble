@@ -74,7 +74,6 @@ export default function FollowingFeed({ feedVariant = 'following' }: { feedVaria
         setRefreshCount((count) => count + 1)
       }}
       isMainFeed
-      isPubkeyFeed
       feedVariant={feedVariant}
     />
   )

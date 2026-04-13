@@ -55,7 +55,6 @@ const UserAggregationList = forwardRef<
     filterMutedNotes?: boolean
     areAlgoRelays?: boolean
     showRelayCloseReason?: boolean
-    isPubkeyFeed?: boolean
     trustScoreThreshold?: number
   }
 >(
@@ -66,7 +65,6 @@ const UserAggregationList = forwardRef<
       filterMutedNotes = true,
       areAlgoRelays = false,
       showRelayCloseReason = false,
-      isPubkeyFeed = false,
       trustScoreThreshold
     },
     ref
@@ -153,14 +151,13 @@ const UserAggregationList = forwardRef<
 
         const since = sinceRef.current
 
-        if (isPubkeyFeed) {
-          const storedEvents = await client.getEventsFromIndexed({
-            authors: subRequests.flatMap(({ filter }) => filter.authors ?? []),
-            kinds: showKinds ?? [],
-            since: dayjs().subtract(1, 'day').unix()
-          })
-          setStoredEvents(storedEvents)
-        }
+        // Load cached events immediately for all feeds to show content while live subscription connects
+        const storedEvents = await client.getEventsFromIndexed({
+          authors: subRequests.flatMap(({ filter }) => filter.authors ?? []),
+          kinds: showKinds ?? [],
+          limit: LIMIT
+        })
+        setStoredEvents(storedEvents)
 
         const preprocessedSubRequests = await Promise.all(
           subRequests.map(async ({ urls, filter }) => {
@@ -221,7 +218,7 @@ const UserAggregationList = forwardRef<
           {
             startLogin,
             needSort: !areAlgoRelays,
-            needSaveToDb: isPubkeyFeed
+            needSaveToDb: true
           }
         )
         setTimelineKey(timelineKey)

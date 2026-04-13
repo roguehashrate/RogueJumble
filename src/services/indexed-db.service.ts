@@ -28,7 +28,8 @@ const StoreNames = {
   PINNED_USERS_EVENTS: 'pinnedUsersEvents',
   EVENTS: 'events',
   MUTE_DECRYPTED_TAGS: 'muteDecryptedTags', // deprecated
-  RELAY_INFO_EVENTS: 'relayInfoEvents' // deprecated
+  RELAY_INFO_EVENTS: 'relayInfoEvents', // deprecated
+  TIMELINE_REFS: 'timelineRefs'
 }
 
 class IndexedDbService {
@@ -47,7 +48,7 @@ class IndexedDbService {
   init(): Promise<void> {
     if (!this.initPromise) {
       this.initPromise = new Promise((resolve, reject) => {
-        const request = window.indexedDB.open('roguejumble', 11)
+        const request = window.indexedDB.open('roguejumble', 12)
 
         request.onerror = (event) => {
           reject(event)
@@ -110,6 +111,9 @@ class IndexedDbService {
               keyPath: 'event.id'
             })
             feedEventsStore.createIndex('createdAtIndex', 'event.created_at')
+          }
+          if (!db.objectStoreNames.contains(StoreNames.TIMELINE_REFS)) {
+            db.createObjectStore(StoreNames.TIMELINE_REFS, { keyPath: 'key' })
           }
 
           if (db.objectStoreNames.contains(StoreNames.RELAY_INFO_EVENTS)) {
@@ -544,6 +548,70 @@ class IndexedDbService {
     })
   }
 
+  async putTimelineRefs(key: string, refs: { event: { id: string; created_at: number }; relays: string[] }[]): Promise<void> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.TIMELINE_REFS, 'readwrite')
+      const store = transaction.objectStore(StoreNames.TIMELINE_REFS)
+
+      const timelineData = {
+        key,
+        refs: refs.map(r => [r.event.id, r.event.created_at]),
+        addedAt: Date.now()
+      }
+
+      const putRequest = store.put(timelineData)
+      putRequest.onsuccess = () => {
+        transaction.commit()
+        resolve()
+      }
+
+      putRequest.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async getTimelineRefs(key: string): Promise<{ id: string; created_at: number }[] | null> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.TIMELINE_REFS, 'readonly')
+      const store = transaction.objectStore(StoreNames.TIMELINE_REFS)
+      const request = store.get(key)
+
+      request.onsuccess = () => {
+        transaction.commit()
+        const result = request.result as { refs: [string, number][]; addedAt: number } | undefined
+        if (result?.refs) {
+          // Clean up timeline refs older than 7 days
+          if (result.addedAt < Date.now() - 1000 * 60 * 60 * 24 * 7) {
+            // Delete expired timeline refs
+            const deleteTransaction = this.db!.transaction(StoreNames.TIMELINE_REFS, 'readwrite')
+            deleteTransaction.objectStore(StoreNames.TIMELINE_REFS).delete(key)
+            deleteTransaction.commit()
+            resolve(null)
+          } else {
+            resolve(result.refs.map(([id, created_at]) => ({ id, created_at })))
+          }
+        } else {
+          resolve(null)
+        }
+      }
+
+      request.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
   private getReplaceableEventKeyFromEvent(event: Event): string {
     if (
       [kinds.Metadata, kinds.Contacts].includes(event.kind) ||
@@ -681,7 +749,7 @@ class IndexedDbService {
     const transaction = this.db!.transaction(StoreNames.EVENTS, 'readwrite')
     const store = transaction.objectStore(StoreNames.EVENTS)
     const index = store.index('createdAtIndex')
-    const request = index.openCursor(IDBKeyRange.upperBound(dayjs().subtract(5, 'days').unix()))
+    const request = index.openCursor(IDBKeyRange.upperBound(dayjs().subtract(14, 'days').unix()))
 
     request.onsuccess = (event) => {
       const cursor = (event.target as IDBRequest).result

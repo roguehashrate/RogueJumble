@@ -27,7 +27,6 @@ export default function NormalFeed({
   showRelayCloseReason = false,
   disable24hMode = false,
   onRefresh,
-  isPubkeyFeed = false,
   feedVariant = 'following'
 }: {
   trustScoreFilterId?: string
@@ -37,7 +36,6 @@ export default function NormalFeed({
   showRelayCloseReason?: boolean
   disable24hMode?: boolean
   onRefresh?: () => void
-  isPubkeyFeed?: boolean
   feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed' | 'communityFeed'
 }) {
   const { showKinds } = useKindFilter()
@@ -205,7 +203,6 @@ export default function NormalFeed({
           hideReplies={false}
           areAlgoRelays={areAlgoRelays}
           showRelayCloseReason={showRelayCloseReason}
-          isPubkeyFeed={isPubkeyFeed}
           trustScoreThreshold={trustScoreThreshold}
           displayMode={isTextFeed ? 'textOnlyMode' : undefined}
         />
@@ -221,7 +218,6 @@ export default function NormalFeed({
               subRequests={subRequests}
               areAlgoRelays={areAlgoRelays}
               showRelayCloseReason={showRelayCloseReason}
-              isPubkeyFeed={isPubkeyFeed}
               trustScoreThreshold={trustScoreThreshold}
             />
           ) : (
@@ -232,7 +228,6 @@ export default function NormalFeed({
               hideReplies={listMode === 'posts'}
               areAlgoRelays={areAlgoRelays}
               showRelayCloseReason={showRelayCloseReason}
-              isPubkeyFeed={isPubkeyFeed}
               trustScoreThreshold={trustScoreThreshold}
               displayMode={isTextFeed ? 'textOnlyMode' : undefined}
             />

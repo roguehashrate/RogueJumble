@@ -58,7 +58,6 @@ const NoteList = forwardRef<
     pinnedEventIds?: string[]
     filterFn?: (event: Event) => boolean
     showNewNotesDirectly?: boolean
-    isPubkeyFeed?: boolean
     displayMode?: 'imageMode' | 'textOnlyMode'
   }
 >(
@@ -75,7 +74,6 @@ const NoteList = forwardRef<
       pinnedEventIds,
       filterFn,
       showNewNotesDirectly = false,
-      isPubkeyFeed = false,
       displayMode
     },
     ref
@@ -353,14 +351,13 @@ const NoteList = forwardRef<
 
         const since = sinceRef.current
 
-        if (isPubkeyFeed) {
-          const storedEvents = await client.getEventsFromIndexed({
-            authors: subRequests.flatMap(({ filter }) => filter.authors ?? []),
-            kinds: showKinds,
-            limit: LIMIT
-          })
-          setStoredEvents(storedEvents)
-        }
+        // Load cached events immediately for all feeds to show content while live subscription connects
+        const storedEvents = await client.getEventsFromIndexed({
+          authors: subRequests.flatMap(({ filter }) => filter.authors ?? []),
+          kinds: showKinds,
+          limit: LIMIT
+        })
+        setStoredEvents(storedEvents)
 
         const preprocessedSubRequests = await Promise.all(
           subRequests.map(async ({ urls, filter }) => {
@@ -436,7 +433,7 @@ const NoteList = forwardRef<
           {
             startLogin,
             needSort: !areAlgoRelays,
-            needSaveToDb: isPubkeyFeed
+            needSaveToDb: true
           }
         )
         setTimelineKey(timelineKey)
