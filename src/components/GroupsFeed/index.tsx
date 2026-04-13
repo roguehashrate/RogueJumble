@@ -1,8 +1,5 @@
-import { NIP29_GROUP_KINDS } from '@/constants'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import client from '@/services/client.service'
-import { TFeedSubRequest } from '@/types'
-import { Event, kinds } from 'nostr-tools'
 import { MessageCircle, Plus, Loader2, Globe } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -29,10 +26,8 @@ export default function GroupsFeed() {
   const { pubkey } = useNostr()
   const [groups, setGroups] = useState<TGroupInfo[]>([])
   const [loading, setLoading] = useState(true)
-  const [subRequests, setSubRequests] = useState<TFeedSubRequest[]>([])
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
-  const [selectedGroup, setSelectedGroup] = useState<TGroupInfo | null>(null)
 
   // Load user's group list from kind 10009
   useEffect(() => {

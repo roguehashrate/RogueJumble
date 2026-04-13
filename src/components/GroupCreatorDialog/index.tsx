@@ -115,11 +115,11 @@ export default function GroupCreatorDialog({
         tags: [
           ['d', groupId],
           ['name', groupName.trim()],
-          ...(groupAbout.trim() ? ['about', groupAbout.trim()] : []),
-          ...(groupPicture.trim() ? ['picture', groupPicture.trim()] : []),
+          ...(groupAbout.trim() ? [['about', groupAbout.trim()]] : []),
+          ...(groupPicture.trim() ? [['picture', groupPicture.trim()]] : []),
           ['private', isPrivate.toString()],
           ['restricted', isRestricted.toString()]
-        ],
+        ] as string[][],
         created_at: Math.floor(Date.now() / 1000)
       }
 

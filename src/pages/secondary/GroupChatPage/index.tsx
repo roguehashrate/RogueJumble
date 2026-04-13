@@ -6,10 +6,10 @@ import client from '@/services/client.service'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
 import { useSecondaryPage } from '@/PageManager'
-import { Event, kinds, nip19 } from 'nostr-tools'
+import { Event, kinds } from 'nostr-tools'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageCircle, LogOut, MoreVertical, X, Smile } from 'lucide-react'
+import { Loader2, MessageCircle, LogOut, MoreVertical, X } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from '@/components/Image'
 import UserAvatar from '@/components/UserAvatar'
@@ -52,11 +52,9 @@ function ColoredUsername({ pubkey }: { pubkey: string }) {
   return (
     <SecondaryPageLink
       to={toProfile(pubkey)}
-      className="cursor-pointer hover:underline"
-      style={{ color }}
       onClick={(e) => e.stopPropagation()}
     >
-      <span className="text-xs font-semibold" style={{ color }}>{displayName}</span>
+      <span className="cursor-pointer text-xs font-semibold hover:underline" style={{ color }}>{displayName}</span>
     </SecondaryPageLink>
   )
 }
