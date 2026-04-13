@@ -308,10 +308,15 @@ const GroupChatPage = forwardRef(
       .toUpperCase()
 
     return (
-      <SecondaryPageLayout ref={ref} index={index} title={groupName} hideBackButton={false}>
-        <div className="flex h-full flex-col pb-20">
-          {/* Group Header */}
-          <div className="flex shrink-0 items-center gap-3 border-b border-border/20 bg-card/50 p-4">
+      <SecondaryPageLayout
+        ref={ref}
+        index={index}
+        title={t('Groups')}
+        hideBackButton={false}
+      >
+        <div className="flex h-full flex-col">
+          {/* Group Info Subheader - Sticky below titlebar */}
+          <div className="sticky top-[3rem] z-10 flex items-center gap-3 border-b border-border/20 bg-card/95 backdrop-blur-xl p-4">
             <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
               {groupPicture ? (
                 <Image
