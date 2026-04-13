@@ -1,5 +1,6 @@
 import {
   EMBEDDED_EVENT_REGEX,
+  BECH32_EVENT_REGEX,
   EMBEDDED_MENTION_REGEX,
   EMOJI_SHORT_CODE_REGEX,
   HASHTAG_REGEX,
@@ -17,6 +18,7 @@ export type TEmbeddedNodeType =
   | 'images'
   | 'media'
   | 'event'
+  | 'bech32-event'
   | 'mention'
   | 'legacy-mention'
   | 'hashtag'
@@ -59,6 +61,11 @@ export const EmbeddedLegacyMentionParser: TContentParser = {
 export const EmbeddedEventParser: TContentParser = {
   type: 'event',
   regex: EMBEDDED_EVENT_REGEX
+}
+
+export const Bech32EventParser: TContentParser = {
+  type: 'bech32-event',
+  regex: BECH32_EVENT_REGEX
 }
 
 export const EmbeddedWebsocketUrlParser: TContentParser = {

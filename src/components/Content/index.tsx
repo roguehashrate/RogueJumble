@@ -7,6 +7,7 @@ import {
   EmbeddedMentionParser,
   EmbeddedUrlParser,
   EmbeddedWebsocketUrlParser,
+  Bech32EventParser,
   parseContent
 } from '@/lib/content-parser'
 import { getImetaInfosFromEvent } from '@/lib/event'
@@ -65,6 +66,7 @@ export default function Content({
 
     const nodes = parseContent(_content, [
       EmbeddedEventParser,
+      Bech32EventParser,
       EmbeddedMentionParser,
       EmbeddedUrlParser,
       EmbeddedLNInvoiceParser,
@@ -278,6 +280,9 @@ export default function Content({
               const id = node.data.split(':')[1]
               return <EmbeddedNote key={index} noteId={id} className="mt-2" />
             }
+            if (node.type === 'bech32-event') {
+              return <EmbeddedNote key={index} noteId={node.data} className="mt-2" />
+            }
             if (node.type === 'mention') {
               return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
             }
@@ -351,6 +356,9 @@ export default function Content({
           if (node.type === 'event') {
             const id = node.data.split(':')[1]
             return <EmbeddedNote key={index} noteId={id} className="mt-2" />
+          }
+          if (node.type === 'bech32-event') {
+            return <EmbeddedNote key={index} noteId={node.data} className="mt-2" />
           }
           if (node.type === 'mention') {
             return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
