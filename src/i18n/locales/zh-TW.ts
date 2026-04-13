@@ -691,7 +691,7 @@ export default {
     'highlighted your note': '引用了你的筆記',
     'Welcome to Jumble': '歡迎來到 RogueJumble',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'RogueJumble 是一個專注於瀏覽伺服器的客戶端。從探索有趣的伺服器開始，或登入以查看您追蹤的動態。',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'n users_one': '{{count}} 位使用者',
     'n users_other': '{{count}} 位使用者',
     'Welcome to Jumble!': '歡迎來到 RogueJumble！',

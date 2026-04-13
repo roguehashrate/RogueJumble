@@ -508,7 +508,7 @@ export default {
     'Private Key': 'Private Key',
     'Welcome to Jumble': 'Welcome to RogueJumble',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'RogueJumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'Explore Relays': 'Explore Relays',
     'Choose a feed': 'Choose a feed',
     'and {{x}} others': 'and {{x}} others',

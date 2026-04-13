@@ -713,7 +713,7 @@ export default {
       'あなたの寄付は、RogueJumbleの維持と改善に役立ちます！ 😊',
     'Welcome to Jumble': 'RogueJumbleへようこそ',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'RogueJumbleはリレーの閲覧に特化したクライアントです。興味深いリレーを探索することから始めるか、ログインしてフォロー中のフィードをご覧ください。',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'n users_one': '{{count}} ユーザー',
     'n users_other': '{{count}} ユーザー',
     'Welcome to Jumble!': 'RogueJumbleへようこそ！',

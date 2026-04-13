@@ -178,7 +178,7 @@ function WelcomeGuide() {
         </div>
         <p className="max-w-md text-muted-foreground">
           {t(
-            'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.'
+            'An opinionated Nostr client with a mobile first UI and some customization.'
           )}
         </p>
       </div>

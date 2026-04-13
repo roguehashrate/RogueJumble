@@ -718,7 +718,7 @@ export default {
       '¡Tu donación me ayuda a mantener RogueJumble y mejorarlo! 😊',
     'Welcome to Jumble': 'Bienvenido a RogueJumble',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'RogueJumble es un cliente centrado en explorar relays. Comienza explorando relays interesantes o inicia sesión para ver tu feed de seguidos.',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'n users_one': '{{count}} usuario',
     'n users_other': '{{count}} usuarios',
     'Welcome to Jumble!': '¡Bienvenido a RogueJumble!',

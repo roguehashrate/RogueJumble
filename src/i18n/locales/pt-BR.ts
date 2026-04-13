@@ -513,7 +513,7 @@ export default {
     'Private Key': 'Chave Privada',
     'Welcome to Jumble': 'Bem-vindo ao Jumble',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'Jumble é um cliente focado em navegar relays. Comece explorando relays interessantes ou faça login para ver o conteúdo das pessoas que você segue.',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'Explore Relays': 'Explorar Relays',
     'Choose a feed': 'Escolha um feed',
     'and {{x}} others': 'e {{x}} outros',

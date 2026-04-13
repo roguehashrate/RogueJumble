@@ -503,7 +503,7 @@ export default {
     'Private Key': '私钥',
     'Welcome to Jumble': '欢迎来到 RogueJumble',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'RogueJumble 是一个专注于浏览服务器的客户端。从探索有趣的服务器开始，或者登录查看你的关注动态。',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'Explore Relays': '探索服务器',
     'Choose a feed': '选择一个动态',
     'and {{x}} others': '和其他 {{x}} 人',

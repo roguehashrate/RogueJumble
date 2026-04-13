@@ -707,7 +707,7 @@ export default {
       'Az adományod segít nekem a RogueJumble fenntartásában és fejlesztésében! 😊',
     'Welcome to Jumble': 'Üdvözlünk a RogueJumble-ben!',
     'Jumble is a client focused on browsing relays. Get started by exploring interesting relays or login to view your following feed.':
-      'A RogueJumble egy csomópont böngészésére összpontosító kliens. Kezdésnek fedezz fel érdekes csomópontokat vagy jelentkezz be a követési hírfolyam megtekintéséhez.',
+      'An opinionated Nostr client with a mobile first UI and some customization.',
     'n users_one': '{{count}} felhasználó',
     'n users_other': '{{count}} felhasználó',
     'Welcome to Jumble!': 'Üdvözlünk a RogueJumble-ben!',
