@@ -659,8 +659,8 @@ export const THEME_COLORS = {
       cardBorderWidth: '0px'
     }
   },
-  terminal: {
-    name: 'Terminal',
+  hackerman: {
+    name: 'Hackerman',
     colors: {
       background: '0 0% 0%',
       foreground: '120 30% 85%',
@@ -696,6 +696,86 @@ export const THEME_COLORS = {
       textShadow: '0 0 4px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.2)',
       fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
       meshOpacity: '0.3',
+      cardBorderWidth: '1px'
+    }
+  },
+  phosphor: {
+    name: 'Phosphor',
+    colors: {
+      background: '0 0% 0%',
+      foreground: '40 90% 75%',
+      card: '40 10% 3%',
+      cardForeground: '40 90% 75%',
+      popover: '40 10% 4%',
+      popoverForeground: '40 90% 75%',
+      primary: '40 95% 50%',
+      primaryHover: '40 95% 60%',
+      primaryForeground: '0 0% 0%',
+      secondary: '40 10% 10%',
+      secondaryForeground: '40 90% 75%',
+      muted: '40 10% 8%',
+      mutedForeground: '40 15% 45%',
+      accent: '40 95% 50%',
+      accentForeground: '0 0% 0%',
+      destructive: '0 60% 30%',
+      destructiveForeground: '40 90% 75%',
+      border: '40 15% 12%',
+      input: '40 10% 8%',
+      ring: '40 95% 50%',
+      surfaceBackground: '0 0% 0%',
+      zap: '50 80% 40%',
+      repost: '40 50% 35%',
+      bookmark: '340 60% 45%',
+      comment: '180 50% 40%',
+      noteHover: '40 5% 2%'
+    },
+    style: {
+      radius: '0px',
+      scanlineOpacity: '0.08',
+      bgGradient: 'none',
+      textShadow: '0 0 4px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.2)',
+      fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
+      meshOpacity: '0.3',
+      cardBorderWidth: '1px'
+    }
+  },
+  smolder: {
+    name: 'Smolder',
+    colors: {
+      background: '0 0% 0%',
+      foreground: '15 80% 85%',
+      card: '15 10% 3%',
+      cardForeground: '15 80% 85%',
+      popover: '15 10% 4%',
+      popoverForeground: '15 80% 85%',
+      primary: '15 90% 55%',
+      primaryHover: '15 90% 65%',
+      primaryForeground: '0 0% 0%',
+      secondary: '15 10% 10%',
+      secondaryForeground: '15 80% 85%',
+      muted: '15 10% 8%',
+      mutedForeground: '15 15% 45%',
+      accent: '15 90% 55%',
+      accentForeground: '0 0% 0%',
+      destructive: '0 70% 40%',
+      destructiveForeground: '15 80% 85%',
+      border: '15 20% 15%',
+      input: '15 10% 8%',
+      ring: '15 90% 55%',
+      surfaceBackground: '0 0% 0%',
+      zap: '45 93% 47%',
+      repost: '30 80% 40%',
+      bookmark: '350 90% 55%',
+      comment: '15 70% 50%',
+      noteHover: '15 5% 2%'
+    },
+    style: {
+      radius: '0.5rem',
+      scanlineOpacity: '0',
+      bgGradient: 'none',
+      textShadow: '0 0 5px hsl(var(--primary) / 0.4), 0 0 12px hsl(var(--primary) / 0.2)',
+      fontFamily: '',
+      meshOpacity: '0.35',
       cardBorderWidth: '1px'
     }
   },

@@ -53,7 +53,7 @@ const applyTheme = (themeName: TThemeName) => {
   root.style.setProperty('--theme-mesh-opacity', style.meshOpacity)
   root.style.setProperty('--theme-card-border-width', style.cardBorderWidth)
 
-  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst', 'terminal', 'midnight')
+  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst', 'hackerman', 'phosphor', 'smolder', 'midnight')
   root.classList.add(themeName)
 }
 

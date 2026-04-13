@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useTheme } from '@/providers/ThemeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
-import { Columns2, LayoutList, List, PanelLeft, Type } from 'lucide-react'
-import { forwardRef } from 'react'
+import { ChevronDown, Columns2, LayoutList, List, PanelLeft, Type } from 'lucide-react'
+import { forwardRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const LAYOUTS = [
@@ -59,6 +59,8 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
     updateFontSize
   } = useUserPreferences()
 
+  const [themesCollapsed, setThemesCollapsed] = useState(false)
+
   const themeEntries = Object.entries(THEME_COLORS) as [
     TThemeName,
     (typeof THEME_COLORS)[TThemeName]
@@ -68,29 +70,42 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
     <SecondaryPageLayout ref={ref} index={index} title={t('Appearance')}>
       <div className="my-3 space-y-4">
         <div className="flex flex-col gap-2 px-4">
-          <Label className="text-base">{t('Theme')}</Label>
-          <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-3">
-            {themeEntries.map(([key, theme]) => (
-              <OptionButton
-                key={key}
-                isSelected={themeSetting === key}
-                icon={
-                  <div className="flex h-8 w-8 overflow-hidden rounded-full">
-                    <div
-                      className="h-full w-1/2"
-                      style={{ background: `hsl(${theme.colors.background})` }}
-                    />
-                    <div
-                      className="h-full w-1/2"
-                      style={{ background: `hsl(${theme.colors.primary})` }}
-                    />
-                  </div>
-                }
-                label={t(theme.name)}
-                onClick={() => setThemeSetting(key)}
-              />
-            ))}
-          </div>
+          <button
+            onClick={() => setThemesCollapsed(!themesCollapsed)}
+            className="flex w-full items-center justify-between text-base font-medium transition-colors hover:text-foreground/80"
+          >
+            <Label className="text-base">{t('Theme')}</Label>
+            <ChevronDown
+              className={cn(
+                'size-4 transition-transform duration-200',
+                themesCollapsed ? 'rotate-0' : 'rotate-180'
+              )}
+            />
+          </button>
+          {!themesCollapsed && (
+            <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-3">
+              {themeEntries.map(([key, theme]) => (
+                <OptionButton
+                  key={key}
+                  isSelected={themeSetting === key}
+                  icon={
+                    <div className="flex h-8 w-8 overflow-hidden rounded-full">
+                      <div
+                        className="h-full w-1/2"
+                        style={{ background: `hsl(${theme.colors.background})` }}
+                      />
+                      <div
+                        className="h-full w-1/2"
+                        style={{ background: `hsl(${theme.colors.primary})` }}
+                      />
+                    </div>
+                  }
+                  label={t(theme.name)}
+                  onClick={() => setThemeSetting(key)}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-2 px-4">
           <Label className="text-base">{t('Font')}</Label>

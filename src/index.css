@@ -273,8 +273,9 @@
   }
 
   .animate-gradient {
-    background-size: 200% auto;
-    animation: gradient-shift 3s ease infinite;
+    background-size: 500% auto;
+    animation: gradient-shift 1.8s ease infinite;
+    filter: drop-shadow(0 0 4px hsl(var(--primary) / 0.3));
   }
 
   @keyframes fadeInUp {
@@ -356,7 +357,7 @@
   .animate-float { animation: float 10s ease-in-out infinite; }
   .animate-float-slow { animation: float-slow 20s linear infinite; }
   .animate-pulse-glow { animation: pulse-glow 4s ease-in-out infinite; }
-  .animate-gradient { animation: gradient-shift 10s ease infinite; background-size: 200% 200%; }
+  .animate-gradient { animation: gradient-shift 1.8s ease infinite; background-size: 500% auto; filter: drop-shadow(0 0 4px hsl(var(--primary) / 0.3)); }
   .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
   .animate-fade-in-scale { animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
   .animate-fade-in-right { animation: fadeInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
@@ -496,25 +497,36 @@
   }
 
   /* --- Font Override --- */
-  .terminal body,
-  .terminal body * {
+  .hackerman body,
+  .hackerman body *,
+  .phosphor body,
+  .phosphor body * {
     font-family: var(--theme-font, inherit);
   }
 
   /* --- Border Radius Overrides --- */
-  .terminal .rounded-2xl,
-  .terminal .rounded-xl,
-  .terminal .glass-card,
-  .terminal .glass,
-  .terminal .glass-strong,
-  .terminal [class*="rounded"] {
+  .hackerman .rounded-2xl,
+  .hackerman .rounded-xl,
+  .hackerman .glass-card,
+  .hackerman .glass,
+  .hackerman .glass-strong,
+  .hackerman [class*="rounded"],
+  .phosphor .rounded-2xl,
+  .phosphor .rounded-xl,
+  .phosphor .glass-card,
+  .phosphor .glass,
+  .phosphor .glass-strong,
+  .phosphor [class*="rounded"] {
     border-radius: var(--theme-radius, 0px) !important;
   }
 
   /* --- Card Border Styling --- */
-  .terminal .glass-card,
-  .terminal .glass,
-  .terminal .glass-strong {
+  .hackerman .glass-card,
+  .hackerman .glass,
+  .hackerman .glass-strong,
+  .phosphor .glass-card,
+  .phosphor .glass,
+  .phosphor .glass-strong {
     border-width: var(--theme-card-border-width, 0px);
     border-color: hsl(var(--primary) / 0.1);
     border-radius: 0px !important;
@@ -524,8 +536,12 @@
   }
 
   /* --- Text Glow on Primary Elements --- */
-  .terminal .text-primary,
-  .terminal [class*="text-primary"] {
+  .hackerman .text-primary,
+  .hackerman [class*="text-primary"],
+  .phosphor .text-primary,
+  .phosphor [class*="text-primary"],
+  .smolder .text-primary,
+  .smolder [class*="text-primary"] {
     text-shadow: var(--theme-text-shadow, none);
   }
 
@@ -535,19 +551,19 @@
   }
 
   /* ============================================================
-     TERMINAL THEME
+     HACKERMAN THEME
      Green phosphor CRT monitor aesthetic
      ============================================================ */
 
   /* Dim mesh — terminals don't glow */
-  .terminal .bg-mesh::before {
+  .hackerman .bg-mesh::before {
     background:
       radial-gradient(ellipse 400px 400px at 30% 40%, hsl(var(--primary) / 0.02) 0%, transparent 70%);
     animation: mesh-drift 80s ease-in-out infinite alternate;
   }
 
   /* CRT scanlines — more pronounced */
-  .terminal body::after {
+  .hackerman body::after {
     background: repeating-linear-gradient(
       to bottom,
       transparent 0px,
@@ -559,49 +575,268 @@
   }
 
   /* Green phosphor glow on interactive elements */
-  .terminal button,
-  .terminal a {
+  .hackerman button,
+  .hackerman a {
     transition: text-shadow 0.15s ease;
   }
-  .terminal button:hover,
-  .terminal a:hover {
+  .hackerman button:hover,
+  .hackerman a:hover {
     text-shadow: 0 0 6px hsl(var(--primary) / 0.3);
   }
 
   /* Terminal cursor blink accent on ring/focus */
-  .terminal input:focus,
-  .terminal textarea:focus {
+  .hackerman input:focus,
+  .hackerman textarea:focus {
     box-shadow:
       0 0 0 1px hsl(var(--primary) / 0.3),
       0 0 8px hsl(var(--primary) / 0.15);
   }
 
   /* Flat, no-glass cards */
-  .terminal .glass-card {
+  .hackerman .glass-card {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--primary) / 0.08);
   }
 
   /* Terminal scrollbar */
   @media (min-width: 768px) {
-    .terminal html::-webkit-scrollbar-thumb,
-    .terminal body::-webkit-scrollbar-thumb {
+    .hackerman html::-webkit-scrollbar-thumb,
+    .hackerman body::-webkit-scrollbar-thumb {
       background: hsl(var(--primary) / 0.25);
       border-radius: 0px;
     }
   }
 
   /* Terminal link styling */
-  .terminal a {
+  .hackerman a {
     color: hsl(var(--primary));
     text-decoration: none;
     border-bottom: 1px solid hsl(var(--primary) / 0.2);
   }
 
   /* Subtle green tint on muted foreground */
-  .terminal .text-muted-foreground,
-  .terminal [class*="text-muted"] {
+  .hackerman .text-muted-foreground,
+  .hackerman [class*="text-muted"] {
     color: hsl(var(--muted-foreground));
+  }
+
+  /* ============================================================
+     PHOSPHOR THEME
+     Amber monochrome CRT aesthetic (same as hackerman but amber)
+     ============================================================ */
+
+  /* Dim mesh for phosphor */
+  .phosphor .bg-mesh::before {
+    background:
+      radial-gradient(ellipse 400px 400px at 30% 40%, hsl(var(--primary) / 0.02) 0%, transparent 70%);
+    animation: mesh-drift 80s ease-in-out infinite alternate;
+  }
+
+  /* CRT scanlines — more pronounced */
+  .phosphor body::after {
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 1px,
+      rgb(0 0 0 / 0.15) 1px,
+      rgb(0 0 0 / 0.15) 2px
+    );
+    opacity: 1;
+  }
+
+  /* Amber phosphor glow on interactive elements */
+  .phosphor button,
+  .phosphor a {
+    transition: text-shadow 0.15s ease;
+  }
+  .phosphor button:hover,
+  .phosphor a:hover {
+    text-shadow: 0 0 6px hsl(var(--primary) / 0.3);
+  }
+
+  /* Terminal cursor blink accent on ring/focus */
+  .phosphor input:focus,
+  .phosphor textarea:focus {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.3),
+      0 0 8px hsl(var(--primary) / 0.15);
+  }
+
+  /* Flat, no-glass cards */
+  .phosphor .glass-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--primary) / 0.08);
+  }
+
+  /* Terminal scrollbar */
+  @media (min-width: 768px) {
+    .phosphor html::-webkit-scrollbar-thumb,
+    .phosphor body::-webkit-scrollbar-thumb {
+      background: hsl(var(--primary) / 0.25);
+      border-radius: 0px;
+    }
+  }
+
+  /* Terminal link styling */
+  .phosphor a {
+    color: hsl(var(--primary));
+    text-decoration: none;
+    border-bottom: 1px solid hsl(var(--primary) / 0.2);
+  }
+
+  /* Subtle amber tint on muted foreground */
+  .phosphor .text-muted-foreground,
+  .phosphor [class*="text-muted"] {
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* ============================================================
+     SMOLDER THEME
+     Fire and ember glow — dying flames, crackling warmth
+     ============================================================ */
+
+  /* Animated fire background with flame pockets at top and bottom */
+  .smolder .bg-mesh::before {
+    background:
+      radial-gradient(ellipse 250px 300px at 20% 5%, hsl(15 95% 45% / 0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 200px 250px at 50% 0%, hsl(30 100% 50% / 0.09) 0%, transparent 55%),
+      radial-gradient(ellipse 220px 280px at 80% 5%, hsl(0 90% 45% / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 250px 300px at 20% 95%, hsl(15 95% 45% / 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 200px 250px at 50% 100%, hsl(30 100% 50% / 0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 220px 280px at 80% 95%, hsl(0 90% 45% / 0.06) 0%, transparent 50%);
+    animation: smolder-fire-rise 4s ease-in-out infinite alternate;
+  }
+
+  /* Bottom flames — pulse upward from bottom */
+  .smolder .bg-mesh::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    pointer-events: none;
+    z-index: 9997;
+    background:
+      radial-gradient(ellipse 60px 120px at 10% 100%, hsl(15 95% 50% / 0.14) 0%, transparent 70%),
+      radial-gradient(ellipse 80px 150px at 20% 100%, hsl(30 100% 50% / 0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 50px 100px at 35% 100%, hsl(0 90% 55% / 0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 70px 140px at 50% 100%, hsl(15 95% 45% / 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 55px 110px at 65% 100%, hsl(45 95% 50% / 0.14) 0%, transparent 65%),
+      radial-gradient(ellipse 75px 130px at 80% 100%, hsl(30 100% 45% / 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60px 120px at 90% 100%, hsl(0 85% 50% / 0.1) 0%, transparent 70%);
+    animation: smolder-flames-rise-up 1.5s ease-in-out infinite alternate;
+    filter: blur(4px);
+  }
+
+  /* Fire glow from top and bottom */
+  .smolder body::before {
+    background:
+      radial-gradient(ellipse at 50% 0%, hsl(15 95% 50% / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 0%, hsl(30 100% 45% / 0.06) 0%, transparent 40%),
+      radial-gradient(ellipse at 70% 0%, hsl(0 90% 50% / 0.06) 0%, transparent 40%),
+      radial-gradient(ellipse at 50% 100%, hsl(15 95% 50% / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 100%, hsl(30 100% 45% / 0.04) 0%, transparent 40%),
+      radial-gradient(ellipse at 70% 100%, hsl(0 90% 50% / 0.04) 0%, transparent 40%);
+    animation: smolder-flames 2.5s ease-in-out infinite alternate;
+  }
+
+  /* Top flames — pulse downward from top */
+  .smolder body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    pointer-events: none;
+    z-index: 9998;
+    background:
+      radial-gradient(ellipse 60px 120px at 10% 0%, hsl(15 95% 50% / 0.14) 0%, transparent 70%),
+      radial-gradient(ellipse 80px 150px at 20% 0%, hsl(30 100% 50% / 0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 50px 100px at 35% 0%, hsl(0 90% 55% / 0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 70px 140px at 50% 0%, hsl(15 95% 45% / 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 55px 110px at 65% 0%, hsl(45 95% 50% / 0.14) 0%, transparent 65%),
+      radial-gradient(ellipse 75px 130px at 80% 0%, hsl(30 100% 45% / 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60px 120px at 90% 0%, hsl(0 85% 50% / 0.1) 0%, transparent 70%);
+    animation: smolder-flames-drip-down 1.5s ease-in-out infinite alternate;
+    filter: blur(4px);
+  }
+
+  /* Fire glow on interactive elements */
+  .smolder button,
+  .smolder a {
+    transition: text-shadow 0.2s ease, box-shadow 0.2s ease;
+  }
+  .smolder button:hover,
+  .smolder a:hover {
+    text-shadow: 0 0 10px hsl(15 95% 50% / 0.5), 0 0 20px hsl(30 100% 45% / 0.3);
+  }
+
+  /* Primary buttons — flame pulse */
+  .smolder button[class*="bg-primary"],
+  .smolder a[class*="bg-primary"] {
+    box-shadow: 0 0 16px hsl(15 90% 50% / 0.3);
+    animation: smolder-flame-pulse 2s ease-in-out infinite;
+  }
+
+  /* Ember focus ring — fire ring */
+  .smolder input:focus,
+  .smolder textarea:focus {
+    box-shadow:
+      0 0 0 2px hsl(15 95% 55% / 0.4),
+      0 0 16px hsl(15 95% 55% / 0.3),
+      0 0 32px hsl(30 100% 45% / 0.15);
+  }
+
+  /* Cards — warm glow borders with fire flicker */
+  .smolder .glass-card {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.95) 0%,
+      hsl(15 15% 4% / 0.95) 100%
+    );
+    border: 1px solid hsl(15 85% 50% / 0.2);
+    box-shadow: 0 0 12px hsl(15 85% 50% / 0.08);
+    animation: smolder-card-flicker 5s ease-in-out infinite;
+  }
+
+  /* Fire scrollbar — gradient flame */
+  @media (min-width: 768px) {
+    .smolder html::-webkit-scrollbar-thumb,
+    .smolder body::-webkit-scrollbar-thumb {
+      background: linear-gradient(
+        180deg,
+        hsl(15 95% 50% / 0.4) 0%,
+        hsl(30 100% 45% / 0.3) 50%,
+        hsl(0 90% 50% / 0.35) 100%
+      );
+      border-radius: 0px;
+      box-shadow: 0 0 4px hsl(15 95% 50% / 0.2);
+    }
+  }
+
+  /* Smolder link styling — ember color with glow */
+  .smolder a {
+    color: hsl(15 90% 60%);
+    text-decoration: none;
+    border-bottom: 1px solid hsl(15 90% 60% / 0.3);
+  }
+  .smolder a:hover {
+    color: hsl(15 95% 65%);
+    border-bottom-color: hsl(15 95% 65% / 0.4);
+  }
+
+  /* Subtle fire tint on muted foreground */
+  .smolder .text-muted-foreground,
+  .smolder [class*="text-muted"] {
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Primary text — warm flame glow */
+  .smolder .text-primary,
+  .smolder [class*="text-primary"] {
+    text-shadow: 0 0 8px hsl(15 95% 55% / 0.4), 0 0 16px hsl(15 95% 55% / 0.2);
   }
 
   /* ============================================================
@@ -692,6 +927,53 @@
     0% { opacity: 0.7; }
     50% { opacity: 1; }
     100% { opacity: 0.8; }
+  }
+
+  /* Smolder fire animations */
+  @keyframes smolder-fire-rise {
+    0% { opacity: 0.7; transform: translateY(5px); }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; transform: translateY(-5px); }
+  }
+
+  @keyframes smolder-flames {
+    0% { opacity: 0.6; transform: translateY(3px) scaleY(0.95); }
+    50% { opacity: 1; transform: translateY(-2px) scaleY(1.05); }
+    100% { opacity: 0.7; transform: translateY(2px) scaleY(0.98); }
+  }
+
+  /* Bottom flames pulse upward */
+  @keyframes smolder-flames-rise-up {
+    0% { opacity: 0.8; transform: translateY(0) scaleY(1); }
+    50% { opacity: 1; transform: translateY(-12px) scaleY(1.15); }
+    100% { opacity: 0.85; transform: translateY(-8px) scaleY(1.05); }
+  }
+
+  /* Top flames pulse downward */
+  @keyframes smolder-flames-drip-down {
+    0% { opacity: 0.85; transform: translateY(0) scaleY(1); }
+    50% { opacity: 1; transform: translateY(12px) scaleY(1.15); }
+    100% { opacity: 0.8; transform: translateY(8px) scaleY(1.05); }
+  }
+
+  @keyframes smolder-embers {
+    0% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 0.6; }
+    100% { opacity: 0.3; transform: translateY(-20px); }
+  }
+
+  @keyframes smolder-flame-pulse {
+    0% { box-shadow: 0 0 8px hsl(15 90% 50% / 0.25); }
+    50% { box-shadow: 0 0 20px hsl(15 95% 50% / 0.4), 0 0 30px hsl(30 100% 45% / 0.2); }
+    100% { box-shadow: 0 0 8px hsl(15 90% 50% / 0.25); }
+  }
+
+  @keyframes smolder-card-flicker {
+    0% { box-shadow: 0 0 8px hsl(15 85% 50% / 0.06); border-color: hsl(15 85% 50% / 0.18); }
+    25% { box-shadow: 0 0 14px hsl(15 85% 50% / 0.1); border-color: hsl(15 85% 50% / 0.22); }
+    50% { box-shadow: 0 0 10px hsl(15 85% 50% / 0.07); border-color: hsl(15 85% 50% / 0.19); }
+    75% { box-shadow: 0 0 12px hsl(15 85% 50% / 0.09); border-color: hsl(15 85% 50% / 0.21); }
+    100% { box-shadow: 0 0 8px hsl(15 85% 50% / 0.06); border-color: hsl(15 85% 50% / 0.18); }
   }
 
   .dark input[type='datetime-local']::-webkit-calendar-picker-indicator {
