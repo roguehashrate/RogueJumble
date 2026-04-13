@@ -20,7 +20,7 @@ export default function GroupLink({
   name?: string
 }) {
   const { t } = useTranslation()
-  const { pubkey } = useNostr()
+  const { pubkey, publish } = useNostr()
   const { push } = useSecondaryPage()
   const [loading, setLoading] = useState(false)
   const [joined, setJoined] = useState(false)
@@ -91,7 +91,7 @@ export default function GroupLink({
           tags: updatedTags,
           created_at: Math.floor(Date.now() / 1000)
         }
-        await client.signAndPublish(draftEvent)
+        await publish(draftEvent)
       }
 
       setJoined(true)

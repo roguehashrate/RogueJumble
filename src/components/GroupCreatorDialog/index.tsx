@@ -2,9 +2,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { NIP29_GROUP_KINDS, BIG_RELAY_URLS } from '@/constants'
+import { NIP29_GROUP_KINDS } from '@/constants'
 import client from '@/services/client.service'
 import mediaUpload, { UPLOAD_ABORTED_ERROR_MSG } from '@/services/media-upload.service'
+import { getDefaultRelayUrls } from '@/lib/relay'
 import { Dispatch, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -43,7 +44,7 @@ export default function GroupCreatorDialog({
 }) {
   const { isSmallScreen } = useScreenSize()
   const { t } = useTranslation()
-  const { pubkey } = useNostr()
+  const { pubkey, publish } = useNostr()
   const { push } = useSecondaryPage()
 
   const [groupName, setGroupName] = useState('')
@@ -123,11 +124,11 @@ export default function GroupCreatorDialog({
       }
 
       // Sign and publish
-      const signedEvent = await client.signAndPublish(draftEvent)
+      await publish(draftEvent)
 
       // Add to user's group list (kind 10009)
       const groupListEvents = await client.fetchEvents(
-        relayUrl ? [relayUrl] : undefined,
+        relayUrl ? [relayUrl] : getDefaultRelayUrls(),
         { kinds: [10009], authors: [pubkey], limit: 1 }
       )
 
@@ -157,7 +158,7 @@ export default function GroupCreatorDialog({
         created_at: Math.floor(Date.now() / 1000)
       }
 
-      await client.signAndPublish(listEvent)
+      await publish(listEvent)
 
       toast.success(t('Group created successfully!'))
       setOpen(false)

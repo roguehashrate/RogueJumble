@@ -21,7 +21,7 @@ type TUploadItem = {
 }
 
 export default function PostButton() {
-  const { checkLogin } = useNostr()
+  const { checkLogin, publish } = useNostr()
   const { push } = useSecondaryPage()
   const { t } = useTranslation()
   const { groupId, onMessageSent } = useGroupChatContext()
@@ -81,7 +81,7 @@ export default function PostButton() {
         created_at: Math.floor(Date.now() / 1000)
       }
 
-      await client.signAndPublish(draftEvent)
+      await publish(draftEvent)
       setMessage('')
       setUploads([])
       setReplyingTo(null)

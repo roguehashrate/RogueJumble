@@ -1,6 +1,6 @@
 import { toGroupChat } from '@/lib/link'
 import { useSecondaryPage } from '@/PageManager'
-import { MessageCircle, Lock, Users, ArrowRight } from 'lucide-react'
+import { Lock, ArrowRight } from 'lucide-react'
 import { useMemo } from 'react'
 import Image from '../Image'
 import { TGroupInfo } from './index'

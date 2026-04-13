@@ -4,6 +4,7 @@ import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { NIP29_GROUP_KINDS } from '@/constants'
 import client from '@/services/client.service'
+import { getDefaultRelayUrls } from '@/lib/relay'
 import { Dispatch, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -33,7 +34,7 @@ export default function GroupJoinDialog({
 }) {
   const { isSmallScreen } = useScreenSize()
   const { t } = useTranslation()
-  const { pubkey } = useNostr()
+  const { pubkey, publish } = useNostr()
   const { push } = useSecondaryPage()
 
   const [groupId, setGroupId] = useState(group?.id || '')
@@ -113,7 +114,7 @@ export default function GroupJoinDialog({
     try {
       // Add group to user's kind 10009 list
       const groupListEvents = await client.fetchEvents(
-        targetGroup.relayUrl ? [targetGroup.relayUrl] : undefined,
+        targetGroup.relayUrl ? [targetGroup.relayUrl] : getDefaultRelayUrls(),
         { kinds: [10009], authors: [pubkey], limit: 1 }
       )
 
@@ -157,7 +158,7 @@ export default function GroupJoinDialog({
         created_at: Math.floor(Date.now() / 1000)
       }
 
-      await client.signAndPublish(draftEvent)
+      await publish(draftEvent)
 
       toast.success(t('Successfully joined the group!'))
       setOpen(false)
