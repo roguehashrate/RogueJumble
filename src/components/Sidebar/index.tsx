@@ -10,7 +10,6 @@ import BookmarkButton from './BookmarkButton'
 import RelaysButton from './ExploreButton'
 import FollowingButton from './FollowingButton'
 import HomeButton from './HomeButton'
-import LayoutSwitcher from './LayoutSwitcher'
 import NotificationsButton from './NotificationButton'
 import PostButton from './PostButton'
 import ProfileButton from './ProfileButton'
@@ -32,7 +31,7 @@ function SidebarLogo({ size }: { size: 'small' | 'normal' }) {
 
 export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: boolean }) {
   const { isSmallScreen } = useScreenSize()
-  const { sidebarCollapse, updateSidebarCollapse, enableSingleColumnLayout } = useUserPreferences()
+  const { sidebarCollapse, updateSidebarCollapse } = useUserPreferences()
   const { pubkey } = useNostr()
   const { navigate } = usePrimaryPage()
 
@@ -83,7 +82,6 @@ export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: bo
           </div>
         ) : (
           <>
-            <LayoutSwitcher collapse={collapse} />
             <AccountButton collapse={collapse} />
           </>
         )}
@@ -92,7 +90,7 @@ export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: bo
         <button
           className={cn(
             'absolute flex h-6 w-5 flex-col items-center justify-center rounded-l-md p-0 text-muted-foreground transition-colors hover:bg-background hover:text-foreground hover:shadow-md [&_svg]:size-4',
-            enableSingleColumnLayout ? 'right-0 top-3' : '-right-0.5 top-5'
+            'right-0 top-3'
           )}
           onClick={(e) => {
             e.stopPropagation()

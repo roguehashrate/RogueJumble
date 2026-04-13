@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import { SimpleUserAvatar } from '@/components/UserAvatar'
 import { cn } from '@/lib/utils'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
-import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import { hasBackgroundAudioAtom } from '@/services/media-manager.service'
 import { useAtomValue } from 'jotai'
 import { ArrowUp } from 'lucide-react'
@@ -18,7 +17,6 @@ export default function NewNotesButton({
   onClick?: () => void
 }) {
   const { t } = useTranslation()
-  const { enableSingleColumnLayout } = useUserPreferences()
   const { isSmallScreen } = useScreenSize()
   const hasBackgroundAudio = useAtomValue(hasBackgroundAudioAtom)
   const pubkeys = useMemo(() => {
@@ -36,10 +34,7 @@ export default function NewNotesButton({
     <>
       {newEvents.length > 0 && (
         <div
-          className={cn(
-            'pointer-events-none z-50 flex w-full justify-center',
-            enableSingleColumnLayout ? 'sticky' : 'absolute'
-          )}
+          className={cn('pointer-events-none z-50 flex w-full justify-center', 'sticky')}
           style={{
             bottom: isSmallScreen
               ? `calc(env(safe-area-inset-bottom) + ${hasBackgroundAudio ? 9.9 : 6.5}rem)`

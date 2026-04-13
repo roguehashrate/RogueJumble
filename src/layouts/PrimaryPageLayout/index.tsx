@@ -4,7 +4,6 @@ import { usePrimaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { PageActiveContext } from '@/providers/PageActiveProvider'
-import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import { TPrimaryPageName } from '@/routes/primary'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
@@ -26,9 +25,7 @@ const PrimaryPageLayout = forwardRef(
     ref
   ) => {
     const { pubkey } = useNostr()
-    const smallScreenScrollAreaRef = useRef<HTMLDivElement>(null)
-    const smallScreenLastScrollTopRef = useRef(0)
-    const { enableSingleColumnLayout } = useUserPreferences()
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
     const { current, display } = usePrimaryPage()
 
     useImperativeHandle(
@@ -42,64 +39,23 @@ const PrimaryPageLayout = forwardRef(
     )
 
     useEffect(() => {
-      if (!enableSingleColumnLayout) return
-
-      const isVisible = () => {
-        return smallScreenScrollAreaRef.current?.checkVisibility
-          ? smallScreenScrollAreaRef.current?.checkVisibility()
-          : false
-      }
-
-      if (isVisible()) {
-        window.scrollTo({ top: smallScreenLastScrollTopRef.current, behavior: 'instant' })
-      }
-      const handleScroll = () => {
-        if (isVisible()) {
-          smallScreenLastScrollTopRef.current = window.scrollY
-        }
-      }
-      window.addEventListener('scroll', handleScroll)
-      return () => {
-        window.removeEventListener('scroll', handleScroll)
-      }
-    }, [current, enableSingleColumnLayout, display])
-
-    useEffect(() => {
-      smallScreenLastScrollTopRef.current = 0
+      // Reset scroll position when pubkey changes
+      window.scrollTo({ top: 0, behavior: 'instant' })
     }, [pubkey])
 
-    // Mobile single-column layout (PWA) - uses window scrolling
-    if (enableSingleColumnLayout) {
-      return (
-        <PageActiveContext.Provider value={current === pageName && display}>
-          <DeepBrowsingProvider active={current === pageName && display}>
-            <div
-              ref={smallScreenScrollAreaRef}
-              style={{
-                paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
-              }}
-            >
-              <PrimaryPageTitlebar hideBottomBorder={hideTitlebarBottomBorder}>
-                {titlebar}
-              </PrimaryPageTitlebar>
-              {children}
-            </div>
-            {displayScrollToTopButton && <ScrollToTopButton />}
-          </DeepBrowsingProvider>
-        </PageActiveContext.Provider>
-      )
-    }
-
-    // Desktop layout - uses window scrolling for spacious feel
     return (
       <PageActiveContext.Provider value={current === pageName && display}>
         <DeepBrowsingProvider active={current === pageName && display}>
-          <div ref={smallScreenScrollAreaRef}>
+          <div
+            ref={scrollAreaRef}
+            style={{
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
+            }}
+          >
             <PrimaryPageTitlebar hideBottomBorder={hideTitlebarBottomBorder}>
               {titlebar}
             </PrimaryPageTitlebar>
             {children}
-            <div className="h-8" />
           </div>
           {displayScrollToTopButton && <ScrollToTopButton />}
         </DeepBrowsingProvider>

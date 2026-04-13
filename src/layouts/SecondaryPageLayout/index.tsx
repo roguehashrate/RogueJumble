@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { useSecondaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { PageActiveContext } from '@/providers/PageActiveProvider'
-import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import { ChevronLeft } from 'lucide-react'
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const SecondaryPageLayout = forwardRef(
@@ -32,8 +31,6 @@ const SecondaryPageLayout = forwardRef(
     },
     ref
   ) => {
-    const scrollAreaRef = useRef<HTMLDivElement>(null)
-    const { enableSingleColumnLayout } = useUserPreferences()
     const { currentIndex } = useSecondaryPage()
 
     useImperativeHandle(
@@ -47,44 +44,17 @@ const SecondaryPageLayout = forwardRef(
     )
 
     useEffect(() => {
-      if (enableSingleColumnLayout) {
-        setTimeout(() => window.scrollTo({ top: 0 }), 10)
-        return
-      }
-      // Desktop: scroll to top on mount
       setTimeout(() => window.scrollTo({ top: 0 }), 10)
     }, [])
 
-    // Mobile single-column layout (PWA)
-    if (enableSingleColumnLayout) {
-      return (
-        <PageActiveContext.Provider value={currentIndex === index}>
-          <DeepBrowsingProvider active={currentIndex === index}>
-            <div
-              style={{
-                paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
-              }}
-            >
-              <SecondaryPageTitlebar
-                title={title}
-                controls={controls}
-                hideBackButton={hideBackButton}
-                hideBottomBorder={hideTitlebarBottomBorder}
-                titlebar={titlebar}
-              />
-              {children}
-            </div>
-            {displayScrollToTopButton && <ScrollToTopButton />}
-          </DeepBrowsingProvider>
-        </PageActiveContext.Provider>
-      )
-    }
-
-    // Desktop layout - uses window scrolling
     return (
       <PageActiveContext.Provider value={currentIndex === index}>
         <DeepBrowsingProvider active={currentIndex === index}>
-          <div ref={scrollAreaRef}>
+          <div
+            style={{
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
+            }}
+          >
             <SecondaryPageTitlebar
               title={title}
               controls={controls}
@@ -93,7 +63,6 @@ const SecondaryPageLayout = forwardRef(
               titlebar={titlebar}
             />
             {children}
-            <div className="h-8" />
           </div>
           {displayScrollToTopButton && <ScrollToTopButton />}
         </DeepBrowsingProvider>

@@ -2,17 +2,11 @@ import { Label } from '@/components/ui/label'
 import { FONT, FONT_SIZE, THEME_COLORS, TThemeName } from '@/constants'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { cn } from '@/lib/utils'
-import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useTheme } from '@/providers/ThemeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
-import { ChevronDown, Columns2, LayoutList, List, PanelLeft, Type } from 'lucide-react'
+import { ChevronDown, LayoutList, List, Type } from 'lucide-react'
 import { forwardRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-
-const LAYOUTS = [
-  { key: false, label: 'Two-column', icon: <Columns2 className="size-5" /> },
-  { key: true, label: 'Single-column', icon: <PanelLeft className="size-5" /> }
-] as const
 
 const NOTIFICATION_STYLES = [
   { key: 'detailed', label: 'Detailed', icon: <LayoutList className="size-5" /> },
@@ -46,11 +40,8 @@ const FONT_SIZES = [
 
 const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
-  const { isSmallScreen } = useScreenSize()
   const { themeSetting, setThemeSetting } = useTheme()
   const {
-    enableSingleColumnLayout,
-    updateEnableSingleColumnLayout,
     notificationListStyle,
     updateNotificationListStyle,
     font,
@@ -135,22 +126,6 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
             ))}
           </div>
         </div>
-        {!isSmallScreen && (
-          <div className="flex flex-col gap-2 px-4">
-            <Label className="text-base">{t('Layout')}</Label>
-            <div className="grid w-full grid-cols-2 gap-4">
-              {LAYOUTS.map(({ key, label, icon }) => (
-                <OptionButton
-                  key={key.toString()}
-                  isSelected={enableSingleColumnLayout === key}
-                  icon={icon}
-                  label={t(label)}
-                  onClick={() => updateEnableSingleColumnLayout(key)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
         <div className="flex flex-col gap-2 px-4">
           <Label className="text-base">{t('Notification list style')}</Label>
           <div className="grid w-full grid-cols-2 gap-4">

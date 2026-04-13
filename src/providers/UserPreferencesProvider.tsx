@@ -2,7 +2,6 @@ import { applyFont } from '@/lib/fontLoader'
 import storage from '@/services/local-storage.service'
 import { TEmoji, TFont, TFontSize, TNotificationStyle } from '@/types'
 import { createContext, useContext, useEffect, useState } from 'react'
-import { useScreenSize } from './ScreenSizeProvider'
 
 type TUserPreferencesContext = {
   notificationListStyle: TNotificationStyle
@@ -19,9 +18,6 @@ type TUserPreferencesContext = {
 
   sidebarCollapse: boolean
   updateSidebarCollapse: (collapse: boolean) => void
-
-  enableSingleColumnLayout: boolean
-  updateEnableSingleColumnLayout: (enable: boolean) => void
 
   quickReaction: boolean
   updateQuickReaction: (enable: boolean) => void
@@ -44,7 +40,6 @@ export const useUserPreferences = () => {
 }
 
 export function UserPreferencesProvider({ children }: { children: React.ReactNode }) {
-  const { isSmallScreen } = useScreenSize()
   const [notificationListStyle, setNotificationListStyle] = useState(
     storage.getNotificationListStyle()
   )
@@ -52,23 +47,12 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const [fontSize, setFontSize] = useState<TFontSize>(storage.getFontSize())
   const [muteMedia, setMuteMedia] = useState(true)
   const [sidebarCollapse, setSidebarCollapse] = useState(storage.getSidebarCollapse())
-  const [enableSingleColumnLayout, setEnableSingleColumnLayout] = useState(
-    storage.getEnableSingleColumnLayout()
-  )
   const [quickReaction, setQuickReaction] = useState(storage.getQuickReaction())
   const [quickReactionEmoji, setQuickReactionEmoji] = useState(storage.getQuickReactionEmoji())
 
   const [allowInsecureConnection, setAllowInsecureConnection] = useState(
     storage.getAllowInsecureConnection()
   )
-
-  useEffect(() => {
-    if (!isSmallScreen && enableSingleColumnLayout) {
-      document.documentElement.style.setProperty('overflow-y', 'scroll')
-    } else {
-      document.documentElement.style.removeProperty('overflow-y')
-    }
-  }, [enableSingleColumnLayout, isSmallScreen])
 
   const updateNotificationListStyle = (style: TNotificationStyle) => {
     setNotificationListStyle(style)
@@ -78,11 +62,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const updateSidebarCollapse = (collapse: boolean) => {
     setSidebarCollapse(collapse)
     storage.setSidebarCollapse(collapse)
-  }
-
-  const updateEnableSingleColumnLayout = (enable: boolean) => {
-    setEnableSingleColumnLayout(enable)
-    storage.setEnableSingleColumnLayout(enable)
   }
 
   const updateQuickReaction = (enable: boolean) => {
@@ -135,8 +114,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         updateMuteMedia: setMuteMedia,
         sidebarCollapse,
         updateSidebarCollapse,
-        enableSingleColumnLayout: isSmallScreen ? true : enableSingleColumnLayout,
-        updateEnableSingleColumnLayout,
         quickReaction,
         updateQuickReaction,
         quickReactionEmoji,

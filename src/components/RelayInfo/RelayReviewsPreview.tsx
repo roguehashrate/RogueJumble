@@ -15,7 +15,6 @@ import { getDefaultRelayUrls } from '@/lib/relay'
 import { cn, isTouchDevice } from '@/lib/utils'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import { useUserTrust } from '@/providers/UserTrustProvider'
 import client from '@/services/client.service'
 import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures'
@@ -202,13 +201,11 @@ function ReviewCarousel({
 }
 
 function Item({ children }: { children: React.ReactNode }) {
-  const { enableSingleColumnLayout } = useUserPreferences()
-
   return (
     <CarouselItem
       className={cn(
         'basis-11/12 pl-0 pr-2',
-        enableSingleColumnLayout ? 'md:basis-5/12 lg:basis-7/12' : 'lg:basis-2/3 2xl:basis-5/12'
+        'md:basis-5/12 lg:basis-7/12'
       )}
     >
       {children}
