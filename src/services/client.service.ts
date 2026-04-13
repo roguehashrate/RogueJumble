@@ -837,6 +837,11 @@ class ClientService extends EventTarget {
     relayUrls.forEach((url) => set.add(url))
   }
 
+  // Keep a relay connection alive to prevent SmartPool from closing it
+  keepRelayAlive(url: string) {
+    this.pool.markRelayActive(url)
+  }
+
   private async query(urls: string[], filter: Filter | Filter[], onevent?: (evt: NEvent) => void) {
     return await new Promise<NEvent[]>((resolve) => {
       const events: NEvent[] = []

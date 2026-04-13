@@ -50,4 +50,9 @@ export class SmartPool extends SimplePool {
       this.close(idleRelays)
     }
   }
+
+  // Keep a relay connection alive (call this to prevent idle cleanup)
+  markRelayActive(url: string) {
+    this.relayIdleTracker.set(url, Date.now())
+  }
 }

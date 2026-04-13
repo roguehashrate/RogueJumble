@@ -91,6 +91,20 @@ export const TRENDING_NOTES_RELAY_URLS = ['wss://trending.relays.land/']
 
 export const GROUP_METADATA_EVENT_KIND = 39000
 
+// NIP-29 Group Chat Event Kinds
+export const NIP29_GROUP_KINDS = {
+  GROUP_LIST: 10009, // NIP-51: User's group list
+  GROUP_CHAT_MESSAGE: 9, // Simple group chat messages (client-side groups)
+  GROUP_METADATA: 39000, // NIP-29: Group metadata (relay-enforced)
+  GROUP_CREATE: 9007, // NIP-29: Create group
+  GROUP_ADD_USER: 9000, // NIP-29: Add user
+  GROUP_REMOVE_USER: 9001, // NIP-29: Remove user
+  GROUP_EDIT_METADATA: 9002, // NIP-29: Edit metadata
+  GROUP_DELETE_EVENT: 9003, // NIP-29: Delete event
+  GROUP_JOIN_REQUEST: 9021, // NIP-29: Join request
+  GROUP_LEAVE_REQUEST: 9022 // NIP-29: Leave request
+} as const
+
 export const ExtendedKind = {
   EXTERNAL_CONTENT_REACTION: 17,
   PICTURE: 20,

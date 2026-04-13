@@ -33,6 +33,7 @@ const LazyUserAggregationDetailPage = lazy(
   () => import('@/pages/secondary/UserAggregationDetailPage')
 )
 const LazyComposePage = lazy(() => import('@/pages/secondary/ComposePage'))
+const LazyGroupChatPage = lazy(() => import('@/pages/secondary/GroupChatPage'))
 
 // Route configs with lazy component types instead of pre-created elements
 const SECONDARY_ROUTE_CONFIGS = [
@@ -61,7 +62,8 @@ const SECONDARY_ROUTE_CONFIGS = [
   { path: '/bookmarks', Component: LazyBookmarkPage },
   { path: '/follow-packs/:id', Component: LazyFollowPackPage },
   { path: '/user-aggregation/:feedId/:npub', Component: LazyUserAggregationDetailPage },
-  { path: '/compose', Component: LazyComposePage }
+  { path: '/compose', Component: LazyComposePage },
+  { path: '/groups/:relayDomain/:groupId', Component: LazyGroupChatPage }
 ]
 
 // Build routes with matchers; element is a function that creates a lazy-wrapped element

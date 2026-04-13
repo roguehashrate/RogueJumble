@@ -88,6 +88,11 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         return await switchFeed(feedInfo.feedType, { pubkey })
       }
 
+      // update groups feed if pubkey changes
+      if (feedInfo?.feedType === 'groups' && pubkey) {
+        return await switchFeed('groups', { pubkey })
+      }
+
       setIsReady(true)
     }
 
@@ -194,6 +199,20 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       return
     }
     if (feedType === 'mediaFeed' || feedType === 'textFeed' || feedType === 'articleFeed' || feedType === 'communityFeed') {
+      if (!options.pubkey) {
+        setIsReady(true)
+        return
+      }
+      const newFeedInfo = { feedType }
+      setFeedInfo(newFeedInfo)
+      feedInfoRef.current = newFeedInfo
+      storage.setFeedInfo(newFeedInfo, pubkey)
+
+      setRelayUrls([])
+      setIsReady(true)
+      return
+    }
+    if (feedType === 'groups') {
       if (!options.pubkey) {
         setIsReady(true)
         return

@@ -138,6 +138,7 @@ export type TFeedType =
   | 'textFeed'
   | 'articleFeed'
   | 'communityFeed'
+  | 'groups'
 export type TFeedInfo = { feedType: TFeedType; id?: string; name?: string } | null
 
 export type TLanguage = 'en' | 'zh' | 'pl'
