@@ -56,10 +56,6 @@ export default function GroupCard({ group }: { group: TGroupInfo }) {
           )}
 
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Users className="size-3.5" />
-              <span>Group</span>
-            </div>
             {group.restricted && (
               <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary">
                 Restricted

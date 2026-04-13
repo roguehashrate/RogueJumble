@@ -162,6 +162,7 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 export const EMOJI_SHORT_CODE_REGEX = /:[a-zA-Z0-9_-]+:/g
 export const EMBEDDED_EVENT_REGEX = /nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
 export const BECH32_EVENT_REGEX = /(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
+export const GROUP_LINK_REGEX = /nostr:group:([a-z0-9-_]+)@([^\s]+)/gi
 export const EMBEDDED_MENTION_REGEX = /nostr:(npub1[a-z0-9]{58}|nprofile1[a-z0-9]+)/g
 export const HASHTAG_REGEX = /#[\p{L}\p{N}\p{M}_]+/gu
 export const LN_INVOICE_REGEX = /(ln(?:bc|tb|bcrt))([0-9]+[munp]?)?1([02-9ac-hj-np-z]+)/g

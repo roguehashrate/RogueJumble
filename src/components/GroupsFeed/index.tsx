@@ -148,7 +148,6 @@ export default function GroupsFeed() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MessageCircle className="size-5 text-primary" />
-          <h2 className="text-lg font-semibold">{t('Your Groups')}</h2>
           {groups.length > 0 && (
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
               {groups.length}

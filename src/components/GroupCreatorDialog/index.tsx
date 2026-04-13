@@ -2,19 +2,37 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { NIP29_GROUP_KINDS } from '@/constants'
+import { NIP29_GROUP_KINDS, BIG_RELAY_URLS } from '@/constants'
 import client from '@/services/client.service'
-import { Dispatch, useState } from 'react'
+import mediaUpload, { UPLOAD_ABORTED_ERROR_MSG } from '@/services/media-upload.service'
+import { Dispatch, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, MessageCircle } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { Loader2, MessageCircle, Upload, X, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecondaryPage } from '@/PageManager'
 import { toGroupChat } from '@/lib/link'
+
+const SUGGESTED_RELAYS = [
+  { value: 'wss://groups.0xchat.com/', label: '0xChat Groups (Recommended)' },
+  { value: 'default', label: 'Default Relays' },
+  { value: 'wss://relay.primal.net/', label: 'Primal Relay' },
+  { value: 'wss://relay.damus.io/', label: 'Damus Relay' },
+  { value: 'wss://nos.lol/', label: 'nos.lol' },
+  { value: 'wss://relay.snort.social/', label: 'Snort Relay' },
+  { value: 'custom', label: 'Custom Relay...' }
+]
 
 export default function GroupCreatorDialog({
   open,
@@ -33,8 +51,44 @@ export default function GroupCreatorDialog({
   const [groupPicture, setGroupPicture] = useState('')
   const [isPrivate, setIsPrivate] = useState(false)
   const [isRestricted, setIsRestricted] = useState(false)
-  const [relayUrl, setRelayUrl] = useState('')
+  const [relaySelection, setRelaySelection] = useState('')
+  const [customRelayUrl, setCustomRelayUrl] = useState('')
   const [creating, setCreating] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const getRelayUrl = () => {
+    if (relaySelection === 'custom') return customRelayUrl
+    if (relaySelection === 'default') return ''
+    return relaySelection
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
+    setUploadProgress(0)
+    try {
+      const result = await mediaUpload.upload(file, {
+        onProgress: (p) => setUploadProgress(p)
+      })
+      setGroupPicture(result.url)
+      toast.success(t('Image uploaded successfully'))
+    } catch (error) {
+      const message = (error as Error).message
+      if (message !== UPLOAD_ABORTED_ERROR_MSG) {
+        toast.error(`Failed to upload image: ${message}`)
+      }
+    } finally {
+      setUploadingImage(false)
+      setUploadProgress(0)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
 
   const handleCreate = async () => {
     if (!groupName.trim()) {
@@ -51,6 +105,7 @@ export default function GroupCreatorDialog({
     try {
       // Generate a unique group ID
       const groupId = crypto.randomUUID().slice(0, 12)
+      const relayUrl = getRelayUrl()
 
       // Create group metadata event (kind 39000)
       const draftEvent = {
@@ -70,6 +125,40 @@ export default function GroupCreatorDialog({
       // Sign and publish
       const signedEvent = await client.signAndPublish(draftEvent)
 
+      // Add to user's group list (kind 10009)
+      const groupListEvents = await client.fetchEvents(
+        relayUrl ? [relayUrl] : undefined,
+        { kinds: [10009], authors: [pubkey], limit: 1 }
+      )
+
+      let existingTags: string[][] = []
+      if (groupListEvents.length > 0) {
+        existingTags = groupListEvents[0].tags.filter(
+          (tag) => tag[0] === 'group' || tag[0] === 'r'
+        )
+      }
+
+      const newGroupTag = ['group', groupId, relayUrl || 'default', groupName.trim()]
+      const updatedTags = [...existingTags, newGroupTag]
+
+      if (relayUrl) {
+        const hasRelayTag = updatedTags.some(
+          (tag) => tag[0] === 'r' && tag[1] === relayUrl
+        )
+        if (!hasRelayTag) {
+          updatedTags.push(['r', relayUrl])
+        }
+      }
+
+      const listEvent = {
+        kind: 10009,
+        content: '',
+        tags: updatedTags,
+        created_at: Math.floor(Date.now() / 1000)
+      }
+
+      await client.signAndPublish(listEvent)
+
       toast.success(t('Group created successfully!'))
       setOpen(false)
 
@@ -82,7 +171,8 @@ export default function GroupCreatorDialog({
       setGroupPicture('')
       setIsPrivate(false)
       setIsRestricted(false)
-      setRelayUrl('')
+      setRelaySelection('')
+      setCustomRelayUrl('')
     } catch (error) {
       console.error('Failed to create group:', error)
       toast.error(t('Failed to create group. Please try again.'))
@@ -117,25 +207,92 @@ export default function GroupCreatorDialog({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="group-picture">{t('Picture URL')}</Label>
-        <Input
-          id="group-picture"
-          value={groupPicture}
-          onChange={(e) => setGroupPicture(e.target.value)}
-          placeholder={t('https://example.com/group.jpg')}
-        />
+        <Label>{t('Group Picture')}</Label>
+        <div className="flex gap-2">
+          {groupPicture ? (
+            <div className="relative flex-1">
+              <div className="flex items-center gap-2 rounded-lg border border-border/20 bg-muted/20 p-2">
+                <ImageIcon className="size-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1 truncate text-xs text-muted-foreground">{groupPicture}</span>
+                <button
+                  onClick={() => setGroupPicture('')}
+                  className="flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/30"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1">
+              {uploadingImage ? (
+                <div className="flex items-center gap-2 rounded-lg border border-border/20 bg-muted/20 p-3">
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <div className="flex-1">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-[10px] text-muted-foreground">{uploadProgress}%</p>
+                  </div>
+                </div>
+              ) : (
+                <Input
+                  value={groupPicture}
+                  onChange={(e) => setGroupPicture(e.target.value)}
+                  placeholder={t('Paste URL or upload an image...')}
+                  className="pr-20"
+                />
+              )}
+            </div>
+          )}
+          {!groupPicture && !uploadingImage && (
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleImageUpload}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                className="shrink-0"
+              >
+                <Upload className="size-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="relay-url">{t('Relay URL')}</Label>
-        <Input
-          id="relay-url"
-          value={relayUrl}
-          onChange={(e) => setRelayUrl(e.target.value)}
-          placeholder={t('wss://relay.example.com (optional)')}
-        />
+        <Label htmlFor="relay-select">{t('Host Relay')}</Label>
+        <Select value={relaySelection} onValueChange={setRelaySelection}>
+          <SelectTrigger id="relay-select">
+            <SelectValue placeholder={t('Select a relay')} />
+          </SelectTrigger>
+          <SelectContent>
+            {SUGGESTED_RELAYS.map((relay) => (
+              <SelectItem key={relay.value} value={relay.value}>
+                {relay.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {relaySelection === 'custom' && (
+          <Input
+            value={customRelayUrl}
+            onChange={(e) => setCustomRelayUrl(e.target.value)}
+            placeholder={t('wss://relay.example.com')}
+            className="mt-2"
+          />
+        )}
         <p className="text-xs text-muted-foreground">
-          {t('The relay where this group will be hosted. Leave empty to use default relays.')}
+          {t('The relay where this group will be hosted. Default relays are recommended for best availability.')}
         </p>
       </div>
 

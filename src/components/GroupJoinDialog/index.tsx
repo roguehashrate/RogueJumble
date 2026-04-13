@@ -4,19 +4,23 @@ import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { NIP29_GROUP_KINDS } from '@/constants'
 import client from '@/services/client.service'
-import { getDefaultRelayUrls } from '@/lib/relay'
-import { normalizeUrl } from '@/lib/url'
-import { Dispatch, useState } from 'react'
+import { Dispatch, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Globe, Link } from 'lucide-react'
+import { Loader2, Globe, Search, Check, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSecondaryPage } from '@/PageManager'
 import { toGroupChat } from '@/lib/link'
-import { TGroupInfo } from '@/components/GroupsFeed'
-import { kinds } from 'nostr-tools'
+
+// Known group-supporting relays to auto-search
+const GROUP_RELAYS = [
+  'wss://groups.0xchat.com/',
+  'wss://relay.nos.social/',
+  'wss://relay.primal.net/',
+  'wss://relay.damus.io/'
+]
 
 export default function GroupJoinDialog({
   open,
@@ -25,7 +29,7 @@ export default function GroupJoinDialog({
 }: {
   open: boolean
   setOpen: Dispatch<boolean>
-  group?: TGroupInfo | null
+  group?: { id: string; relayUrl?: string; name?: string } | null
 }) {
   const { isSmallScreen } = useScreenSize()
   const { t } = useTranslation()
@@ -33,11 +37,67 @@ export default function GroupJoinDialog({
   const { push } = useSecondaryPage()
 
   const [groupId, setGroupId] = useState(group?.id || '')
-  const [relayUrl, setRelayUrl] = useState(group?.relayUrl || '')
+  const [searching, setSearching] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [foundGroup, setFoundGroup] = useState<{ id: string; name: string; relayUrl: string } | null>(null)
+  const [searchError, setSearchError] = useState<string | null>(null)
+
+  // Auto-search when dialog opens with a pre-filled group ID
+  useEffect(() => {
+    if (open && group?.id && !group.relayUrl) {
+      handleSearch()
+    }
+  }, [open])
+
+  const handleSearch = async () => {
+    if (!groupId.trim()) {
+      setSearchError(t('Please enter a group ID'))
+      return
+    }
+
+    setSearching(true)
+    setSearchError(null)
+    setFoundGroup(null)
+
+    try {
+      // Try each group relay to find the group
+      for (const relay of GROUP_RELAYS) {
+        try {
+          const metadataEvents = await client.fetchEvents(
+            [relay],
+            {
+              kinds: [NIP29_GROUP_KINDS.GROUP_METADATA],
+              '#d': [groupId.trim()],
+              limit: 1
+            } as any
+          )
+
+          if (metadataEvents.length > 0) {
+            const metadataEvent = metadataEvents[0]
+            let name = groupId
+            metadataEvent.tags.forEach((tag) => {
+              if (tag[0] === 'name' && tag[1]) {
+                name = tag[1]
+              }
+            })
+            setFoundGroup({ id: groupId.trim(), name, relayUrl: relay })
+            return
+          }
+        } catch {
+          // Continue to next relay
+        }
+      }
+
+      setSearchError(t('Group not found on any known group relays. Please check the group ID.'))
+    } catch (error) {
+      setSearchError(t('Failed to search for group'))
+    } finally {
+      setSearching(false)
+    }
+  }
 
   const handleJoin = async () => {
-    if (!groupId.trim()) {
+    if (!foundGroup && !groupId.trim()) {
       toast.error(t('Group ID is required'))
       return
     }
@@ -47,48 +107,14 @@ export default function GroupJoinDialog({
       return
     }
 
+    const targetGroup = foundGroup || { id: groupId.trim(), name: groupId.trim(), relayUrl: '' }
+    
     setJoining(true)
     try {
-      const normalizedRelayUrl = relayUrl ? normalizeUrl(relayUrl) : getDefaultRelayUrls()[0]
-      
-      // Fetch group metadata to verify it exists
-      const metadataEvents = await client.fetchEvents(
-        [normalizedRelayUrl],
-        {
-          kinds: [NIP29_GROUP_KINDS.GROUP_METADATA],
-          '#d': [groupId],
-          limit: 1
-        } as any
-      )
-
-      let groupName = groupId
-      let groupAbout: string | undefined
-      let groupPicture: string | undefined
-
-      if (metadataEvents.length > 0) {
-        const metadataEvent = metadataEvents[0]
-        metadataEvent.tags.forEach((tag) => {
-          const [tagName, tagValue] = tag
-          if (tagName === 'name' && tagValue) {
-            groupName = tagValue
-          } else if (tagName === 'about' && tagValue) {
-            groupAbout = tagValue
-          } else if (tagName === 'picture' && tagValue) {
-            groupPicture = tagValue
-          }
-        })
-      } else {
-        toast.warning(t('Group metadata not found. The group may not exist on this relay.'))
-      }
-
       // Add group to user's kind 10009 list
       const groupListEvents = await client.fetchEvents(
-        getDefaultRelayUrls(),
-        {
-          kinds: [10009],
-          authors: [pubkey],
-          limit: 1
-        }
+        targetGroup.relayUrl ? [targetGroup.relayUrl] : undefined,
+        { kinds: [10009], authors: [pubkey], limit: 1 }
       )
 
       let existingTags: string[][] = []
@@ -100,27 +126,28 @@ export default function GroupJoinDialog({
 
       // Check if already in list
       const alreadyInList = existingTags.some(
-        (tag) => tag[0] === 'group' && tag[1] === groupId && tag[2] === normalizedRelayUrl
+        (tag) => tag[0] === 'group' && tag[1] === targetGroup.id
       )
 
       if (alreadyInList) {
         toast.info(t('You are already a member of this group'))
-        const relayDomain = normalizedRelayUrl.replace(/^wss?:\/\//, '').replace(/\/$/, '')
-        push(toGroupChat(relayDomain, groupId, groupName))
+        const relayDomain = targetGroup.relayUrl.replace(/^wss?:\/\//, '').replace(/\/$/, '')
+        push(toGroupChat(relayDomain || 'default', targetGroup.id, targetGroup.name))
         setOpen(false)
         return
       }
 
       // Create updated group list event
-      const newGroupTag = ['group', groupId, normalizedRelayUrl, groupName]
+      const newGroupTag = ['group', targetGroup.id, targetGroup.relayUrl || 'default', targetGroup.name]
       const updatedTags = [...existingTags, newGroupTag]
 
-      // Add relay to r tags if not already there
-      const hasRelayTag = updatedTags.some(
-        (tag) => tag[0] === 'r' && tag[1] === normalizedRelayUrl
-      )
-      if (!hasRelayTag) {
-        updatedTags.push(['r', normalizedRelayUrl])
+      if (targetGroup.relayUrl) {
+        const hasRelayTag = updatedTags.some(
+          (tag) => tag[0] === 'r' && tag[1] === targetGroup.relayUrl
+        )
+        if (!hasRelayTag) {
+          updatedTags.push(['r', targetGroup.relayUrl])
+        }
       }
 
       const draftEvent = {
@@ -136,12 +163,13 @@ export default function GroupJoinDialog({
       setOpen(false)
 
       // Navigate to the group chat
-      const relayDomain = normalizedRelayUrl.replace(/^wss?:\/\//, '').replace(/\/$/, '')
-      push(toGroupChat(relayDomain, groupId, groupName))
+      const relayDomain = targetGroup.relayUrl.replace(/^wss?:\/\//, '').replace(/\/$/, '')
+      push(toGroupChat(relayDomain || 'default', targetGroup.id, targetGroup.name))
 
       // Reset form
       setGroupId('')
-      setRelayUrl('')
+      setFoundGroup(null)
+      setSearchError(null)
     } catch (error) {
       console.error('Failed to join group:', error)
       toast.error(t('Failed to join group. Please try again.'))
@@ -153,7 +181,11 @@ export default function GroupJoinDialog({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleJoin()
+      if (!foundGroup) {
+        handleSearch()
+      } else {
+        handleJoin()
+      }
     }
   }
 
@@ -165,7 +197,7 @@ export default function GroupJoinDialog({
           <div>
             <h4 className="font-medium">{t('How to join a group')}</h4>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t('Enter the group ID and the relay URL where the group is hosted. You can get this information from the group creator or an invite link.')}
+              {t('Enter the group ID. We\'ll automatically search known group relays to find it.')}
             </p>
           </div>
         </div>
@@ -173,33 +205,58 @@ export default function GroupJoinDialog({
 
       <div className="space-y-2">
         <Label htmlFor="group-id">{t('Group ID')} *</Label>
-        <Input
-          id="group-id"
-          value={groupId}
-          onChange={(e) => setGroupId(e.target.value)}
-          placeholder={t('Enter group ID')}
-          disabled={joining}
-        />
+        <div className="flex gap-2">
+          <Input
+            id="group-id"
+            value={groupId}
+            onChange={(e) => {
+              setGroupId(e.target.value)
+              setFoundGroup(null)
+              setSearchError(null)
+            }}
+            placeholder={t('Enter group ID')}
+            disabled={joining || searching}
+            className="flex-1"
+          />
+          {!foundGroup && (
+            <Button
+              onClick={handleSearch}
+              disabled={searching || !groupId.trim()}
+              variant="outline"
+              size="icon"
+            >
+              {searching ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Search className="size-4" />
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="relay-url">{t('Relay URL')}</Label>
-        <Input
-          id="relay-url"
-          value={relayUrl}
-          onChange={(e) => setRelayUrl(e.target.value)}
-          placeholder={t('wss://relay.example.com')}
-          disabled={joining}
-        />
-        <p className="text-xs text-muted-foreground">
-          {t('The relay where the group is hosted. If unsure, try the default relays.')}
-        </p>
-      </div>
+      {/* Search result */}
+      {foundGroup && (
+        <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <Check className="size-5 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium">{foundGroup.name}</p>
+            <p className="text-xs text-muted-foreground">{foundGroup.relayUrl}</p>
+          </div>
+        </div>
+      )}
+
+      {searchError && (
+        <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+          <AlertCircle className="size-5 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">{searchError}</p>
+        </div>
+      )}
 
       {group && (
         <div className="rounded-lg border border-border/20 bg-muted/20 p-3">
           <div className="flex items-center gap-2">
-            <Link className="size-4 text-muted-foreground" />
+            <Globe className="size-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
               {t('Pre-filled from group card')}
             </span>
@@ -214,14 +271,14 @@ export default function GroupJoinDialog({
       <Button
         variant="outline"
         onClick={() => setOpen(false)}
-        disabled={joining}
+        disabled={joining || searching}
         className="flex-1"
       >
         {t('Cancel')}
       </Button>
       <Button
-        onClick={handleJoin}
-        disabled={joining || !groupId.trim()}
+        onClick={foundGroup ? handleJoin : handleSearch}
+        disabled={joining || searching || !groupId.trim()}
         className="flex-1"
       >
         {joining ? (
@@ -229,10 +286,15 @@ export default function GroupJoinDialog({
             <Loader2 className="mr-2 size-4 animate-spin" />
             {t('Joining...')}
           </>
+        ) : foundGroup ? (
+          <>
+            <Check className="mr-2 size-4" />
+            {t('Join Group')}
+          </>
         ) : (
           <>
-            <Globe className="mr-2 size-4" />
-            {t('Join Group')}
+            <Search className="mr-2 size-4" />
+            {searching ? t('Searching...') : t('Search')}
           </>
         )}
       </Button>
