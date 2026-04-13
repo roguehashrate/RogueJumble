@@ -73,11 +73,14 @@ export const SECONDARY_ROUTES = SECONDARY_ROUTE_CONFIGS.map(
     matcher: match(path),
     // Returns a lazy-wrapped element; PageManager wraps it in Suspense
     createLazyElement: (params: Record<string, unknown>, index: number, ref: React.RefObject<TPageRef>) => {
-      const LazyElement = ({ ...props }: Record<string, unknown>) => (
-        <Suspense fallback={<PageSkeleton />}>
-          <Component ref={ref} index={index} {...params} {...props} />
-        </Suspense>
-      )
+      const LazyElement = ({ ...props }: Record<string, unknown>) => {
+        const Comp = Component as any
+        return (
+          <Suspense fallback={<PageSkeleton />}>
+            <Comp ref={ref} index={index} {...params} {...props} />
+          </Suspense>
+        )
+      }
       return LazyElement
     }
   })

@@ -5,7 +5,7 @@ type TGroupChatContext = {
   registerGroupChat: (groupId: string) => void
   unregisterGroupChat: () => void
   onMessageSent: () => void
-  refreshMessages: () => void
+  refreshMessages: number
 }
 
 const GroupChatContext = createContext<TGroupChatContext | undefined>(undefined)

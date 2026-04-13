@@ -19,6 +19,7 @@ import { toProfile } from '@/lib/link'
 import { SecondaryPageLink } from '@/PageManager'
 import Content from '@/components/Content'
 import MessageActions from '@/components/GroupChat/MessageActions'
+import type { TGroupMessage as TGroupMessageType } from '@/components/GroupChat/MessageActions'
 import ZapDialog from '@/components/ZapDialog'
 import EmojiPicker from '@/components/EmojiPicker'
 import {
@@ -81,16 +82,15 @@ const GroupChatPage = forwardRef(
   ) => {
     const { t } = useTranslation()
     const { pop } = useSecondaryPage()
-    const { pubkey } = useNostr()
+    const { pubkey, publish } = useNostr()
     const { registerGroupChat, unregisterGroupChat, refreshMessages } = useGroupChatContext()
     const [messages, setMessages] = useState<TGroupMessage[]>([])
     const [groupName, setGroupName] = useState<string>('Group')
     const [groupAbout, setGroupAbout] = useState<string>()
     const [groupPicture, setGroupPicture] = useState<string>()
     const [loading, setLoading] = useState(true)
-    const [replyingTo, setReplyingTo] = useState<TGroupMessage | null>(null)
-    const [zapTarget, setZapTarget] = useState<TGroupMessage | null>(null)
-    const [reactTarget, setReactTarget] = useState<TGroupMessage | null>(null)
+    const [zapTarget, setZapTarget] = useState<TGroupMessageType | null>(null)
+    const [reactTarget, setReactTarget] = useState<TGroupMessageType | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const hasScrolledOnLoadRef = useRef(false)
 
@@ -110,7 +110,7 @@ const GroupChatPage = forwardRef(
           tags: [['h', groupId]],
           created_at: Math.floor(Date.now() / 1000)
         }
-        await client.signAndPublish(draftEvent)
+        await publish(draftEvent)
         
         // Remove group from user's kind 10009 list
         const groupListEvents = await client.fetchEvents(
@@ -128,7 +128,7 @@ const GroupChatPage = forwardRef(
             tags: existingTags,
             created_at: Math.floor(Date.now() / 1000)
           }
-          await client.signAndPublish(updatedEvent)
+          await publish(updatedEvent)
         }
         
         toast.success(t('Left the group'))
@@ -139,8 +139,7 @@ const GroupChatPage = forwardRef(
       }
     }
 
-    const handleReply = (message: TGroupMessage) => {
-      setReplyingTo(message)
+    const handleReply = (message: TGroupMessageType) => {
       // Dispatch event to PostButton to open drawer and set reply
       const preview = message.event.content.slice(0, 50) + (message.event.content.length > 50 ? '...' : '')
       window.dispatchEvent(new CustomEvent('groupchat-set-reply', {
@@ -154,7 +153,7 @@ const GroupChatPage = forwardRef(
       window.dispatchEvent(new CustomEvent('groupchat-open-drawer'))
     }
 
-    const handleReact = (message: TGroupMessage) => {
+    const handleReact = (message: TGroupMessageType) => {
       setReactTarget(message)
     }
 
@@ -171,7 +170,7 @@ const GroupChatPage = forwardRef(
           ],
           created_at: Math.floor(Date.now() / 1000)
         }
-        await client.signAndPublish(draftEvent)
+        await publish(draftEvent)
         toast.success(t('Reacted with {{emoji}}', { emoji: emojiContent }))
         setReactTarget(null)
       } catch (error) {
@@ -180,13 +179,13 @@ const GroupChatPage = forwardRef(
       }
     }
 
-    const handleZap = (message: TGroupMessage) => {
+    const handleZap = (message: TGroupMessageType) => {
       setZapTarget(message)
     }
 
     // Refresh messages when a new message is sent from the PostButton
     useEffect(() => {
-      if (refreshMessages > 0) {
+      if (refreshMessages && refreshMessages > 0) {
         // Re-fetch messages to include the new one
         const fetchNewMessages = async () => {
           try {

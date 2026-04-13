@@ -1,7 +1,7 @@
 import { getDefaultRelayUrls } from '@/lib/relay'
 import client from '@/services/client.service'
 import { MessageCircle, Plus, Loader2, Globe } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNostr } from '@/providers/NostrProvider'
 import GroupCard from './GroupCard'
@@ -86,15 +86,15 @@ export default function GroupsFeed() {
           )
 
           // Merge metadata into group infos
-          metadataEvents.forEach((metadataEvent: Event) => {
-            const dTag = metadataEvent.tags.find((t) => t[0] === 'd')
+          metadataEvents.forEach((metadataEvent: any) => {
+            const dTag = metadataEvent.tags.find((t: string[]) => t[0] === 'd')
             if (!dTag) return
 
             const groupId = dTag[1]
             const group = groupInfos.find((g) => g.id === groupId)
             if (!group) return
 
-            metadataEvent.tags.forEach((tag) => {
+            metadataEvent.tags.forEach((tag: string[]) => {
               const [tagName, tagValue] = tag
               if (tagName === 'name' && tagValue) {
                 group.name = tagValue
@@ -124,9 +124,9 @@ export default function GroupsFeed() {
     loadGroups()
   }, [pubkey])
 
-  const handleCreateGroup = useCallback(() => {
+  const handleCreateGroup = () => {
     setShowCreateDialog(true)
-  }, [])
+  }
 
   if (loading) {
     return (
@@ -204,7 +204,6 @@ export default function GroupsFeed() {
       <GroupJoinDialog 
         open={showJoinDialog} 
         setOpen={setShowJoinDialog}
-        group={selectedGroup}
       />
     </div>
   )
