@@ -90,6 +90,8 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
       }, 15_000) // 15s timeout for the entire reaction flow
 
       try {
+        console.log('[Reaction] Starting reaction with emoji:', emoji)
+        
         // Fetch stats in background, don't block the reaction
         const statsPromise = noteStats?.updatedAt
           ? Promise.resolve()
@@ -101,19 +103,25 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
           ? createReactionDraftEvent(event, emoji)
           : createExternalContentReactionDraftEvent(externalContent, emoji)
         const seenOn = event ? client.getSeenEventRelayUrls(event.id) : getDefaultRelayUrls()
+        console.log('[Reaction] Seen-on relays:', seenOn)
+        
         const powEnabled = window.localStorage.getItem(StorageKey.POW_ENABLED) !== 'false'
         const reactionDifficulty = window.localStorage.getItem(StorageKey.POW_REACTION_DIFFICULTY)
         const minPow = powEnabled ? (reactionDifficulty ? parseInt(reactionDifficulty, 10) : 12) : 0
+        console.log('[Reaction] PoW enabled:', powEnabled, 'difficulty:', minPow)
+        
         const evt = await publish(reaction, {
           additionalRelayUrls: seenOn,
           minPow
         })
+        console.log('[Reaction] Published successfully, event:', evt.id)
         
         // Update stats after successful publish
         await statsPromise
         stuffStatsService.updateStuffStatsByEvents([evt])
         haptic('success')
       } catch (error) {
+        console.error('[Reaction] Failed:', error)
         const errors = formatError(error)
         errors.forEach((err) => {
           toast.error(`${t('Failed to like')}: ${err}`, { duration: 10_000 })

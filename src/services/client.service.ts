@@ -194,6 +194,8 @@ class ClientService extends EventTarget {
 
   async publishEvent(relayUrls: string[], event: NEvent) {
     const uniqueRelayUrls = Array.from(new Set(relayUrls))
+    console.log('[PublishEvent] Publishing to relays:', uniqueRelayUrls)
+    
     await new Promise<void>((resolve, reject) => {
       let successCount = 0
       let finishedCount = 0
@@ -204,9 +206,11 @@ class ClientService extends EventTarget {
       const checkCompletion = (url: string, success: boolean, error?: unknown) => {
         if (error) {
           errors.push({ url, error })
+          console.warn(`[PublishEvent] ❌ Failed ${url}:`, error instanceof Error ? error.message : error)
         }
         if (success) {
           successCount++
+          console.log(`[PublishEvent] ✅ Success ${url} (${successCount}/${successThreshold} needed)`)
         }
         finishedCount++
 
@@ -232,20 +236,23 @@ class ClientService extends EventTarget {
         uniqueRelayUrls.map(async (url) => {
           // eslint-disable-next-line @typescript-eslint/no-this-alias
           const that = this
+          console.log(`[PublishEvent] 🔄 Connecting to relay: ${url}`)
           const relay = await this.pool.ensureRelay(url).catch((err) => {
-            console.warn('[publishEvent] Failed to ensure relay:', url, err)
+            console.warn(`[PublishEvent] ❌ Failed to connect to relay ${url}:`, err)
             return undefined
           })
           if (!relay) {
             checkCompletion(url, false, new Error('Cannot connect to relay'))
             return
           }
+          console.log(`[PublishEvent] ✅ Connected to relay: ${url}`)
 
           relay.publishTimeout = 10_000 // 10s
           let hasAuthed = false
 
           const publishPromise = async () => {
             try {
+              console.log(`[PublishEvent] 📤 Publishing to ${url}...`)
               await relay.publish(event)
               that.trackEventSeenOn(event.id, relay)
               checkCompletion(url, true)
@@ -256,13 +263,16 @@ class ClientService extends EventTarget {
                 error.message.startsWith('auth-required') &&
                 !!that.signer
               ) {
+                console.log(`[PublishEvent] 🔐 Auth required for ${url}, authenticating...`)
                 try {
                   await relay.auth((authEvt: EventTemplate) => that.signer!.signEvent(authEvt))
                   hasAuthed = true
+                  console.log(`[PublishEvent] ✅ Authenticated with ${url}, retrying publish...`)
                   // Retry after auth and track completion properly
                   await publishPromise()
                 } catch (retryError) {
                   // Auth retry failed - track as failure
+                  console.warn(`[PublishEvent] ❌ Auth retry failed for ${url}:`, retryError)
                   checkCompletion(url, false, retryError)
                 }
               } else {

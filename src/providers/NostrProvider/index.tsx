@@ -660,14 +660,17 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       throw new Error('You need to login first')
     }
 
+    console.log('[Publish] Starting publish...')
     const draft = JSON.parse(JSON.stringify(draftEvent)) as TDraftEvent
     let event: VerifiedEvent
     if (minPow > 0) {
+      console.log('[Publish] Mining PoW with difficulty:', minPow)
       const unsignedEvent = await minePow({ ...draft, pubkey: account.pubkey }, minPow)
       event = await signEvent(unsignedEvent)
     } else {
       event = await signEvent(draft)
     }
+    console.log('[Publish] Event signed:', event.id)
 
     if (event.kind !== kinds.Application && event.pubkey !== account.pubkey) {
       const eventAuthor = await client.fetchProfile(event.pubkey)
@@ -682,9 +685,13 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    console.log('[Publish] Determining target relays...')
     const relays = await client.determineTargetRelays(event, options)
+    console.log('[Publish] Target relays:', relays)
 
+    console.log('[Publish] Publishing to relays...')
     await client.publishEvent(relays, event)
+    console.log('[Publish] Successfully published to relays')
     return event
   }
 
