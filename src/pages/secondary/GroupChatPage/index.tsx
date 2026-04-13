@@ -6,10 +6,11 @@ import client from '@/services/client.service'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
 import { useSecondaryPage } from '@/PageManager'
-import { Event, kinds } from 'nostr-tools'
+import { Event, kinds, nip19 } from 'nostr-tools'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageCircle } from 'lucide-react'
+import { Loader2, MessageCircle, LogOut, MoreVertical, X, Smile } from 'lucide-react'
+import { toast } from 'sonner'
 import Image from '@/components/Image'
 import UserAvatar from '@/components/UserAvatar'
 import { FormattedTimestamp } from '@/components/FormattedTimestamp'
@@ -17,6 +18,15 @@ import { useFetchProfile } from '@/hooks'
 import { toProfile } from '@/lib/link'
 import { SecondaryPageLink } from '@/PageManager'
 import Content from '@/components/Content'
+import MessageActions from '@/components/GroupChat/MessageActions'
+import ZapDialog from '@/components/ZapDialog'
+import EmojiPicker from '@/components/EmojiPicker'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 // Derive a consistent HSL color from a pubkey
 function deriveColorFromPubkey(pubkey: string): string {
@@ -80,6 +90,9 @@ const GroupChatPage = forwardRef(
     const [groupAbout, setGroupAbout] = useState<string>()
     const [groupPicture, setGroupPicture] = useState<string>()
     const [loading, setLoading] = useState(true)
+    const [replyingTo, setReplyingTo] = useState<TGroupMessage | null>(null)
+    const [zapTarget, setZapTarget] = useState<TGroupMessage | null>(null)
+    const [reactTarget, setReactTarget] = useState<TGroupMessage | null>(null)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const hasScrolledOnLoadRef = useRef(false)
 
@@ -88,6 +101,90 @@ const GroupChatPage = forwardRef(
       registerGroupChat(groupId)
       return () => unregisterGroupChat()
     }, [groupId, registerGroupChat, unregisterGroupChat])
+
+    const handleLeaveGroup = async () => {
+      if (!pubkey) return
+      try {
+        // Send kind 9022 (leave request) event
+        const draftEvent = {
+          kind: NIP29_GROUP_KINDS.GROUP_LEAVE_REQUEST,
+          content: '',
+          tags: [['h', groupId]],
+          created_at: Math.floor(Date.now() / 1000)
+        }
+        await client.signAndPublish(draftEvent)
+        
+        // Remove group from user's kind 10009 list
+        const groupListEvents = await client.fetchEvents(
+          getDefaultRelayUrls(),
+          { kinds: [10009], authors: [pubkey], limit: 1 }
+        )
+        
+        if (groupListEvents.length > 0) {
+          const existingTags = groupListEvents[0].tags.filter(
+            (tag) => tag[0] !== 'group' || tag[1] !== groupId
+          )
+          const updatedEvent = {
+            kind: 10009,
+            content: '',
+            tags: existingTags,
+            created_at: Math.floor(Date.now() / 1000)
+          }
+          await client.signAndPublish(updatedEvent)
+        }
+        
+        toast.success(t('Left the group'))
+        pop()
+      } catch (error) {
+        console.error('Failed to leave group:', error)
+        toast.error(t('Failed to leave group'))
+      }
+    }
+
+    const handleReply = (message: TGroupMessage) => {
+      setReplyingTo(message)
+      // Dispatch event to PostButton to open drawer and set reply
+      const preview = message.event.content.slice(0, 50) + (message.event.content.length > 50 ? '...' : '')
+      window.dispatchEvent(new CustomEvent('groupchat-set-reply', {
+        detail: {
+          eventId: message.event.id,
+          authorPubkey: message.pubkey,
+          preview
+        }
+      }))
+      // Open the message drawer by dispatching to PostButton
+      window.dispatchEvent(new CustomEvent('groupchat-open-drawer'))
+    }
+
+    const handleReact = (message: TGroupMessage) => {
+      setReactTarget(message)
+    }
+
+    const handleEmojiSelect = async (emoji: any) => {
+      if (!reactTarget) return
+      const emojiContent = typeof emoji === 'string' ? emoji : emoji?.shortcode || emoji?.emoji || '👍'
+      try {
+        const draftEvent = {
+          kind: kinds.Reaction,
+          content: emojiContent,
+          tags: [
+            ['e', reactTarget.event.id],
+            ['p', reactTarget.pubkey]
+          ],
+          created_at: Math.floor(Date.now() / 1000)
+        }
+        await client.signAndPublish(draftEvent)
+        toast.success(t('Reacted with {{emoji}}', { emoji: emojiContent }))
+        setReactTarget(null)
+      } catch (error) {
+        console.error('Failed to react:', error)
+        toast.error(t('Failed to react'))
+      }
+    }
+
+    const handleZap = (message: TGroupMessage) => {
+      setZapTarget(message)
+    }
 
     // Refresh messages when a new message is sent from the PostButton
     useEffect(() => {
@@ -232,6 +329,22 @@ const GroupChatPage = forwardRef(
                 <p className="truncate text-xs text-muted-foreground">{groupAbout}</p>
               )}
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/30">
+                  <MoreVertical className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={handleLeaveGroup}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 size-4" />
+                  {t('Leave Group')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Messages List */}
@@ -264,12 +377,18 @@ const GroupChatPage = forwardRef(
 
                   {/* Message Bubble */}
                   <div
-                    className={`max-w-[70%] rounded-xl px-3 py-2 ${
+                    className={`relative max-w-[70%] rounded-xl px-3 py-2 ${
                       message.pubkey === pubkey
                         ? 'bg-primary/30 text-white backdrop-blur-sm'
                         : 'bg-muted/20'
                     }`}
                   >
+                    <MessageActions
+                      message={message}
+                      onReply={handleReply}
+                      onReact={handleReact}
+                      onZap={handleZap}
+                    />
                     <div className={`mb-1 flex items-center gap-1 ${message.pubkey === pubkey ? 'justify-end' : ''}`}>
                       <ColoredUsername pubkey={message.pubkey} />
                       <span className={message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'}>&bull;</span>
@@ -291,6 +410,42 @@ const GroupChatPage = forwardRef(
             <div ref={messagesEndRef} />
           </div>
         </div>
+
+        {/* Zap Dialog for group messages */}
+        {zapTarget && (
+          <ZapDialog
+            open={!!zapTarget}
+            setOpen={(open) => {
+              if (!open) setZapTarget(null)
+            }}
+            pubkey={zapTarget.pubkey}
+            event={zapTarget.event}
+          />
+        )}
+
+        {/* Emoji Picker for reactions */}
+        {reactTarget && (
+          <div
+            className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 sm:items-center"
+            onClick={() => setReactTarget(null)}
+          >
+            <div
+              className="w-full max-w-md rounded-t-2xl bg-card/95 p-4 backdrop-blur-xl sm:rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-center text-lg font-semibold">{t('React to message')}</h3>
+                <button
+                  onClick={() => setReactTarget(null)}
+                  className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/30"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <EmojiPicker onEmojiClick={handleEmojiSelect} />
+            </div>
+          </div>
+        )}
       </SecondaryPageLayout>
     )
   }

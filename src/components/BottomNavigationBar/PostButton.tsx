@@ -2,8 +2,8 @@ import { useSecondaryPage } from '@/PageManager'
 import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
-import { Plus, Send, Loader2, Image as ImageIcon, X, Paperclip } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { Plus, Send, Loader2, X, Paperclip, MessageCircle } from 'lucide-react'
+import { useRef, useState, useEffect } from 'react'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useTranslation } from 'react-i18next'
 import client from '@/services/client.service'
@@ -29,7 +29,29 @@ export default function PostButton() {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [uploads, setUploads] = useState<TUploadItem[]>([])
+  const [replyingTo, setReplyingTo] = useState<{ eventId: string; authorPubkey: string; preview: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Expose setReplyingTo to parent via window event
+  useEffect(() => {
+    const handleSetReply = (e: CustomEvent) => {
+      setReplyingTo(e.detail)
+    }
+    const handleClearReply = () => {
+      setReplyingTo(null)
+    }
+    const handleOpenDrawer = () => {
+      setDrawerOpen(true)
+    }
+    window.addEventListener('groupchat-set-reply', handleSetReply as EventListener)
+    window.addEventListener('groupchat-clear-reply', handleClearReply)
+    window.addEventListener('groupchat-open-drawer', handleOpenDrawer)
+    return () => {
+      window.removeEventListener('groupchat-set-reply', handleSetReply as EventListener)
+      window.removeEventListener('groupchat-clear-reply', handleClearReply)
+      window.removeEventListener('groupchat-open-drawer', handleOpenDrawer)
+    }
+  }, [])
 
   const handleSend = async () => {
     const hasContent = message.trim() || uploads.some((u) => u.url)
@@ -46,16 +68,23 @@ export default function PostButton() {
       const mediaUrls = uploads.filter((u) => u.url).map((u) => u.url!)
       const content = message.trim() + (mediaUrls.length > 0 ? '\n\n' + mediaUrls.join('\n\n') : '')
 
+      const tags: string[][] = [['h', groupId]]
+      if (replyingTo) {
+        tags.push(['e', replyingTo.eventId, '', 'reply'])
+        tags.push(['p', replyingTo.authorPubkey])
+      }
+
       const draftEvent = {
         kind: NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE,
         content: content.trim(),
-        tags: [['h', groupId]],
+        tags,
         created_at: Math.floor(Date.now() / 1000)
       }
 
       await client.signAndPublish(draftEvent)
       setMessage('')
       setUploads([])
+      setReplyingTo(null)
       setDrawerOpen(false)
       onMessageSent()
     } catch (error) {
@@ -209,6 +238,22 @@ export default function PostButton() {
                       )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Reply preview */}
+              {replyingTo && (
+                <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                  <MessageCircle className="size-4 shrink-0 text-primary" />
+                  <span className="flex-1 truncate text-xs text-muted-foreground">
+                    Replying to: {replyingTo.preview}
+                  </span>
+                  <button
+                    onClick={() => setReplyingTo(null)}
+                    className="flex size-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="size-3" />
+                  </button>
                 </div>
               )}
 
