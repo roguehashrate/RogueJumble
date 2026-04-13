@@ -40,6 +40,7 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
   const [likeCount, setLikeCount] = useState(0)
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null)
   const isLongPressRef = useRef(false)
+  const isProcessingRef = useRef(false)
   const noteStats = useStuffStatsById(stuffKey)
   const myLastEmoji = useMemo(() => {
     const stats = noteStats || {}
@@ -75,16 +76,26 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
   }, [isEmojiReactionsOpen])
 
   const like = async (emoji: string | TEmoji) => {
+    // Use ref to prevent race condition with rapid clicks
+    if (isProcessingRef.current || !pubkey) return
+    
     checkLogin(async () => {
-      if (liking || !pubkey) return
-
+      if (liking) return
+      
+      isProcessingRef.current = true
       setLiking(true)
-      const timer = setTimeout(() => setLiking(false), 10_000)
+      const timer = setTimeout(() => {
+        setLiking(false)
+        toast.error(t('Reaction timed out. Please try again.'), { duration: 5000 })
+      }, 10_000)
 
       try {
-        if (!noteStats?.updatedAt) {
-          await stuffStatsService.fetchStuffStats(stuffKey, pubkey)
-        }
+        // Fetch stats in background, don't block the reaction
+        const statsPromise = noteStats?.updatedAt
+          ? Promise.resolve()
+          : stuffStatsService.fetchStuffStats(stuffKey, pubkey).catch(() => {
+              // Ignore stats fetch errors - they're not critical for publishing
+            })
 
         const reaction = event
           ? createReactionDraftEvent(event, emoji)
@@ -97,6 +108,9 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
           additionalRelayUrls: seenOn,
           minPow
         })
+        
+        // Update stats after successful publish
+        await statsPromise
         stuffStatsService.updateStuffStatsByEvents([evt])
         haptic('success')
       } catch (error) {
@@ -106,6 +120,7 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
         })
       } finally {
         setLiking(false)
+        isProcessingRef.current = false
         clearTimeout(timer)
       }
     })

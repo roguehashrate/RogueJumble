@@ -176,7 +176,7 @@ class ClientService extends EventTarget {
       let successCount = 0
       let finishedCount = 0
       // If one third of the relays have accepted the event, consider it a success
-      const successThreshold = uniqueRelayUrls.length / 3
+      const successThreshold = Math.max(1, uniqueRelayUrls.length / 3)
       const errors: { url: string; error: any }[] = []
 
       const checkCompletion = (url: string, success: boolean, error?: unknown) => {
@@ -193,14 +193,16 @@ class ClientService extends EventTarget {
           resolve()
         }
         if (finishedCount >= uniqueRelayUrls.length) {
-          reject(
-            new AggregateError(
-              errors.map(
-                ({ url, error }) =>
-                  new Error(`${url}: ${error instanceof Error ? error.message : String(error)}`)
+          if (successCount < successThreshold) {
+            reject(
+              new AggregateError(
+                errors.map(
+                  ({ url, error }) =>
+                    new Error(`${url}: ${error instanceof Error ? error.message : String(error)}`)
+                )
               )
             )
-          )
+          }
         }
       }
 
@@ -234,12 +236,11 @@ class ClientService extends EventTarget {
                 try {
                   await relay.auth((authEvt: EventTemplate) => that.signer!.signEvent(authEvt))
                   hasAuthed = true
-                  await publishPromise().catch(() => {
-                    // ignore
-                  })
-                  return
-                } catch (error) {
-                  checkCompletion(url, false, error)
+                  // Retry after auth and track completion properly
+                  await publishPromise()
+                } catch (retryError) {
+                  // Auth retry failed - track as failure
+                  checkCompletion(url, false, retryError)
                 }
               } else {
                 checkCompletion(url, false, error)
