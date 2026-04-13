@@ -82,10 +82,10 @@ export const BIG_RELAY_URLS = [
   'wss://relay.damus.io/',
   'wss://nos.lol/',
   'wss://relay.primal.net/',
-  'wss://offchain.pub/'
+  'wss://relay.ditto.pub/'
 ]
 
-export const SEARCHABLE_RELAY_URLS = ['wss://search.nos.today/', 'wss://relay.nostr.band/']
+export const SEARCHABLE_RELAY_URLS = ['wss://search.nos.today/', 'wss://relay.ditto.pub/', 'wss://nostr.polyserv.xyz/']
 
 export const TRENDING_NOTES_RELAY_URLS = ['wss://trending.relays.land/']
 
