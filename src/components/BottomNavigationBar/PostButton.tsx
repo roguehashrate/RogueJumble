@@ -54,7 +54,16 @@ export default function PostButton() {
 
   const handleSend = async () => {
     const hasContent = message.trim() || uploads.some((u) => u.url)
-    if (!hasContent || !groupId || sending) return
+    console.log('[PostButton] handleSend called', { hasContent, groupId, messageLength: message.length })
+    if (!hasContent) {
+      toast.error(t('Message cannot be empty'))
+      return
+    }
+    if (!groupId) {
+      toast.error(t('Not in a group chat'))
+      return
+    }
+    if (sending) return
 
     const uploadingFiles = uploads.filter((u) => u.uploading)
     if (uploadingFiles.length > 0) {
@@ -88,7 +97,7 @@ export default function PostButton() {
       onMessageSent()
     } catch (error) {
       console.error('Failed to send message:', error)
-      toast.error(t('Failed to send message'))
+      toast.error(t('Failed to send message: ') + (error as Error).message)
     } finally {
       setSending(false)
     }

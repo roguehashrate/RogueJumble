@@ -96,8 +96,12 @@ const GroupChatPage = forwardRef(
 
     // Register this group chat with the context
     useEffect(() => {
+      console.log('[GroupChatPage] Registering group chat:', groupId)
       registerGroupChat(groupId)
-      return () => unregisterGroupChat()
+      return () => {
+        console.log('[GroupChatPage] Unregistering group chat')
+        unregisterGroupChat()
+      }
     }, [groupId, registerGroupChat, unregisterGroupChat])
 
     const handleLeaveGroup = async () => {
