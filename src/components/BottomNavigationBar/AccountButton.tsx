@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { LONG_PRESS_THRESHOLD } from '@/constants'
 import { cn } from '@/lib/utils'
-import { usePrimaryPage } from '@/PageManager'
+import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import { UserRound } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 
 export default function AccountButton() {
   const { navigate, current, display } = usePrimaryPage()
+  const { pop } = useSecondaryPage()
   const { pubkey, profile } = useNostr()
   const [loginDialogOpen, setLoginDialogOpen] = useState(false)
   const active = useMemo(() => current === 'me' && display, [display, current])
@@ -26,6 +27,9 @@ export default function AccountButton() {
   const handlePointerUp = () => {
     if (pressTimerRef.current) {
       clearTimeout(pressTimerRef.current)
+      if (!display) {
+        pop()
+      }
       navigate('me')
       pressTimerRef.current = null
     }

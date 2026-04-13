@@ -1,4 +1,4 @@
-import { usePrimaryPage } from '@/PageManager'
+import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
 import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNotification } from '@/providers/NotificationProvider'
@@ -8,6 +8,7 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 export default function NotificationsButton() {
   const { checkLogin } = useNostr()
   const { navigate, current, display } = usePrimaryPage()
+  const { pop } = useSecondaryPage()
   const { unreadCount } = useNotification()
   const isActive = current === 'notifications' && display
 
@@ -16,7 +17,12 @@ export default function NotificationsButton() {
       active={isActive}
       onClick={() => {
         haptic('click')
-        checkLogin(() => navigate('notifications'))
+        checkLogin(() => {
+          if (!display) {
+            pop()
+          }
+          navigate('notifications')
+        })
       }}
     >
       <div className="relative">
