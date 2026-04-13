@@ -119,14 +119,36 @@ class ClientService extends EventTarget {
           }
         })
         if (mentions.length > 0) {
-          const relayLists = await this.fetchRelayLists(mentions)
+          // Fetch relay lists for mentions with timeout to avoid blocking publish
+          const relayLists = await Promise.race([
+            this.fetchRelayLists(mentions),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('Relay list fetch timeout')), 3000)
+            )
+          ]).catch((err) => {
+            console.warn('[determineTargetRelays] Relay list fetch failed:', err)
+            return []
+          })
           relayLists.forEach((relayList) => {
             relayList.read.slice(0, 5).forEach((url) => relaySet.add(url))
           })
         }
       }
 
-      const relayList = await this.fetchRelayList(event.pubkey)
+      // Fetch author's relay list with timeout to avoid blocking publish
+      const relayList = await Promise.race([
+        this.fetchRelayList(event.pubkey),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Relay list fetch timeout')), 3000)
+        )
+      ]).catch((err) => {
+        console.warn('[determineTargetRelays] Author relay list fetch failed:', err)
+        return {
+          write: defaultRelays,
+          read: defaultRelays,
+          originalRelays: []
+        }
+      })
       relayList.write.forEach((url) => relaySet.add(url))
 
       if (
@@ -210,7 +232,8 @@ class ClientService extends EventTarget {
         uniqueRelayUrls.map(async (url) => {
           // eslint-disable-next-line @typescript-eslint/no-this-alias
           const that = this
-          const relay = await this.pool.ensureRelay(url).catch(() => {
+          const relay = await this.pool.ensureRelay(url).catch((err) => {
+            console.warn('[publishEvent] Failed to ensure relay:', url, err)
             return undefined
           })
           if (!relay) {

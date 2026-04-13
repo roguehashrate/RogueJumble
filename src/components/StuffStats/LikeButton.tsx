@@ -86,8 +86,8 @@ export default function LikeButton({ stuff }: { stuff: Event | string }) {
       setLiking(true)
       const timer = setTimeout(() => {
         setLiking(false)
-        toast.error(t('Reaction timed out. Please try again.'), { duration: 5000 })
-      }, 10_000)
+        toast.error(t('Reaction timed out. Please try again.'), { duration: 10_000 })
+      }, 15_000) // 15s timeout for the entire reaction flow
 
       try {
         // Fetch stats in background, don't block the reaction
