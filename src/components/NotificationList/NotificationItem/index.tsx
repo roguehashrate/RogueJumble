@@ -1,4 +1,4 @@
-import { ExtendedKind, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
+import { ExtendedKind, NIP29_GROUP_KINDS, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
 import { isMentioningMutedUsers } from '@/lib/event'
 import { tagNameEquals } from '@/lib/tag'
 import { useContentPolicy } from '@/providers/ContentPolicyProvider'
@@ -13,6 +13,7 @@ import { PollResponseNotification } from './PollResponseNotification'
 import { ReactionNotification } from './ReactionNotification'
 import { RepostNotification } from './RepostNotification'
 import { ZapNotification } from './ZapNotification'
+import { GroupMentionNotification } from './GroupMentionNotification'
 
 export function NotificationItem({
   notification,
@@ -96,6 +97,9 @@ export function NotificationItem({
   }
   if (notification.kind === kinds.Highlights) {
     return <HighlightNotification notification={notification} isNew={isNew} />
+  }
+  if (notification.kind === NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE) {
+    return <GroupMentionNotification notification={notification} isNew={isNew} />
   }
   return null
 }

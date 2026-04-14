@@ -1,5 +1,5 @@
 import { useSecondaryPage } from '@/PageManager'
-import { ExtendedKind, NSFW_DISPLAY_POLICY, SUPPORTED_KINDS } from '@/constants'
+import { ExtendedKind, NIP29_GROUP_KINDS, NSFW_DISPLAY_POLICY, SUPPORTED_KINDS } from '@/constants'
 import { getParentStuff, isNsfwEvent } from '@/lib/event'
 import { toExternalContent, toNote } from '@/lib/link'
 import { generateBech32IdFromATag, generateBech32IdFromETag, tagNameEquals } from '@/lib/tag'
@@ -134,6 +134,9 @@ export default function Note({
     content = <FollowPack className="mt-2" event={event} />
   } else if (event.kind === kinds.Reaction) {
     content = <Reaction className="mt-2" event={event} />
+  } else if (event.kind === NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE) {
+    // Group chat message — render as simple text content
+    content = <Content className="mt-2" event={event} displayMode={displayMode} />
   } else {
     content = <Content className="mt-2" event={event} enableHighlight displayMode={displayMode} />
   }

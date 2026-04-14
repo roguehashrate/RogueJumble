@@ -141,7 +141,8 @@ export const ALLOWED_FILTER_KINDS = [
   kinds.Highlights,
   kinds.LongFormArticle,
   ExtendedKind.ADDRESSABLE_NORMAL_VIDEO,
-  ExtendedKind.ADDRESSABLE_SHORT_VIDEO
+  ExtendedKind.ADDRESSABLE_SHORT_VIDEO,
+  NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE
 ]
 
 export const SUPPORTED_KINDS = [

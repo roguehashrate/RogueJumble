@@ -1,4 +1,4 @@
-import { ExtendedKind, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
+import { ExtendedKind, NIP29_GROUP_KINDS, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
 import { compareEvents } from '@/lib/event'
 import { notificationFilter } from '@/lib/notification'
 import { getDefaultRelayUrls } from '@/lib/relay'
@@ -115,7 +115,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               ExtendedKind.COMMENT,
               ExtendedKind.POLL_RESPONSE,
               ExtendedKind.VOICE_COMMENT,
-              ExtendedKind.POLL
+              ExtendedKind.POLL,
+              NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE
             ],
             '#p': [pubkey],
             limit: 20
