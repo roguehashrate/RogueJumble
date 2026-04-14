@@ -56,13 +56,20 @@ export default function GroupsFeed() {
       setLoading(true)
       try {
         // Fetch user's relay list to find where their data is published
-        const relayList = await client.fetchRelayList(pubkey)
-        // Query both user's write relays and default relays
-        const fetchRelays = relayList.write.length > 0
-          ? relayList.write.concat(getDefaultRelayUrls()).slice(0, 5)
-          : getDefaultRelayUrls()
+        let fetchRelays: string[] = []
+        try {
+          const relayList = await client.fetchRelayList(pubkey)
+          if (relayList.write.length > 0) {
+            fetchRelays = [...new Set([...relayList.write.slice(0, 3), ...getDefaultRelayUrls()])]
+          }
+        } catch (e) {
+          console.log('[GroupsFeed] Failed to fetch relay list, using defaults')
+        }
+        if (fetchRelays.length === 0) {
+          fetchRelays = getDefaultRelayUrls()
+        }
 
-        console.log('[GroupsFeed] Fetching group list from', fetchRelays.length, 'relays')
+        console.log('[GroupsFeed] Fetching group list from', fetchRelays.length, 'relays:', fetchRelays)
 
         const events = await client.fetchEvents(
           fetchRelays,
@@ -104,20 +111,31 @@ export default function GroupsFeed() {
 
     // Subscribe to updates
     const subscribeToUpdates = async () => {
-      const relayList = await client.fetchRelayList(pubkey)
-      const subRelays = relayList.write.length > 0
-        ? relayList.write.concat(getDefaultRelayUrls()).slice(0, 5)
-        : getDefaultRelayUrls()
+      let subRelays: string[] = []
+      try {
+        const relayList = await client.fetchRelayList(pubkey)
+        if (relayList.write.length > 0) {
+          subRelays = [...new Set([...relayList.write.slice(0, 3), ...getDefaultRelayUrls()])]
+        }
+      } catch (e) {
+        // ignore
+      }
+      if (subRelays.length === 0) {
+        subRelays = getDefaultRelayUrls()
+      }
 
       unsub = client.subscribe(
         subRelays,
         { kinds: [10009], authors: [pubkey] },
         {
           onevent: async (event) => {
-            console.log('[GroupsFeed] Received group list update')
+            console.log('[GroupsFeed] Received group list update with', event.tags.length, 'tags')
+            const groupTags = event.tags.filter((t: string[]) => t[0] === 'group')
+            console.log('[GroupsFeed] Found', groupTags.length, 'group tags in update:', groupTags.map((t: string[]) => `${t[1]}@${t[2]}`))
             const newGroups = parseGroupTags(event)
             await enrichWithMetadata(newGroups)
             const deduped = deduplicateGroups(newGroups)
+            console.log('[GroupsFeed] After dedup:', deduped.length, 'groups')
             setGroups(deduped)
           }
         }

@@ -205,6 +205,9 @@ const GroupChatPage = forwardRef(
       const msgReactions = reactions.get(messageId) || []
       const existingReaction = msgReactions.find((r) => r.pubkey === pubkey && r.emoji === emoji)
       if (existingReaction) {
+        // Publish to group relay + default relays for redundancy
+        const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
+        const publishRelays = [...new Set([...groupRelay, ...getDefaultRelayUrls().slice(0, 4)])]
         const draftEvent = {
           kind: kinds.Reaction,
           content: '',
@@ -216,7 +219,7 @@ const GroupChatPage = forwardRef(
           ] as [string, string][],
           created_at: Math.floor(Date.now() / 1000)
         }
-        await publish(draftEvent, { specifiedRelayUrls: [normalizeUrl(relayDomain)] })
+        await publish(draftEvent, { specifiedRelayUrls: publishRelays })
         setReactions((prev) => {
           const newMap = new Map(prev)
           const newReactions = newMap.get(messageId) || []
@@ -256,7 +259,9 @@ const GroupChatPage = forwardRef(
             : [['e', messageId], ['p', pubkey], ['h', groupId], ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)]] as [string, string][],
           created_at: Math.floor(Date.now() / 1000)
         }
-        await publish(draftEvent, { specifiedRelayUrls: [normalizeUrl(relayDomain)] })
+        const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
+        const publishRelays = [...new Set([...groupRelay, ...getDefaultRelayUrls().slice(0, 4)])]
+        await publish(draftEvent, { specifiedRelayUrls: publishRelays })
       }
     }
 
@@ -284,7 +289,9 @@ const GroupChatPage = forwardRef(
           tags,
           created_at: Math.floor(Date.now() / 1000)
         }
-        await publish(draftEvent, { specifiedRelayUrls: [normalizeUrl(relayDomain)] })
+        const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
+        const publishRelays = [...new Set([...groupRelay, ...getDefaultRelayUrls().slice(0, 4)])]
+        await publish(draftEvent, { specifiedRelayUrls: publishRelays })
         toast.success(t('Reacted with {{emoji}}', { emoji: emojiContent }))
         setReactTarget(null)
       } catch (error) {
