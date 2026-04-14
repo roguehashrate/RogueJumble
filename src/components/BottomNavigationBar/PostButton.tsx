@@ -216,8 +216,8 @@ export default function PostButton() {
           <Send className="relative z-10 size-5 transition-transform duration-200 group-hover:scale-110" />
         </button>
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl">
-            <div className="flex flex-col gap-4 overflow-auto p-4">
+          <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl" style={{ touchAction: 'none' }}>
+            <div className="flex flex-col gap-4 overflow-auto p-4" style={{ touchAction: 'auto' }}>
               <h3 className="text-center text-lg font-semibold">{t('Send Message')}</h3>
 
               {/* Upload previews */}
@@ -332,8 +332,12 @@ export default function PostButton() {
                 </div>
                 <button
                   onClick={handleSend}
+                  onTouchEnd={(e) => {
+                    e.preventDefault()
+                    handleSend()
+                  }}
                   disabled={(!message.trim() && uploads.every((u) => !u.url)) || sending || uploads.some((u) => u.uploading)}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:pointer-events-none"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {sending ? (
                     <Loader2 className="size-5 animate-spin" />

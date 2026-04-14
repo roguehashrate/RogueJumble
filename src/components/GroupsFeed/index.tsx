@@ -75,18 +75,25 @@ export default function GroupsFeed() {
 
         if (cancelled) return
         if (events.length === 0) {
+          console.log('[GroupsFeed] No kind 10009 group list event found')
           setGroups([])
           setLoading(false)
           return
         }
 
+        console.log('[GroupsFeed] Found group list event with', events[0].tags.length, 'total tags')
+        const groupTags = events[0].tags.filter((t: string[]) => t[0] === 'group')
+        console.log('[GroupsFeed] Found', groupTags.length, 'group tags:', groupTags.map((t: string[]) => `${t[1]}@${t[2]}`))
+
         const groupInfos = parseGroupTags(events[0])
+        console.log('[GroupsFeed] Parsed', groupInfos.length, 'groups from tags')
 
         // Fetch metadata (kind 39000) for each group
         await enrichWithMetadata(groupInfos)
 
         if (cancelled) return
         const deduped = deduplicateGroups(groupInfos)
+        console.log('[GroupsFeed] After dedup:', deduped.length, 'groups')
         setGroups(deduped)
       } catch (error) {
         console.error('[GroupsFeed] Failed to load groups:', error)

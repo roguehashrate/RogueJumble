@@ -142,6 +142,9 @@ export default function GroupCreatorDialog({
         existingTags = groupListEvents[0].tags.filter(
           (tag) => tag[0] === 'group' || tag[0] === 'r'
         )
+        console.log('[GroupCreator] Found existing list with', existingTags.filter(t => t[0] === 'group').length, 'group tags')
+      } else {
+        console.log('[GroupCreator] No existing group list found, creating new one')
       }
 
       const newGroupTag = ['group', groupId, relayUrl || 'default', groupName.trim()]
