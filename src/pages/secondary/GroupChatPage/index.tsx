@@ -3,6 +3,7 @@ import { NIP29_GROUP_KINDS } from '@/constants'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { normalizeUrl } from '@/lib/url'
 import client from '@/services/client.service'
+import indexedDb from '@/services/indexed-db.service'
 import customEmojiService from '@/services/custom-emoji.service'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
@@ -285,99 +286,154 @@ const GroupChatPage = forwardRef(
     useEffect(() => {
       const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
       let isMounted = true
+      const cacheKey = `${groupId}:${relayDomain || 'default'}`
+
+      const processMessages = (
+        messageEvents: { event: Event; relays?: string[] }[],
+        isFromCache: boolean
+      ) => {
+        if (!isMounted) return
+
+        const sortedMessages = messageEvents
+          .map(({ event }) => ({
+            event,
+            content: event.content,
+            pubkey: event.pubkey,
+            created_at: event.created_at
+          }))
+          .sort((a, b) => a.created_at - b.created_at)
+
+        setMessages((prev) => {
+          if (isFromCache) {
+            // If loading from cache, just set it directly
+            return sortedMessages
+          }
+          // If from relay, merge with existing (deduplicate by event ID)
+          const existingIds = new Set(prev.map((m) => m.event.id))
+          const newMessages = sortedMessages.filter((m) => !existingIds.has(m.event.id))
+          if (newMessages.length === 0) return prev
+          return [...prev, ...newMessages].sort((a, b) => a.created_at - b.created_at)
+        })
+
+        if (isFromCache) {
+          // Don't show loading if we have cached data
+          setLoading(false)
+        }
+
+        return sortedMessages
+      }
+
+      const fetchRepliedEvents = async (sortedMessages: TGroupMessage[]) => {
+        const newRepliedMap = new Map<string, { event: Event; pubkey: string }>()
+
+        for (const msg of sortedMessages) {
+          const eTags = msg.event.tags.filter((t: string[]) => t[0] === 'e')
+          const pTag = msg.event.tags.find((t: string[]) => t[0] === 'p')
+
+          let foundReply = false
+
+          for (const eTag of eTags) {
+            const repliedId = eTag[1]
+            if (!repliedId) continue
+
+            const originalMsg = sortedMessages.find((m) => m.event.id === repliedId)
+            if (originalMsg) {
+              newRepliedMap.set(msg.event.id, {
+                event: originalMsg.event,
+                pubkey: originalMsg.pubkey
+              })
+              foundReply = true
+              break
+            }
+          }
+
+          if (!foundReply) {
+            for (const eTag of eTags) {
+              const repliedId = eTag[1]
+              if (!repliedId) continue
+              try {
+                const repliedEvent = await client.fetchEvent(repliedId)
+                if (repliedEvent) {
+                  newRepliedMap.set(msg.event.id, {
+                    event: repliedEvent,
+                    pubkey: repliedEvent.pubkey
+                  })
+                  foundReply = true
+                  break
+                }
+              } catch {
+                /* skip */
+              }
+            }
+          }
+
+          if (!foundReply && pTag && pTag[1]) {
+            const emptyEvent = {
+              id: '',
+              content: '',
+              tags: [],
+              pubkey: '',
+              created_at: 0,
+              sig: '',
+              kind: 0
+            } as unknown as Event
+            newRepliedMap.set(msg.event.id, {
+              event: emptyEvent,
+              pubkey: pTag[1]
+            })
+          }
+        }
+        if (newRepliedMap.size > 0) setRepliedEvents(newRepliedMap)
+      }
 
       const init = async () => {
+        // Step 1: Load from cache first (instant display)
+        try {
+          const cachedMessages = await indexedDb.getGroupMessages(cacheKey)
+          if (cachedMessages && cachedMessages.length > 0) {
+            processMessages(cachedMessages, true)
+          }
+        } catch (error) {
+          console.error('Failed to load cached messages:', error)
+        }
+
+        // Step 2: Fetch fresh messages from relay
         try {
           const messageEvents = await client.fetchEvents(relayUrls, {
-            kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE, 10], // kind 9 = chat, kind 10 = threaded reply
+            kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE, 10],
             '#h': [groupId],
             limit: 100
           })
 
           if (isMounted) {
-            const sortedMessages = messageEvents
-              .map((event: Event) => ({
-                event,
-                content: event.content,
-                pubkey: event.pubkey,
-                created_at: event.created_at
-              }))
-              .sort((a, b) => a.created_at - b.created_at)
+            const sortedMessages = processMessages(
+              messageEvents.map((event) => ({ event, relays: relayUrls })),
+              false
+            )
 
-            setMessages(sortedMessages)
-            setLoading(false)
+            if (sortedMessages) {
+              // Fetch replied events
+              await fetchRepliedEvents(sortedMessages)
 
-            // Fetch replied events for initial messages + also check p tags for replies
-            const newRepliedMap = new Map<string, { event: Event; pubkey: string }>()
-
-            for (const msg of sortedMessages) {
-              // Check for "e" tags - NIP-10 can have multiple (root + reply markers)
-              const eTags = msg.event.tags.filter((t: string[]) => t[0] === 'e')
-              const pTag = msg.event.tags.find((t: string[]) => t[0] === 'p')
-
-              let foundReply = false
-
-              // Try each e-tag to find a message we already have
-              for (const eTag of eTags) {
-                const repliedId = eTag[1]
-                if (!repliedId) continue
-
-                const originalMsg = sortedMessages.find((m) => m.event.id === repliedId)
-                if (originalMsg) {
-                  newRepliedMap.set(msg.event.id, {
-                    event: originalMsg.event,
-                    pubkey: originalMsg.pubkey
-                  })
-                  foundReply = true
-                  break
-                }
-              }
-
-              // If not found locally, try fetching from relay (try all e-tags)
-              if (!foundReply) {
-                for (const eTag of eTags) {
-                  const repliedId = eTag[1]
-                  if (!repliedId) continue
-                  try {
-                    const repliedEvent = await client.fetchEvent(repliedId)
-                    if (repliedEvent) {
-                      newRepliedMap.set(msg.event.id, {
-                        event: repliedEvent,
-                        pubkey: repliedEvent.pubkey
-                      })
-                      foundReply = true
-                      break
-                    }
-                  } catch {
-                    /* skip */
-                  }
-                }
-              }
-
-              // Fallback: show p-tag if no e-tag worked
-              if (!foundReply && pTag && pTag[1]) {
-                const emptyEvent = {
-                  id: '',
-                  content: '',
-                  tags: [],
-                  pubkey: '',
-                  created_at: 0,
-                  sig: '',
-                  kind: 0
-                } as unknown as Event
-                newRepliedMap.set(msg.event.id, {
-                  event: emptyEvent,
-                  pubkey: pTag[1]
-                })
+              // Persist to cache
+              try {
+                await indexedDb.putGroupMessages(
+                  cacheKey,
+                  messageEvents.map((event) => ({ event, relays: relayUrls }))
+                )
+              } catch (error) {
+                console.error('Failed to cache messages:', error)
               }
             }
-            if (newRepliedMap.size > 0) setRepliedEvents(newRepliedMap)
+
+            setLoading(false)
           }
         } catch (error) {
           console.error('Failed to fetch messages:', error)
           if (isMounted) setLoading(false)
         }
 
+        // Step 3: Subscribe to live updates
         const closer = client.subscribe(
           relayUrls,
           {
@@ -388,7 +444,6 @@ const GroupChatPage = forwardRef(
             onevent: async (event: Event) => {
               if (!isMounted) return
 
-              // If this is a reply, fetch the replied event - try ALL e-tags
               const eTags = event.tags.filter((t: string[]) => t[0] === 'e')
               const pTag = event.tags.find((t: string[]) => t[0] === 'p')
               let foundReply = false
@@ -397,7 +452,6 @@ const GroupChatPage = forwardRef(
                 if (!replyTag[1]) continue
                 const replyId = replyTag[1]
 
-                // First check if we already have this message locally
                 const existingMsg = messagesRef.current.find((m) => m.event.id === replyId)
                 if (existingMsg) {
                   setRepliedEvents((prev) => {
@@ -409,7 +463,6 @@ const GroupChatPage = forwardRef(
                   break
                 }
 
-                // Try fetching from relay
                 try {
                   const repliedEvent = await client.fetchEvent(replyId)
                   if (repliedEvent) {
@@ -426,7 +479,6 @@ const GroupChatPage = forwardRef(
                 }
               }
 
-              // Fallback to p-tag if no e-tag worked
               if (!foundReply && pTag && pTag[1]) {
                 const emptyEvent = {
                   id: '',

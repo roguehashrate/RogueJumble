@@ -29,7 +29,8 @@ const StoreNames = {
   EVENTS: 'events',
   MUTE_DECRYPTED_TAGS: 'muteDecryptedTags', // deprecated
   RELAY_INFO_EVENTS: 'relayInfoEvents', // deprecated
-  TIMELINE_REFS: 'timelineRefs'
+  TIMELINE_REFS: 'timelineRefs',
+  GROUP_MESSAGES: 'groupMessages'
 }
 
 class IndexedDbService {
@@ -48,7 +49,7 @@ class IndexedDbService {
   init(): Promise<void> {
     if (!this.initPromise) {
       this.initPromise = new Promise((resolve, reject) => {
-        const request = window.indexedDB.open('roguejumble', 12)
+        const request = window.indexedDB.open('roguejumble', 13)
 
         request.onerror = (event) => {
           reject(event)
@@ -114,6 +115,12 @@ class IndexedDbService {
           }
           if (!db.objectStoreNames.contains(StoreNames.TIMELINE_REFS)) {
             db.createObjectStore(StoreNames.TIMELINE_REFS, { keyPath: 'key' })
+          }
+          if (!db.objectStoreNames.contains(StoreNames.GROUP_MESSAGES)) {
+            const groupMessagesStore = db.createObjectStore(StoreNames.GROUP_MESSAGES, {
+              keyPath: 'key'
+            })
+            groupMessagesStore.createIndex('addedAtIndex', 'addedAt')
           }
 
           if (db.objectStoreNames.contains(StoreNames.RELAY_INFO_EVENTS)) {
@@ -599,6 +606,79 @@ class IndexedDbService {
             resolve(null)
           } else {
             resolve(result.refs.map(([id, created_at]) => ({ id, created_at })))
+          }
+        } else {
+          resolve(null)
+        }
+      }
+
+      request.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async putGroupMessages(
+    key: string,
+    messages: { event: Event; relays: string[] }[]
+  ): Promise<void> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.GROUP_MESSAGES, 'readwrite')
+      const store = transaction.objectStore(StoreNames.GROUP_MESSAGES)
+
+      const data = {
+        key,
+        messages,
+        addedAt: Date.now()
+      }
+
+      const putRequest = store.put(data)
+      putRequest.onsuccess = () => {
+        transaction.commit()
+        resolve()
+      }
+
+      putRequest.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async getGroupMessages(
+    key: string
+  ): Promise<{ event: Event; relays: string[] }[] | null> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.GROUP_MESSAGES, 'readonly')
+      const store = transaction.objectStore(StoreNames.GROUP_MESSAGES)
+      const request = store.get(key)
+
+      request.onsuccess = () => {
+        transaction.commit()
+        const result = request.result as
+          | { messages: { event: Event; relays: string[] }[]; addedAt: number }
+          | undefined
+        if (result?.messages) {
+          // Clean up group messages older than 7 days
+          if (result.addedAt < Date.now() - 1000 * 60 * 60 * 24 * 7) {
+            const deleteTransaction = this.db!.transaction(
+              StoreNames.GROUP_MESSAGES,
+              'readwrite'
+            )
+            deleteTransaction.objectStore(StoreNames.GROUP_MESSAGES).delete(key)
+            deleteTransaction.commit()
+            resolve(null)
+          } else {
+            resolve(result.messages)
           }
         } else {
           resolve(null)
