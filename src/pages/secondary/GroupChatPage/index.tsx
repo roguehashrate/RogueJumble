@@ -125,6 +125,11 @@ const GroupChatPage = forwardRef(
     const hasScrolledOnLoadRef = useRef(false)
     const messagesRef = useRef<TGroupMessage[]>([])
     messagesRef.current = messages
+    const messagesContainerRef = useRef<HTMLDivElement>(null)
+    const isNearBottomRef = useRef(true)
+    const lastScrollTimeRef = useRef(0)
+    const SCROLL_THROTTLE_MS = 100
+    const BOTTOM_THRESHOLD = 150
 
     // Register this group chat with the context
     useEffect(() => {
@@ -184,7 +189,6 @@ const GroupChatPage = forwardRef(
           }
         })
       )
-      window.dispatchEvent(new CustomEvent('groupchat-open-drawer'))
     }
 
     const handleReact = (message: TGroupMessageType) => {
@@ -200,12 +204,14 @@ const GroupChatPage = forwardRef(
           kind: kinds.Reaction,
           content: '',
           tags: [
-            ['e', existingReaction.eventId],
-            ['p', pubkey]
+            ['e', messageId],
+            ['p', pubkey],
+            ['h', groupId],
+            ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)]
           ] as [string, string][],
           created_at: Math.floor(Date.now() / 1000)
         }
-        await publish(draftEvent)
+        await publish(draftEvent, { specifiedRelayUrls: [normalizeUrl(relayDomain)] })
         setReactions((prev) => {
           const newMap = new Map(prev)
           const newReactions = newMap.get(messageId) || []
@@ -240,10 +246,12 @@ const GroupChatPage = forwardRef(
         const draftEvent = {
           kind: kinds.Reaction,
           content: reactionContent,
-          tags: emojiInfo ? [['e', messageId], ['emoji', emojiInfo.shortcode, emojiInfo.url]] as [string, string][] : [['e', messageId]] as [string, string][],
+          tags: emojiInfo
+            ? [['e', messageId], ['p', pubkey], ['h', groupId], ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)], ['emoji', emojiInfo.shortcode, emojiInfo.url]] as [string, string][]
+            : [['e', messageId], ['p', pubkey], ['h', groupId], ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)]] as [string, string][],
           created_at: Math.floor(Date.now() / 1000)
         }
-        await publish(draftEvent)
+        await publish(draftEvent, { specifiedRelayUrls: [normalizeUrl(relayDomain)] })
       }
     }
 
@@ -254,7 +262,9 @@ const GroupChatPage = forwardRef(
       let emojiContent: string
       const tags: string[][] = [
         ['e', reactTarget.event.id],
-        ['p', reactTarget.pubkey]
+        ['p', reactTarget.pubkey],
+        ['h', groupId],
+        ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)]
       ]
       if (typeof emoji === 'string') {
         emojiContent = emoji
@@ -269,7 +279,7 @@ const GroupChatPage = forwardRef(
           tags,
           created_at: Math.floor(Date.now() / 1000)
         }
-        await publish(draftEvent)
+        await publish(draftEvent, { specifiedRelayUrls: [normalizeUrl(relayDomain)] })
         toast.success(t('Reacted with {{emoji}}', { emoji: emojiContent }))
         setReactTarget(null)
       } catch (error) {
@@ -610,7 +620,22 @@ const GroupChatPage = forwardRef(
       }
     }, [groupId, relayDomain])
 
-    // Scroll to bottom on initial load
+    // Track user scroll position to determine auto-scroll behavior
+    useEffect(() => {
+      const container = messagesContainerRef.current
+      if (!container) return
+
+      const handleScroll = () => {
+        const { scrollTop, scrollHeight, clientHeight } = container
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+        isNearBottomRef.current = distanceFromBottom < BOTTOM_THRESHOLD
+      }
+
+      container.addEventListener('scroll', handleScroll, { passive: true })
+      return () => container.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    // Auto-scroll on initial load
     useEffect(() => {
       if (!loading && messages.length > 0 && !hasScrolledOnLoadRef.current) {
         hasScrolledOnLoadRef.current = true
@@ -620,11 +645,17 @@ const GroupChatPage = forwardRef(
       }
     }, [loading, messages.length])
 
-    // Scroll to bottom smoothly when new messages arrive
+    // Auto-scroll when new messages arrive (only if user is near bottom)
     useEffect(() => {
-      if (hasScrolledOnLoadRef.current && messages.length > 0) {
+      if (!hasScrolledOnLoadRef.current || messages.length === 0) return
+
+      const now = Date.now()
+      if (now - lastScrollTimeRef.current < SCROLL_THROTTLE_MS) return
+
+      if (isNearBottomRef.current) {
+        lastScrollTimeRef.current = now
         requestAnimationFrame(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+          messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' })
         })
       }
     }, [messages.length])
@@ -675,7 +706,11 @@ const GroupChatPage = forwardRef(
           </div>
 
           {/* Messages List */}
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 space-y-3 overflow-y-auto p-4"
+            style={{ overflowAnchor: 'auto' }}
+          >
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />

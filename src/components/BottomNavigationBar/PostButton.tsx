@@ -55,21 +55,18 @@ export default function PostButton() {
           content: event.content,
           event
         })
+        // Open drawer after reply info is ready
+        setDrawerOpen(true)
       }
     }
     const handleClearReply = () => {
       setReplyingTo(null)
     }
-    const handleOpenDrawer = () => {
-      setDrawerOpen(true)
-    }
     window.addEventListener('groupchat-set-reply', handleSetReply)
     window.addEventListener('groupchat-clear-reply', handleClearReply)
-    window.addEventListener('groupchat-open-drawer', handleOpenDrawer)
     return () => {
       window.removeEventListener('groupchat-set-reply', handleSetReply)
       window.removeEventListener('groupchat-clear-reply', handleClearReply)
-      window.removeEventListener('groupchat-open-drawer', handleOpenDrawer)
     }
   }, [])
 
