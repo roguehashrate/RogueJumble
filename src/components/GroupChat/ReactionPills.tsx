@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useNostr } from '@/providers/NostrProvider'
+import customEmojiService from '@/services/custom-emoji.service'
+import Emoji from '@/components/Emoji'
 import { cn } from '@/lib/utils'
 
 type TReaction = {
@@ -24,7 +26,7 @@ export function ReactionPills({
   const groupedReactions = useMemo(() => {
     const msgReactions = reactions.get(messageId) || []
     const map = new Map<string, TReaction[]>()
-    
+
     msgReactions.forEach((r) => {
       if (!map.has(r.emoji)) map.set(r.emoji, [])
       map.get(r.emoji)!.push(r)
@@ -51,27 +53,51 @@ export function ReactionPills({
     [messageId, pubkey, onReact]
   )
 
-  if (groupedReactions.length === 0) return null
+  if (groupedReactions.length === 0) {
+    return (
+      <button
+        onClick={() => onReact(messageId, '👍')}
+        className="mt-1 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-foreground"
+      >
+        <span className="text-sm">👍</span>
+      </button>
+    )
+  }
 
   return (
-    <div className="mt-1 flex flex-wrap gap-1">
-      {groupedReactions.map(({ emoji, count, hasActed }) => (
-        <button
-          key={emoji}
-          onClick={() => handleToggle(emoji)}
-          className={cn(
-            'flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors',
-            hasActed
-              ? 'border-primary/40 bg-primary/10'
-              : 'border-border/20 hover:border-primary/30 hover:bg-muted/20'
-          )}
-        >
-          <span>{emoji}</span>
-          <span className={cn('font-medium', hasActed ? 'text-primary' : 'text-muted-foreground')}>
-            {count}
-          </span>
-        </button>
-      ))}
+    <div className="mt-1.5 flex flex-wrap gap-1">
+      {groupedReactions.map(({ emoji, count, hasActed }) => {
+        const isCustom = customEmojiService.isCustomEmojiId(emoji)
+        const customEmoji = isCustom ? customEmojiService.getEmojiById(emoji) : undefined
+
+        return (
+          <button
+            key={emoji}
+            onClick={() => handleToggle(emoji)}
+            className={cn(
+              'flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors',
+              hasActed ? 'border-primary/50 bg-primary/10' : 'border-border/30 hover:border-border'
+            )}
+          >
+            {customEmoji ? (
+              <Emoji emoji={customEmoji} classNames={{ img: 'size-4' }} />
+            ) : (
+              <span className="text-sm">{emoji}</span>
+            )}
+            <span
+              className={cn('font-medium', hasActed ? 'text-primary' : 'text-muted-foreground')}
+            >
+              {count}
+            </span>
+          </button>
+        )
+      })}
+      <button
+        onClick={() => onReact(messageId, '😊')}
+        className="flex items-center rounded-full px-1.5 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-foreground"
+      >
+        +
+      </button>
     </div>
   )
 }

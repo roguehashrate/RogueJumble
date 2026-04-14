@@ -6,6 +6,7 @@ import {
   parseContent
 } from '@/lib/content-parser'
 import { cn } from '@/lib/utils'
+import customEmojiService from '@/services/custom-emoji.service'
 import { TEmoji } from '@/types'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -48,7 +49,10 @@ export default function Content({
         }
         if (node.type === 'emoji') {
           const shortcode = node.data.split(':')[1]
-          const emoji = emojiInfos?.find((e) => e.shortcode === shortcode)
+          // First check prop, then fall back to customEmojiService
+          const emoji =
+            emojiInfos?.find((e) => e.shortcode === shortcode) ||
+            customEmojiService.getEmojiById(shortcode)
           if (!emoji) return node.data
           return <Emoji key={index} emoji={emoji} classNames={{ img: 'size-4' }} />
         }

@@ -65,7 +65,20 @@ class CustomEmojiService {
   getEmojiById(id?: string): TEmoji | undefined {
     if (!id) return undefined
 
-    return this.emojiMap.get(id)
+    // Try as hash first
+    if (this.emojiMap.has(id)) {
+      return this.emojiMap.get(id)
+    }
+
+    // Try as shortcode (strip colons if present)
+    const shortcode = id.replace(/^:|:$/g, '')
+    for (const emoji of this.emojiMap.values()) {
+      if (emoji.shortcode === shortcode) {
+        return emoji
+      }
+    }
+
+    return undefined
   }
 
   getAllCustomEmojisForPicker() {
@@ -77,7 +90,14 @@ class CustomEmojiService {
   }
 
   isCustomEmojiId(shortcode: string) {
-    return this.emojiMap.has(shortcode)
+    // Try exact match first
+    if (this.emojiMap.has(shortcode)) return true
+    // Try without colons
+    const clean = shortcode.replace(/^:|:$/g, '')
+    for (const emoji of this.emojiMap.values()) {
+      if (emoji.shortcode === clean) return true
+    }
+    return false
   }
 
   private async addEmojisToIndex(emojis: TEmoji[]) {

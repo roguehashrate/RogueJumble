@@ -7,9 +7,9 @@ import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
 import { useSecondaryPage } from '@/PageManager'
 import { Event, kinds } from 'nostr-tools'
-import { forwardRef, useEffect, useRef, useState, useCallback } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, MessageCircle, LogOut, MoreVertical, X } from 'lucide-react'
+import { Loader2, MessageCircle, LogOut, MoreVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from '@/components/Image'
 import UserAvatar from '@/components/UserAvatar'
@@ -19,8 +19,8 @@ import { toProfile } from '@/lib/link'
 import { SecondaryPageLink } from '@/PageManager'
 import Content from '@/components/Content'
 import MessageActions from '@/components/GroupChat/MessageActions'
-import type { TGroupMessage as TGroupMessageType } from '@/components/GroupChat/MessageActions'
 import { ReactionPills } from '@/components/GroupChat/ReactionPills'
+import type { TGroupMessage as TGroupMessageType } from '@/components/GroupChat/MessageActions'
 import ZapDialog from '@/components/ZapDialog'
 import EmojiPicker from '@/components/EmojiPicker'
 import {
@@ -52,11 +52,10 @@ function ColoredUsername({ pubkey }: { pubkey: string }) {
   const color = deriveColorFromPubkey(pubkey)
 
   return (
-    <SecondaryPageLink
-      to={toProfile(pubkey)}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <span className="cursor-pointer text-xs font-semibold hover:underline" style={{ color }}>{displayName}</span>
+    <SecondaryPageLink to={toProfile(pubkey)} onClick={(e) => e.stopPropagation()}>
+      <span className="cursor-pointer text-xs font-semibold hover:underline" style={{ color }}>
+        {displayName}
+      </span>
     </SecondaryPageLink>
   )
 }
@@ -84,7 +83,7 @@ const GroupChatPage = forwardRef(
     const { t } = useTranslation()
     const { pop } = useSecondaryPage()
     const { pubkey, publish } = useNostr()
-    const { registerGroupChat, unregisterGroupChat, refreshMessages } = useGroupChatContext()
+    const { registerGroupChat, unregisterGroupChat } = useGroupChatContext()
     const [messages, setMessages] = useState<TGroupMessage[]>([])
     const [groupName, setGroupName] = useState<string>('Group')
     const [groupAbout, setGroupAbout] = useState<string>()
@@ -92,19 +91,24 @@ const GroupChatPage = forwardRef(
     const [loading, setLoading] = useState(true)
     const [zapTarget, setZapTarget] = useState<TGroupMessageType | null>(null)
     const [reactTarget, setReactTarget] = useState<TGroupMessageType | null>(null)
-    const [reactions, setReactions] = useState<Map<string, { emoji: string; pubkey: string; eventId: string }[]>>(new Map())
+    const [reactions, setReactions] = useState<
+      Map<string, { emoji: string; pubkey: string; eventId: string }[]>
+    >(new Map())
+    const [repliedEvents, setRepliedEvents] = useState<
+      Map<string, { event: Event; pubkey: string }>
+    >(new Map())
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const hasScrolledOnLoadRef = useRef(false)
+    const messagesRef = useRef<TGroupMessage[]>([])
+    messagesRef.current = messages
 
     // Register this group chat with the context
     useEffect(() => {
       const normalizedRelay = relayDomain ? normalizeUrl(relayDomain) : null
-      console.log('[GroupChatPage] Registering group chat:', groupId, 'relay:', normalizedRelay)
       if (normalizedRelay) {
         registerGroupChat(groupId, normalizedRelay)
       }
       return () => {
-        console.log('[GroupChatPage] Unregistering group chat')
         unregisterGroupChat()
       }
     }, [groupId, relayDomain, registerGroupChat, unregisterGroupChat])
@@ -112,7 +116,6 @@ const GroupChatPage = forwardRef(
     const handleLeaveGroup = async () => {
       if (!pubkey) return
       try {
-        // Send kind 9022 (leave request) event
         const draftEvent = {
           kind: NIP29_GROUP_KINDS.GROUP_LEAVE_REQUEST,
           content: '',
@@ -120,13 +123,13 @@ const GroupChatPage = forwardRef(
           created_at: Math.floor(Date.now() / 1000)
         }
         await publish(draftEvent)
-        
-        // Remove group from user's kind 10009 list
-        const groupListEvents = await client.fetchEvents(
-          getDefaultRelayUrls(),
-          { kinds: [10009], authors: [pubkey], limit: 1 }
-        )
-        
+
+        const groupListEvents = await client.fetchEvents(getDefaultRelayUrls(), {
+          kinds: [10009],
+          authors: [pubkey],
+          limit: 1
+        })
+
         if (groupListEvents.length > 0) {
           const existingTags = groupListEvents[0].tags.filter(
             (tag) => tag[0] !== 'group' || tag[1] !== groupId
@@ -139,7 +142,7 @@ const GroupChatPage = forwardRef(
           }
           await publish(updatedEvent)
         }
-        
+
         toast.success(t('Left the group'))
         pop()
       } catch (error) {
@@ -149,16 +152,14 @@ const GroupChatPage = forwardRef(
     }
 
     const handleReply = (message: TGroupMessageType) => {
-      // Dispatch event to PostButton to open drawer and set reply
-      const preview = message.event.content.slice(0, 50) + (message.event.content.length > 50 ? '...' : '')
-      window.dispatchEvent(new CustomEvent('groupchat-set-reply', {
-        detail: {
-          eventId: message.event.id,
-          authorPubkey: message.pubkey,
-          preview
-        }
-      }))
-      // Open the message drawer by dispatching to PostButton
+      window.dispatchEvent(
+        new CustomEvent('groupchat-set-reply', {
+          detail: {
+            eventId: message.event.id,
+            authorPubkey: message.pubkey
+          }
+        })
+      )
       window.dispatchEvent(new CustomEvent('groupchat-open-drawer'))
     }
 
@@ -166,17 +167,61 @@ const GroupChatPage = forwardRef(
       setReactTarget(message)
     }
 
-    const handleEmojiSelect = async (emoji: any) => {
-      if (!reactTarget) return
-      const emojiContent = typeof emoji === 'string' ? emoji : emoji?.shortcode || emoji?.emoji || '👍'
+    const handleToggleReaction = async (messageId: string, emoji: string) => {
+      if (!pubkey) return
+      const msgReactions = reactions.get(messageId) || []
+      const existingReaction = msgReactions.find((r) => r.pubkey === pubkey && r.emoji === emoji)
+      if (existingReaction) {
+        const draftEvent = {
+          kind: kinds.Reaction,
+          content: '',
+          tags: [
+            ['e', existingReaction.eventId],
+            ['p', pubkey]
+          ] as [string, string][],
+          created_at: Math.floor(Date.now() / 1000)
+        }
+        await publish(draftEvent)
+        setReactions((prev) => {
+          const newMap = new Map(prev)
+          const newReactions = newMap.get(messageId) || []
+          newMap.set(
+            messageId,
+            newReactions.filter((r) => r.eventId !== existingReaction.eventId)
+          )
+          return newMap
+        })
+      } else {
+        const draftEvent = {
+          kind: kinds.Reaction,
+          content: emoji,
+          tags: [['e', messageId]] as [string, string][],
+          created_at: Math.floor(Date.now() / 1000)
+        }
+        await publish(draftEvent)
+      }
+    }
+
+    const handleEmojiSelect = async (
+      emoji: string | { shortcode: string; url: string } | undefined
+    ) => {
+      if (!reactTarget || !emoji) return
+      let emojiContent: string
+      const tags: string[][] = [
+        ['e', reactTarget.event.id],
+        ['p', reactTarget.pubkey]
+      ]
+      if (typeof emoji === 'string') {
+        emojiContent = emoji
+      } else {
+        emojiContent = `:${emoji.shortcode}:`
+        tags.push(['emoji', emoji.shortcode, emoji.url])
+      }
       try {
         const draftEvent = {
           kind: kinds.Reaction,
           content: emojiContent,
-          tags: [
-            ['e', reactTarget.event.id],
-            ['p', reactTarget.pubkey]
-          ],
+          tags,
           created_at: Math.floor(Date.now() / 1000)
         }
         await publish(draftEvent)
@@ -192,44 +237,20 @@ const GroupChatPage = forwardRef(
       setZapTarget(message)
     }
 
-    // Quick react from ReactionPills
-    const handleEmojiReact = useCallback(async (messageId: string, emoji: string) => {
-      if (!pubkey) return
-      // Find the message to get the author pubkey
-      const msg = messages.find((m) => m.event.id === messageId)
-      if (!msg) return
-      
-      try {
-        const draftEvent = {
-          kind: kinds.Reaction,
-          content: emoji,
-          tags: [
-            ['e', messageId],
-            ['p', msg.pubkey]
-          ],
-          created_at: Math.floor(Date.now() / 1000)
-        }
-        await publish(draftEvent)
-      } catch (error) {
-        console.error('Failed to react:', error)
-      }
-    }, [messages, pubkey, publish])
-
-    // Refresh messages when a new message is sent from the PostButton
+    // Fetch initial messages + subscribe to live updates
     useEffect(() => {
-      if (refreshMessages && refreshMessages > 0) {
-        // Re-fetch messages to include the new one
-        const fetchNewMessages = async () => {
-          try {
-            const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
-            const messageEvents = await client.fetchEvents(
-              relayUrls,
-              {
-                kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE],
-                '#h': [groupId],
-                limit: 100
-              }
-            )
+      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      let isMounted = true
+
+      const init = async () => {
+        try {
+          const messageEvents = await client.fetchEvents(relayUrls, {
+            kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE, 10], // kind 9 = chat, kind 10 = threaded reply
+            '#h': [groupId],
+            limit: 100
+          })
+
+          if (isMounted) {
             const sortedMessages = messageEvents
               .map((event: Event) => ({
                 event,
@@ -238,40 +259,250 @@ const GroupChatPage = forwardRef(
                 created_at: event.created_at
               }))
               .sort((a, b) => a.created_at - b.created_at)
-            setMessages(sortedMessages)
-          } catch (error) {
-            console.error('Failed to refresh messages:', error)
-          }
-        }
-        fetchNewMessages()
-      }
-    }, [refreshMessages])
 
-    // Subscribe to reactions for all messages in this group
+            setMessages(sortedMessages)
+            setLoading(false)
+
+            // Fetch replied events for initial messages + also check p tags for replies
+            const newRepliedMap = new Map<string, { event: Event; pubkey: string }>()
+
+            for (const msg of sortedMessages) {
+              // Check for "e" tags - NIP-10 can have multiple (root + reply markers)
+              const eTags = msg.event.tags.filter((t: string[]) => t[0] === 'e')
+              const pTag = msg.event.tags.find((t: string[]) => t[0] === 'p')
+
+              let foundReply = false
+
+              // Try each e-tag to find a message we already have
+              for (const eTag of eTags) {
+                const repliedId = eTag[1]
+                if (!repliedId) continue
+
+                const originalMsg = sortedMessages.find((m) => m.event.id === repliedId)
+                if (originalMsg) {
+                  newRepliedMap.set(msg.event.id, {
+                    event: originalMsg.event,
+                    pubkey: originalMsg.pubkey
+                  })
+                  foundReply = true
+                  break
+                }
+              }
+
+              // If not found locally, try fetching from relay (try all e-tags)
+              if (!foundReply) {
+                for (const eTag of eTags) {
+                  const repliedId = eTag[1]
+                  if (!repliedId) continue
+                  try {
+                    const repliedEvent = await client.fetchEvent(repliedId)
+                    if (repliedEvent) {
+                      newRepliedMap.set(msg.event.id, {
+                        event: repliedEvent,
+                        pubkey: repliedEvent.pubkey
+                      })
+                      foundReply = true
+                      break
+                    }
+                  } catch {
+                    /* skip */
+                  }
+                }
+              }
+
+              // Fallback: show p-tag if no e-tag worked
+              if (!foundReply && pTag && pTag[1]) {
+                const emptyEvent = {
+                  id: '',
+                  content: '',
+                  tags: [],
+                  pubkey: '',
+                  created_at: 0,
+                  sig: '',
+                  kind: 0
+                } as unknown as Event
+                newRepliedMap.set(msg.event.id, {
+                  event: emptyEvent,
+                  pubkey: pTag[1]
+                })
+              }
+            }
+            if (newRepliedMap.size > 0) setRepliedEvents(newRepliedMap)
+          }
+        } catch (error) {
+          console.error('Failed to fetch messages:', error)
+          if (isMounted) setLoading(false)
+        }
+
+        const closer = client.subscribe(
+          relayUrls,
+          {
+            kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE, 10],
+            '#h': [groupId]
+          },
+          {
+            onevent: async (event: Event) => {
+              if (!isMounted) return
+
+              // If this is a reply, fetch the replied event - try ALL e-tags
+              const eTags = event.tags.filter((t: string[]) => t[0] === 'e')
+              const pTag = event.tags.find((t: string[]) => t[0] === 'p')
+              let foundReply = false
+
+              for (const replyTag of eTags) {
+                if (!replyTag[1]) continue
+                const replyId = replyTag[1]
+
+                // First check if we already have this message locally
+                const existingMsg = messagesRef.current.find((m) => m.event.id === replyId)
+                if (existingMsg) {
+                  setRepliedEvents((prev) => {
+                    const newMap = new Map(prev)
+                    newMap.set(event.id, { event: existingMsg.event, pubkey: existingMsg.pubkey })
+                    return newMap
+                  })
+                  foundReply = true
+                  break
+                }
+
+                // Try fetching from relay
+                try {
+                  const repliedEvent = await client.fetchEvent(replyId)
+                  if (repliedEvent) {
+                    setRepliedEvents((prev) => {
+                      const newMap = new Map(prev)
+                      newMap.set(event.id, { event: repliedEvent, pubkey: repliedEvent.pubkey })
+                      return newMap
+                    })
+                    foundReply = true
+                    break
+                  }
+                } catch {
+                  /* skip */
+                }
+              }
+
+              // Fallback to p-tag if no e-tag worked
+              if (!foundReply && pTag && pTag[1]) {
+                const emptyEvent = {
+                  id: '',
+                  content: '',
+                  tags: [],
+                  pubkey: '',
+                  created_at: 0,
+                  sig: '',
+                  kind: 0
+                } as unknown as Event
+                setRepliedEvents((prev) => {
+                  const newMap = new Map(prev)
+                  newMap.set(event.id, { event: emptyEvent, pubkey: pTag[1] })
+                  return newMap
+                })
+              }
+
+              setMessages((prev) => {
+                if (prev.some((m) => m.event.id === event.id)) return prev
+                return [
+                  ...prev,
+                  {
+                    event,
+                    content: event.content,
+                    pubkey: event.pubkey,
+                    created_at: event.created_at
+                  }
+                ].sort((a, b) => a.created_at - b.created_at)
+              })
+            }
+          }
+        )
+
+        return closer
+      }
+
+      init()
+
+      return () => {
+        isMounted = false
+      }
+    }, [groupId, relayDomain])
+
+    // Subscribe to reactions
     useEffect(() => {
       const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      client
+        .fetchEvents(relayUrls, {
+          kinds: [NIP29_GROUP_KINDS.GROUP_METADATA],
+          '#d': [groupId],
+          limit: 1
+        } as any)
+        .then((events) => {
+          if (events.length > 0) {
+            const metadataEvent = events[0]
+            metadataEvent.tags.forEach((tag) => {
+              const [tagName, tagValue] = tag
+              if (tagName === 'name' && tagValue) setGroupName(tagValue)
+              else if (tagName === 'about' && tagValue) setGroupAbout(tagValue)
+              else if (tagName === 'picture' && tagValue) setGroupPicture(tagValue)
+            })
+          }
+        })
+        .catch(console.error)
+    }, [groupId, relayDomain])
+
+    // Subscribe to reactions
+    useEffect(() => {
+      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+
+      // Fetch existing reactions filtered by group (h tag)
+      client
+        .fetchEvents(relayUrls, {
+          kinds: [kinds.Reaction],
+          '#h': [groupId],
+          limit: 500
+        })
+        .then((reactionEvents) => {
+          const msgIds = new Set(messagesRef.current.map((m) => m.event.id))
+          const newMap = new Map(reactions)
+          reactionEvents.forEach((event: Event) => {
+            const eTag = event.tags.find((t: string[]) => t[0] === 'e')
+            if (!eTag) return
+
+            const messageId = eTag[1]
+            if (!msgIds.has(messageId)) return
+
+            const emoji = event.content || '👍'
+            const existing = newMap.get(messageId) || []
+            if (!existing.some((r) => r.eventId === event.id)) {
+              newMap.set(messageId, [
+                ...existing,
+                { emoji, pubkey: event.pubkey, eventId: event.id }
+              ])
+            }
+          })
+          setReactions(newMap)
+        })
+        .catch(console.error)
+
+      // Subscribe to new reactions filtered by group (h tag)
       const closer = client.subscribe(
         relayUrls,
-        {
-          kinds: [kinds.Reaction],
-          limit: 200
-        },
+        { kinds: [kinds.Reaction], '#h': [groupId] },
         {
           onevent: (event: Event) => {
-            // Check if this reaction is for a message in our group
-            const eTag = event.tags.find((t) => t[0] === 'e')
-            const hTag = event.tags.find((t) => t[0] === 'h')
-            if (!eTag || (hTag && hTag[1] !== groupId)) return
+            const eTag = event.tags.find((t: string[]) => t[0] === 'e')
+            if (!eTag) return
 
             const messageId = eTag[1]
             const emoji = event.content || '👍'
-            
+
             setReactions((prev) => {
               const newMap = new Map(prev)
               const existing = newMap.get(messageId) || []
-              // Avoid duplicates
               if (existing.some((r) => r.eventId === event.id)) return prev
-              newMap.set(messageId, [...existing, { emoji, pubkey: event.pubkey, eventId: event.id }])
+              newMap.set(messageId, [
+                ...existing,
+                { emoji, pubkey: event.pubkey, eventId: event.id }
+              ])
               return newMap
             })
           }
@@ -283,70 +514,7 @@ const GroupChatPage = forwardRef(
       }
     }, [groupId, relayDomain])
 
-    // Fetch group metadata and messages
-    useEffect(() => {
-      const fetchGroupData = async () => {
-        setLoading(true)
-        hasScrolledOnLoadRef.current = false
-        try {
-          const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
-
-          // Fetch group metadata (kind 39000)
-          const metadataEvents = await client.fetchEvents(
-            relayUrls,
-            {
-              kinds: [NIP29_GROUP_KINDS.GROUP_METADATA],
-              '#d': [groupId],
-              limit: 1
-            } as any
-          )
-
-          if (metadataEvents.length > 0) {
-            const metadataEvent = metadataEvents[0]
-            metadataEvent.tags.forEach((tag) => {
-              const [tagName, tagValue] = tag
-              if (tagName === 'name' && tagValue) {
-                setGroupName(tagValue)
-              } else if (tagName === 'about' && tagValue) {
-                setGroupAbout(tagValue)
-              } else if (tagName === 'picture' && tagValue) {
-                setGroupPicture(tagValue)
-              }
-            })
-          }
-
-          // Fetch group messages (kind 9 with h tag)
-          const messageEvents = await client.fetchEvents(
-            relayUrls,
-            {
-              kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE],
-              '#h': [groupId],
-              limit: 100
-            }
-          )
-
-          // Sort by creation time
-          const sortedMessages = messageEvents
-            .map((event: Event) => ({
-              event,
-              content: event.content,
-              pubkey: event.pubkey,
-              created_at: event.created_at
-            }))
-            .sort((a, b) => a.created_at - b.created_at)
-
-          setMessages(sortedMessages)
-        } catch (error) {
-          console.error('Failed to fetch group data:', error)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-      fetchGroupData()
-    }, [relayDomain, groupId])
-
-    // Scroll to bottom on initial load (instant)
+    // Scroll to bottom on initial load
     useEffect(() => {
       if (!loading && messages.length > 0 && !hasScrolledOnLoadRef.current) {
         hasScrolledOnLoadRef.current = true
@@ -373,15 +541,10 @@ const GroupChatPage = forwardRef(
       .toUpperCase()
 
     return (
-      <SecondaryPageLayout
-        ref={ref}
-        index={index}
-        title={t('Groups')}
-        hideBackButton={false}
-      >
+      <SecondaryPageLayout ref={ref} index={index} title={t('Groups')} hideBackButton={false}>
         <div className="flex h-full flex-col">
           {/* Group Info Subheader - Sticky below titlebar */}
-          <div className="sticky top-[3rem] z-10 flex items-center gap-3 border-b border-border/20 bg-card/95 backdrop-blur-xl p-4">
+          <div className="sticky top-[3rem] z-10 flex items-center gap-3 border-b border-border/20 bg-card/95 p-4 backdrop-blur-xl">
             <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary/10">
               {groupPicture ? (
                 <Image
@@ -395,9 +558,7 @@ const GroupChatPage = forwardRef(
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="truncate font-semibold">{groupName}</h2>
-              {groupAbout && (
-                <p className="truncate text-xs text-muted-foreground">{groupAbout}</p>
-              )}
+              {groupAbout && <p className="truncate text-xs text-muted-foreground">{groupAbout}</p>}
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -418,7 +579,7 @@ const GroupChatPage = forwardRef(
           </div>
 
           {/* Messages List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -427,60 +588,106 @@ const GroupChatPage = forwardRef(
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <MessageCircle className="mb-4 size-12 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">{t('No messages yet. Start the conversation!')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('No messages yet. Start the conversation!')}
+                </p>
               </div>
             ) : (
-              messages.map((message) => (
-                <div
-                  key={message.event.id}
-                  className={`flex gap-2 ${
-                    message.pubkey === pubkey ? 'flex-row-reverse' : ''
-                  }`}
-                >
-                  {/* Avatar */}
-                  <div className="shrink-0">
-                    <UserAvatar
-                      userId={message.pubkey}
-                      className="size-8"
-                    />
-                  </div>
+              messages.map((message) => {
+                const repliedMsg = repliedEvents.get(message.event.id)
 
-                  {/* Message Bubble */}
+                return (
                   <div
-                    className={`relative max-w-[70%] rounded-xl px-3 py-2 ${
-                      message.pubkey === pubkey
-                        ? 'bg-primary/30 text-white backdrop-blur-sm'
-                        : 'bg-muted/20'
-                    }`}
+                    key={message.event.id}
+                    className={`flex gap-2 ${message.pubkey === pubkey ? 'flex-row-reverse' : ''}`}
                   >
-                    <MessageActions
-                      message={message}
-                      onReply={handleReply}
-                      onReact={handleReact}
-                      onZap={handleZap}
-                    />
-                    <div className={`mb-1 flex items-center gap-1 ${message.pubkey === pubkey ? 'justify-end' : ''}`}>
-                      <ColoredUsername pubkey={message.pubkey} />
-                      <span className={message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'}>&bull;</span>
-                      <FormattedTimestamp
-                        timestamp={message.created_at}
-                        className={`text-[10px] ${
-                          message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'
-                        }`}
+                    {/* Avatar */}
+                    <div className="shrink-0">
+                      <UserAvatar userId={message.pubkey} className="size-8" />
+                    </div>
+
+                    {/* Message Bubble */}
+                    <div
+                      className={`relative max-w-[70%] rounded-xl px-3 py-2 ${
+                        message.pubkey === pubkey
+                          ? 'bg-primary/30 text-white backdrop-blur-sm'
+                          : 'bg-muted/20'
+                      }`}
+                    >
+                      {/* Replied message shown above the bubble - Discord/Telegram style */}
+                      {repliedMsg && (
+                        <div className="mb-2">
+                          <div className="flex items-start gap-2">
+                            <div className="h-full min-h-[20px] w-0.5 rounded-full bg-foreground/30" />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <MessageCircle
+                                  className="size-3 shrink-0"
+                                  style={{ color: deriveColorFromPubkey(repliedMsg.pubkey) }}
+                                />
+                                <span
+                                  className="text-xs font-bold"
+                                  style={{ color: deriveColorFromPubkey(repliedMsg.pubkey) }}
+                                >
+                                  <ColoredUsername pubkey={repliedMsg.pubkey} />
+                                </span>
+                              </div>
+                              {repliedMsg.event.content && (
+                                <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap break-words text-[11px] font-normal opacity-60">
+                                  {repliedMsg.event.content}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <MessageActions
+                        message={message}
+                        onReply={handleReply}
+                        onReact={handleReact}
+                        onZap={handleZap}
+                      />
+                      <div
+                        className={`mb-1 flex items-center gap-1 ${message.pubkey === pubkey ? 'justify-end' : ''}`}
+                      >
+                        <ColoredUsername pubkey={message.pubkey} />
+                        <span
+                          className={
+                            message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'
+                          }
+                        >
+                          &bull;
+                        </span>
+                        <FormattedTimestamp
+                          timestamp={message.created_at}
+                          className={`text-[10px] ${
+                            message.pubkey === pubkey ? 'text-white/50' : 'text-muted-foreground'
+                          }`}
+                        />
+                      </div>
+                      <Content
+                        event={message.event}
+                        className={`text-sm ${message.pubkey === pubkey ? 'text-white' : ''}`}
+                      />
+                      <ReactionPills
+                        messageId={message.event.id}
+                        reactions={reactions}
+                        onReact={(msgId, emoji) => {
+                          const msgReactions = reactions.get(msgId) || []
+                          const existing = msgReactions.find(
+                            (r) => r.pubkey === pubkey && r.emoji === emoji
+                          )
+                          if (existing) {
+                            setReactTarget(message)
+                          } else {
+                            handleToggleReaction(msgId, emoji)
+                          }
+                        }}
                       />
                     </div>
-                    <Content
-                      event={message.event}
-                      className="text-sm text-white"
-                    />
-                    <ReactionPills
-                      messageId={message.event.id}
-                      reactions={reactions}
-                      onReact={handleEmojiReact}
-                    />
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -514,7 +721,7 @@ const GroupChatPage = forwardRef(
                   onClick={() => setReactTarget(null)}
                   className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/30"
                 >
-                  <X className="size-4" />
+                  <span className="text-sm">✕</span>
                 </button>
               </div>
               <EmojiPicker onEmojiClick={handleEmojiSelect} />
