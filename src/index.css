@@ -36,13 +36,16 @@
     min-height: 100vh;
   }
 
-  input, textarea, button {
+  input,
+  textarea,
+  button {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
   }
 
-  body, html {
+  body,
+  html {
     overscroll-behavior-y: none;
     overscroll-behavior-x: none;
   }
@@ -55,10 +58,21 @@
   }
 
   /* Hide scrollbars on mobile, show on desktop */
-  * { -ms-overflow-style: none; scrollbar-width: none; }
-  *::-webkit-scrollbar { display: none; width: 0px; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 
   /* Show scrollbars on desktop for window scrolling */
   @media (min-width: 768px) {
@@ -121,11 +135,7 @@
   }
 
   .glass-card {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--card) / 0.4) 0%,
-      hsl(var(--card) / 0.25) 100%
-    );
+    background: linear-gradient(135deg, hsl(var(--card) / 0.4) 0%, hsl(var(--card) / 0.25) 100%);
     border: 1px solid hsl(var(--border) / 0.15);
   }
 
@@ -133,20 +143,33 @@
      GLOW EFFECTS (subtle)
      ============================================================ */
   .glow-primary {
-    box-shadow: 0 0 16px hsl(var(--primary) / 0.15), 0 4px 12px hsl(var(--primary) / 0.08);
+    box-shadow:
+      0 0 16px hsl(var(--primary) / 0.15),
+      0 4px 12px hsl(var(--primary) / 0.08);
   }
   .glow-sm {
     box-shadow: 0 0 8px hsl(var(--primary) / 0.08);
   }
-  .glow-zap { box-shadow: 0 0 16px hsl(var(--zap) / 0.2); }
-  .glow-repost { box-shadow: 0 0 16px hsl(var(--repost) / 0.15); }
-  .glow-bookmark { box-shadow: 0 0 16px hsl(var(--bookmark) / 0.15); }
+  .glow-zap {
+    box-shadow: 0 0 16px hsl(var(--zap) / 0.2);
+  }
+  .glow-repost {
+    box-shadow: 0 0 16px hsl(var(--repost) / 0.15);
+  }
+  .glow-bookmark {
+    box-shadow: 0 0 16px hsl(var(--bookmark) / 0.15);
+  }
 
   /* ============================================================
      GRADIENT UTILITIES
      ============================================================ */
   .gradient-text {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-hover)), hsl(var(--zap)));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--primary-hover)),
+      hsl(var(--zap))
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -162,9 +185,18 @@
     inset: 0;
     border-radius: inherit;
     padding: 1.5px;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.6), hsl(var(--zap) / 0.3), hsl(var(--bookmark) / 0.6));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.6),
+      hsl(var(--zap) / 0.3),
+      hsl(var(--bookmark) / 0.6)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -185,17 +217,37 @@
     position: absolute;
     inset: -50%;
     background:
-      radial-gradient(ellipse 600px 600px at 20% 30%, hsl(var(--primary) / 0.06) 0%, transparent 70%),
+      radial-gradient(
+        ellipse 600px 600px at 20% 30%,
+        hsl(var(--primary) / 0.06) 0%,
+        transparent 70%
+      ),
       radial-gradient(ellipse 500px 500px at 75% 15%, hsl(var(--zap) / 0.04) 0%, transparent 70%),
-      radial-gradient(ellipse 400px 400px at 60% 75%, hsl(var(--repost) / 0.03) 0%, transparent 70%),
-      radial-gradient(ellipse 350px 350px at 10% 80%, hsl(var(--bookmark) / 0.02) 0%, transparent 70%);
+      radial-gradient(
+        ellipse 400px 400px at 60% 75%,
+        hsl(var(--repost) / 0.03) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 350px 350px at 10% 80%,
+        hsl(var(--bookmark) / 0.02) 0%,
+        transparent 70%
+      );
     animation: mesh-drift 40s ease-in-out infinite alternate;
   }
   @keyframes mesh-drift {
-    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-    33% { transform: translate(20px, -10px) rotate(2deg) scale(1.03); }
-    66% { transform: translate(-10px, 8px) rotate(-1deg) scale(0.99); }
-    100% { transform: translate(5px, -5px) rotate(1deg) scale(1.01); }
+    0% {
+      transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    33% {
+      transform: translate(20px, -10px) rotate(2deg) scale(1.03);
+    }
+    66% {
+      transform: translate(-10px, 8px) rotate(-1deg) scale(0.99);
+    }
+    100% {
+      transform: translate(5px, -5px) rotate(1deg) scale(1.01);
+    }
   }
 
   /* ============================================================
@@ -232,44 +284,91 @@
      ============================================================ */
 
   @keyframes shimmer {
-    0% { background-position: 400% 0; }
-    100% { background-position: 0% 0; }
+    0% {
+      background-position: 400% 0;
+    }
+    100% {
+      background-position: 0% 0;
+    }
   }
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-    25% { transform: translateY(-20px) translateX(10px) rotate(2deg); }
-    50% { transform: translateY(-10px) translateX(-15px) rotate(-1deg); }
-    75% { transform: translateY(-30px) translateX(5px) rotate(1deg); }
+    0%,
+    100% {
+      transform: translateY(0px) translateX(0px) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px) rotate(2deg);
+    }
+    50% {
+      transform: translateY(-10px) translateX(-15px) rotate(-1deg);
+    }
+    75% {
+      transform: translateY(-30px) translateX(5px) rotate(1deg);
+    }
   }
 
   @keyframes float-slow {
-    0% { transform: translate(0, 0); opacity: 0.3; }
-    25% { transform: translate(30px, -30px); opacity: 0.5; }
-    50% { transform: translate(-20px, -50px); opacity: 0.2; }
-    75% { transform: translate(-40px, -20px); opacity: 0.4; }
-    100% { transform: translate(0, 0); opacity: 0.3; }
+    0% {
+      transform: translate(0, 0);
+      opacity: 0.3;
+    }
+    25% {
+      transform: translate(30px, -30px);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate(-20px, -50px);
+      opacity: 0.2;
+    }
+    75% {
+      transform: translate(-40px, -20px);
+      opacity: 0.4;
+    }
+    100% {
+      transform: translate(0, 0);
+      opacity: 0.3;
+    }
   }
 
   @keyframes orbit {
-    0% { transform: rotate(0deg) translateX(var(--orbit-radius, 60px)) rotate(0deg); }
-    100% { transform: rotate(360deg) translateX(var(--orbit-radius, 60px)) rotate(-360deg); }
+    0% {
+      transform: rotate(0deg) translateX(var(--orbit-radius, 60px)) rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg) translateX(var(--orbit-radius, 60px)) rotate(-360deg);
+    }
   }
 
   @keyframes orbit-reverse {
-    0% { transform: rotate(360deg) translateX(var(--orbit-radius, 80px)) rotate(-360deg); }
-    100% { transform: rotate(0deg) translateX(var(--orbit-radius, 80px)) rotate(0deg); }
+    0% {
+      transform: rotate(360deg) translateX(var(--orbit-radius, 80px)) rotate(-360deg);
+    }
+    100% {
+      transform: rotate(0deg) translateX(var(--orbit-radius, 80px)) rotate(0deg);
+    }
   }
 
   @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 12px hsl(var(--primary) / 0.15); }
-    50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.25); }
+    0%,
+    100% {
+      box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.25);
+    }
   }
 
   @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   .animate-gradient {
@@ -279,101 +378,232 @@
   }
 
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes fadeInScale {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   @keyframes fadeInRight {
-    from { opacity: 0; transform: translateX(16px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
   @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
   }
 
   @keyframes ripple {
-    0% { transform: scale(0); opacity: 0.5; }
-    100% { transform: scale(4); opacity: 0; }
+    0% {
+      transform: scale(0);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
   }
 
   @keyframes progressFill {
-    0% { width: 0%; }
-    100% { width: 100%; }
+    0% {
+      width: 0%;
+    }
+    100% {
+      width: 100%;
+    }
   }
 
   @keyframes shake {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    10% { transform: translate(-1px, -1px) rotate(-1deg); }
-    20% { transform: translate(1px, -1px) rotate(1deg); }
-    30% { transform: translate(-1px, 1px) rotate(-1deg); }
-    40% { transform: translate(1px, 1px) rotate(1deg); }
-    50% { transform: translate(-1px, -1px) rotate(-1deg); }
-    60% { transform: translate(1px, -1px) rotate(1deg); }
-    70% { transform: translate(-1px, 1px) rotate(-1deg); }
-    80% { transform: translate(1px, 1px) rotate(1deg); }
-    90% { transform: translate(-1px, -1px) rotate(-1deg); }
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    10% {
+      transform: translate(-1px, -1px) rotate(-1deg);
+    }
+    20% {
+      transform: translate(1px, -1px) rotate(1deg);
+    }
+    30% {
+      transform: translate(-1px, 1px) rotate(-1deg);
+    }
+    40% {
+      transform: translate(1px, 1px) rotate(1deg);
+    }
+    50% {
+      transform: translate(-1px, -1px) rotate(-1deg);
+    }
+    60% {
+      transform: translate(1px, -1px) rotate(1deg);
+    }
+    70% {
+      transform: translate(-1px, 1px) rotate(-1deg);
+    }
+    80% {
+      transform: translate(1px, 1px) rotate(1deg);
+    }
+    90% {
+      transform: translate(-1px, -1px) rotate(-1deg);
+    }
   }
 
   @keyframes iconBounce {
-    0% { transform: scale(1); }
-    20% { transform: scale(1.25); }
-    40% { transform: scale(0.9); }
-    60% { transform: scale(1.05); }
-    80% { transform: scale(0.97); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    20% {
+      transform: scale(1.25);
+    }
+    40% {
+      transform: scale(0.9);
+    }
+    60% {
+      transform: scale(1.05);
+    }
+    80% {
+      transform: scale(0.97);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(100%); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes glow-pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.7; }
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.7;
+    }
   }
 
   /* ============================================================
      ANIMATION CLASSES
      ============================================================ */
-  .animate-shimmer { animation: shimmer 3s ease-in-out infinite; }
-  .animate-float { animation: float 10s ease-in-out infinite; }
-  .animate-float-slow { animation: float-slow 20s linear infinite; }
-  .animate-pulse-glow { animation: pulse-glow 4s ease-in-out infinite; }
-  .animate-gradient { animation: gradient-shift 1.8s ease infinite; background-size: 500% auto; filter: drop-shadow(0 0 4px hsl(var(--primary) / 0.3)); }
-  .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-  .animate-fade-in-scale { animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-  .animate-fade-in-right { animation: fadeInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-  .animate-slide-down { animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-  .animate-spin-slow { animation: spin-slow 30s linear infinite; }
-  .animate-breathe { animation: breathe 5s ease-in-out infinite; }
-  .animate-ripple { animation: ripple 0.8s cubic-bezier(0, 0.2, 0.8, 1) forwards; }
-  .animate-icon-bounce { animation: iconBounce 0.3s ease-out; }
-  .animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+  .animate-shimmer {
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  .animate-float {
+    animation: float 10s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: float-slow 20s linear infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+  .animate-gradient {
+    animation: gradient-shift 1.8s ease infinite;
+    background-size: 500% auto;
+    filter: drop-shadow(0 0 4px hsl(var(--primary) / 0.3));
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .animate-fade-in-scale {
+    animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .animate-fade-in-right {
+    animation: fadeInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .animate-slide-down {
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+  .animate-spin-slow {
+    animation: spin-slow 30s linear infinite;
+  }
+  .animate-breathe {
+    animation: breathe 5s ease-in-out infinite;
+  }
+  .animate-ripple {
+    animation: ripple 0.8s cubic-bezier(0, 0.2, 0.8, 1) forwards;
+  }
+  .animate-icon-bounce {
+    animation: iconBounce 0.3s ease-out;
+  }
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
 
   /* Stagger delays */
-  .stagger-1 { animation-delay: 0.05s; }
-  .stagger-2 { animation-delay: 0.1s; }
-  .stagger-3 { animation-delay: 0.15s; }
-  .stagger-4 { animation-delay: 0.2s; }
-  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-1 {
+    animation-delay: 0.05s;
+  }
+  .stagger-2 {
+    animation-delay: 0.1s;
+  }
+  .stagger-3 {
+    animation-delay: 0.15s;
+  }
+  .stagger-4 {
+    animation-delay: 0.2s;
+  }
+  .stagger-5 {
+    animation-delay: 0.25s;
+  }
 
   /* ============================================================
      THEME COLOR DEFINITIONS
@@ -464,6 +694,26 @@
   }
 
   /* ============================================================
+     TEXT SELECTION COLORS
+     More visible selection colors for better readability
+     ============================================================ */
+  ::selection {
+    background: hsl(var(--primary) / 0.4);
+    color: hsl(var(--primary-foreground));
+  }
+
+  .dark ::selection {
+    background: hsl(25 95% 55% / 0.35);
+    color: hsl(0 0% 0%);
+  }
+
+  /* Rogue theme selection - uses a contrasting cyan tint for visibility */
+  .rogue ::selection {
+    background: hsl(190 100% 40% / 0.35);
+    color: hsl(190 100% 70%);
+  }
+
+  /* ============================================================
      THEME STYLE SYSTEM
      These CSS rules use CSS variables set by ThemeProvider to
      create visually distinct themes (not just color swaps).
@@ -510,13 +760,13 @@
   .hackerman .glass-card,
   .hackerman .glass,
   .hackerman .glass-strong,
-  .hackerman [class*="rounded"],
+  .hackerman [class*='rounded'],
   .phosphor .rounded-2xl,
   .phosphor .rounded-xl,
   .phosphor .glass-card,
   .phosphor .glass,
   .phosphor .glass-strong,
-  .phosphor [class*="rounded"] {
+  .phosphor [class*='rounded'] {
     border-radius: var(--theme-radius, 0px) !important;
   }
 
@@ -537,11 +787,11 @@
 
   /* --- Text Glow on Primary Elements --- */
   .hackerman .text-primary,
-  .hackerman [class*="text-primary"],
+  .hackerman [class*='text-primary'],
   .phosphor .text-primary,
-  .phosphor [class*="text-primary"],
+  .phosphor [class*='text-primary'],
   .smolder .text-primary,
-  .smolder [class*="text-primary"] {
+  .smolder [class*='text-primary'] {
     text-shadow: var(--theme-text-shadow, none);
   }
 
@@ -557,8 +807,11 @@
 
   /* Dim mesh — terminals don't glow */
   .hackerman .bg-mesh::before {
-    background:
-      radial-gradient(ellipse 400px 400px at 30% 40%, hsl(var(--primary) / 0.02) 0%, transparent 70%);
+    background: radial-gradient(
+      ellipse 400px 400px at 30% 40%,
+      hsl(var(--primary) / 0.02) 0%,
+      transparent 70%
+    );
     animation: mesh-drift 80s ease-in-out infinite alternate;
   }
 
@@ -616,7 +869,7 @@
 
   /* Subtle green tint on muted foreground */
   .hackerman .text-muted-foreground,
-  .hackerman [class*="text-muted"] {
+  .hackerman [class*='text-muted'] {
     color: hsl(var(--muted-foreground));
   }
 
@@ -627,8 +880,11 @@
 
   /* Dim mesh for phosphor */
   .phosphor .bg-mesh::before {
-    background:
-      radial-gradient(ellipse 400px 400px at 30% 40%, hsl(var(--primary) / 0.02) 0%, transparent 70%);
+    background: radial-gradient(
+      ellipse 400px 400px at 30% 40%,
+      hsl(var(--primary) / 0.02) 0%,
+      transparent 70%
+    );
     animation: mesh-drift 80s ease-in-out infinite alternate;
   }
 
@@ -686,7 +942,7 @@
 
   /* Subtle amber tint on muted foreground */
   .phosphor .text-muted-foreground,
-  .phosphor [class*="text-muted"] {
+  .phosphor [class*='text-muted'] {
     color: hsl(var(--muted-foreground));
   }
 
@@ -766,16 +1022,20 @@
   /* Fire glow on interactive elements */
   .smolder button,
   .smolder a {
-    transition: text-shadow 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      text-shadow 0.2s ease,
+      box-shadow 0.2s ease;
   }
   .smolder button:hover,
   .smolder a:hover {
-    text-shadow: 0 0 10px hsl(15 95% 50% / 0.5), 0 0 20px hsl(30 100% 45% / 0.3);
+    text-shadow:
+      0 0 10px hsl(15 95% 50% / 0.5),
+      0 0 20px hsl(30 100% 45% / 0.3);
   }
 
   /* Primary buttons — flame pulse */
-  .smolder button[class*="bg-primary"],
-  .smolder a[class*="bg-primary"] {
+  .smolder button[class*='bg-primary'],
+  .smolder a[class*='bg-primary'] {
     box-shadow: 0 0 16px hsl(15 90% 50% / 0.3);
     animation: smolder-flame-pulse 2s ease-in-out infinite;
   }
@@ -791,11 +1051,7 @@
 
   /* Cards — warm glow borders with fire flicker */
   .smolder .glass-card {
-    background: linear-gradient(
-      180deg,
-      hsl(var(--card) / 0.95) 0%,
-      hsl(15 15% 4% / 0.95) 100%
-    );
+    background: linear-gradient(180deg, hsl(var(--card) / 0.95) 0%, hsl(15 15% 4% / 0.95) 100%);
     border: 1px solid hsl(15 85% 50% / 0.2);
     box-shadow: 0 0 12px hsl(15 85% 50% / 0.08);
     animation: smolder-card-flicker 5s ease-in-out infinite;
@@ -829,14 +1085,16 @@
 
   /* Subtle fire tint on muted foreground */
   .smolder .text-muted-foreground,
-  .smolder [class*="text-muted"] {
+  .smolder [class*='text-muted'] {
     color: hsl(var(--muted-foreground));
   }
 
   /* Primary text — warm flame glow */
   .smolder .text-primary,
-  .smolder [class*="text-primary"] {
-    text-shadow: 0 0 8px hsl(15 95% 55% / 0.4), 0 0 16px hsl(15 95% 55% / 0.2);
+  .smolder [class*='text-primary'] {
+    text-shadow:
+      0 0 8px hsl(15 95% 55% / 0.4),
+      0 0 16px hsl(15 95% 55% / 0.2);
   }
 
   /* ============================================================
@@ -847,7 +1105,11 @@
   /* Enhanced background mesh for midnight */
   .midnight .bg-mesh::before {
     background:
-      radial-gradient(ellipse 500px 400px at 20% 25%, hsl(var(--primary) / 0.05) 0%, transparent 60%),
+      radial-gradient(
+        ellipse 500px 400px at 20% 25%,
+        hsl(var(--primary) / 0.05) 0%,
+        transparent 60%
+      ),
       radial-gradient(ellipse 300px 250px at 80% 15%, hsl(210 40% 60% / 0.04) 0%, transparent 50%),
       radial-gradient(ellipse 200px 200px at 60% 50%, hsl(45 60% 60% / 0.03) 0%, transparent 40%),
       radial-gradient(ellipse 250px 300px at 35% 75%, hsl(230 30% 40% / 0.04) 0%, transparent 50%);
@@ -855,8 +1117,8 @@
   }
 
   /* Moonlit glow on primary buttons */
-  .midnight button[class*="bg-primary"],
-  .midnight a[class*="bg-primary"] {
+  .midnight button[class*='bg-primary'],
+  .midnight a[class*='bg-primary'] {
     box-shadow:
       0 0 16px hsl(var(--primary) / 0.2),
       0 4px 12px hsl(230 30% 0% / 0.3);
@@ -864,11 +1126,7 @@
 
   /* Cards — deep but warm, like moonlight on surfaces */
   .midnight .glass-card {
-    background: linear-gradient(
-      135deg,
-      hsl(var(--card) / 0.5) 0%,
-      hsl(var(--card) / 0.35) 100%
-    );
+    background: linear-gradient(135deg, hsl(var(--card) / 0.5) 0%, hsl(var(--card) / 0.35) 100%);
   }
 
   /* Gold accent ring on focus */
@@ -890,7 +1148,7 @@
 
   /* Subtle warm on primary text */
   .midnight .text-primary,
-  .midnight [class*="text-primary"] {
+  .midnight [class*='text-primary'] {
     text-shadow: 0 0 12px hsl(var(--primary) / 0.15);
   }
 
@@ -924,56 +1182,128 @@
   }
 
   @keyframes milkyway-breathe {
-    0% { opacity: 0.7; }
-    50% { opacity: 1; }
-    100% { opacity: 0.8; }
+    0% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.8;
+    }
   }
 
   /* Smolder fire animations */
   @keyframes smolder-fire-rise {
-    0% { opacity: 0.7; transform: translateY(5px); }
-    50% { opacity: 1; }
-    100% { opacity: 0.8; transform: translateY(-5px); }
+    0% {
+      opacity: 0.7;
+      transform: translateY(5px);
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.8;
+      transform: translateY(-5px);
+    }
   }
 
   @keyframes smolder-flames {
-    0% { opacity: 0.6; transform: translateY(3px) scaleY(0.95); }
-    50% { opacity: 1; transform: translateY(-2px) scaleY(1.05); }
-    100% { opacity: 0.7; transform: translateY(2px) scaleY(0.98); }
+    0% {
+      opacity: 0.6;
+      transform: translateY(3px) scaleY(0.95);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-2px) scaleY(1.05);
+    }
+    100% {
+      opacity: 0.7;
+      transform: translateY(2px) scaleY(0.98);
+    }
   }
 
   /* Bottom flames pulse upward */
   @keyframes smolder-flames-rise-up {
-    0% { opacity: 0.8; transform: translateY(0) scaleY(1); }
-    50% { opacity: 1; transform: translateY(-12px) scaleY(1.15); }
-    100% { opacity: 0.85; transform: translateY(-8px) scaleY(1.05); }
+    0% {
+      opacity: 0.8;
+      transform: translateY(0) scaleY(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-12px) scaleY(1.15);
+    }
+    100% {
+      opacity: 0.85;
+      transform: translateY(-8px) scaleY(1.05);
+    }
   }
 
   /* Top flames pulse downward */
   @keyframes smolder-flames-drip-down {
-    0% { opacity: 0.85; transform: translateY(0) scaleY(1); }
-    50% { opacity: 1; transform: translateY(12px) scaleY(1.15); }
-    100% { opacity: 0.8; transform: translateY(8px) scaleY(1.05); }
+    0% {
+      opacity: 0.85;
+      transform: translateY(0) scaleY(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(12px) scaleY(1.15);
+    }
+    100% {
+      opacity: 0.8;
+      transform: translateY(8px) scaleY(1.05);
+    }
   }
 
   @keyframes smolder-embers {
-    0% { opacity: 0.3; transform: translateY(0); }
-    50% { opacity: 0.6; }
-    100% { opacity: 0.3; transform: translateY(-20px); }
+    0% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 0.6;
+    }
+    100% {
+      opacity: 0.3;
+      transform: translateY(-20px);
+    }
   }
 
   @keyframes smolder-flame-pulse {
-    0% { box-shadow: 0 0 8px hsl(15 90% 50% / 0.25); }
-    50% { box-shadow: 0 0 20px hsl(15 95% 50% / 0.4), 0 0 30px hsl(30 100% 45% / 0.2); }
-    100% { box-shadow: 0 0 8px hsl(15 90% 50% / 0.25); }
+    0% {
+      box-shadow: 0 0 8px hsl(15 90% 50% / 0.25);
+    }
+    50% {
+      box-shadow:
+        0 0 20px hsl(15 95% 50% / 0.4),
+        0 0 30px hsl(30 100% 45% / 0.2);
+    }
+    100% {
+      box-shadow: 0 0 8px hsl(15 90% 50% / 0.25);
+    }
   }
 
   @keyframes smolder-card-flicker {
-    0% { box-shadow: 0 0 8px hsl(15 85% 50% / 0.06); border-color: hsl(15 85% 50% / 0.18); }
-    25% { box-shadow: 0 0 14px hsl(15 85% 50% / 0.1); border-color: hsl(15 85% 50% / 0.22); }
-    50% { box-shadow: 0 0 10px hsl(15 85% 50% / 0.07); border-color: hsl(15 85% 50% / 0.19); }
-    75% { box-shadow: 0 0 12px hsl(15 85% 50% / 0.09); border-color: hsl(15 85% 50% / 0.21); }
-    100% { box-shadow: 0 0 8px hsl(15 85% 50% / 0.06); border-color: hsl(15 85% 50% / 0.18); }
+    0% {
+      box-shadow: 0 0 8px hsl(15 85% 50% / 0.06);
+      border-color: hsl(15 85% 50% / 0.18);
+    }
+    25% {
+      box-shadow: 0 0 14px hsl(15 85% 50% / 0.1);
+      border-color: hsl(15 85% 50% / 0.22);
+    }
+    50% {
+      box-shadow: 0 0 10px hsl(15 85% 50% / 0.07);
+      border-color: hsl(15 85% 50% / 0.19);
+    }
+    75% {
+      box-shadow: 0 0 12px hsl(15 85% 50% / 0.09);
+      border-color: hsl(15 85% 50% / 0.21);
+    }
+    100% {
+      box-shadow: 0 0 8px hsl(15 85% 50% / 0.06);
+      border-color: hsl(15 85% 50% / 0.18);
+    }
   }
 
   .dark input[type='datetime-local']::-webkit-calendar-picker-indicator {

@@ -111,7 +111,7 @@ function EmojiListItem({
     <button
       className={cn(
         'w-full cursor-pointer rounded-lg p-1 transition-colors [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
-        selectedIndex === index && 'bg-accent text-accent-foreground'
+        selectedIndex === index && 'bg-muted text-foreground'
       )}
       onClick={() => selectItem(index)}
       onMouseEnter={() => setSelectedIndex(index)}
