@@ -76,7 +76,7 @@ export default function MessageActions({
   return (
     <>
       <div
-        className="absolute inset-0 z-0 cursor-pointer touch-none"
+        className="absolute inset-0 z-0 cursor-pointer touch-pan-y"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
