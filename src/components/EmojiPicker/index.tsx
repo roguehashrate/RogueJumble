@@ -19,7 +19,8 @@ export default function EmojiPicker({
   return (
     <EmojiPickerReact
       theme={Theme.DARK}
-      width={isSmallScreen ? '100%' : 350}
+      width={isSmallScreen ? '100%' : 400}
+      height={isSmallScreen ? 350 : 450}
       autoFocusSearch={false}
       emojiStyle={EmojiStyle.NATIVE}
       skinTonePickerLocation={SkinTonePickerLocation.PREVIEW}

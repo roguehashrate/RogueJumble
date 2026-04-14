@@ -2,7 +2,7 @@ import { useSecondaryPage } from '@/PageManager'
 import { haptic } from '@/lib/haptic'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
-import { Plus, Send, Loader2, X, Paperclip } from 'lucide-react'
+import { Plus, Send, Loader2, X, Paperclip, Smile } from 'lucide-react'
 import { useRef, useState, useEffect } from 'react'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useTranslation } from 'react-i18next'
@@ -13,6 +13,9 @@ import { toast } from 'sonner'
 import client from '@/services/client.service'
 import UserAvatar from '@/components/UserAvatar'
 import Username from '@/components/Username'
+import EmojiPicker from '@/components/EmojiPicker'
+import customEmojiService from '@/services/custom-emoji.service'
+import Emoji from '@/components/Emoji'
 
 type TUploadItem = {
   file: File
@@ -40,7 +43,33 @@ export default function PostButton() {
   const [sending, setSending] = useState(false)
   const [uploads, setUploads] = useState<TUploadItem[]>([])
   const [replyingTo, setReplyingTo] = useState<TReplyInfo | null>(null)
+  const [emojiTab, setEmojiTab] = useState<'picker' | 'search'>('picker')
+  const [emojiQuery, setEmojiQuery] = useState('')
+  const [emojiSuggestions, setEmojiSuggestions] = useState<string[]>([])
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const handleResize = () => {
+      const visualViewport = window.visualViewport
+      if (visualViewport) {
+        const keyboardHeight = window.innerHeight - visualViewport.height
+        setKeyboardHeight(keyboardHeight > 50 ? keyboardHeight : 0)
+      }
+    }
+    window.visualViewport?.addEventListener('resize', handleResize)
+    handleResize()
+    return () => window.visualViewport?.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (drawerOpen && keyboardHeight > 0 && textareaRef.current) {
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 100)
+    }
+  }, [drawerOpen, keyboardHeight])
 
   // Expose setReplyingTo to parent via window event
   useEffect(() => {
@@ -73,7 +102,12 @@ export default function PostButton() {
 
   const handleSend = async () => {
     const hasContent = message.trim() || uploads.some((u) => u.url)
-    console.log('[PostButton] handleSend called', { hasContent, groupId, relayUrl, messageLength: message.length })
+    console.log('[PostButton] handleSend called', {
+      hasContent,
+      groupId,
+      relayUrl,
+      messageLength: message.length
+    })
     if (!hasContent) {
       toast.error(t('Message cannot be empty'))
       return
@@ -99,6 +133,21 @@ export default function PostButton() {
       if (replyingTo) {
         tags.push(['e', replyingTo.eventId, '', 'reply'])
         tags.push(['p', replyingTo.authorPubkey])
+      }
+
+      // Extract emoji shortcodes from content and add emoji tags
+      const shortcodeRegex = /:([a-zA-Z0-9_-]+):/g
+      const addedEmojiTags = new Set<string>()
+      let match
+      while ((match = shortcodeRegex.exec(content)) !== null) {
+        const shortcode = match[1]
+        if (!addedEmojiTags.has(shortcode)) {
+          const emoji = customEmojiService.getEmojiById(shortcode)
+          if (emoji) {
+            tags.push(['emoji', shortcode, emoji.url])
+            addedEmojiTags.add(shortcode)
+          }
+        }
       }
 
       const draftEvent = {
@@ -162,7 +211,9 @@ export default function PostButton() {
           signal: upload.abortController.signal
         })
         setUploads((prev) =>
-          prev.map((u) => (u.file === upload.file ? { ...u, url: result.url, uploading: false } : u))
+          prev.map((u) =>
+            u.file === upload.file ? { ...u, url: result.url, uploading: false } : u
+          )
         )
       } catch (error) {
         const message = (error as Error).message
@@ -216,15 +267,29 @@ export default function PostButton() {
           <Send className="relative z-10 size-5 transition-transform duration-200 group-hover:scale-110" />
         </button>
         <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <DrawerContent className="max-h-[85vh] border-t border-border/20 bg-card/90 backdrop-blur-xl" style={{ touchAction: 'none' }}>
-            <div className="flex flex-col gap-4 overflow-auto p-4" style={{ touchAction: 'auto' }}>
-              <h3 className="text-center text-lg font-semibold">{t('Send Message')}</h3>
+          <DrawerContent
+            className="max-h-[90dvh] border-t border-border/20 bg-card/90 backdrop-blur-xl"
+            style={{ touchAction: 'auto' }}
+          >
+            <div className="flex h-full flex-col" style={{ touchAction: 'auto' }}>
+              <div className="flex items-center justify-between border-b border-border/20 p-4">
+                <h3 className="text-lg font-semibold">{t('Send Message')}</h3>
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/30"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
 
               {/* Upload previews */}
               {uploads.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {uploads.map((upload, idx) => (
-                    <div key={idx} className="relative rounded-lg border border-border/20 overflow-hidden bg-muted/20">
+                    <div
+                      key={idx}
+                      className="relative overflow-hidden rounded-lg border border-border/20 bg-muted/20"
+                    >
                       {upload.url ? (
                         <>
                           <img
@@ -278,7 +343,7 @@ export default function PostButton() {
 
               {/* Reply preview */}
               {replyingTo && (
-                <div className="rounded-lg border border-primary/30 bg-primary/5 pl-3 pr-2 py-2">
+                <div className="rounded-lg border border-primary/30 bg-primary/5 py-2 pl-3 pr-2">
                   <div className="flex items-start gap-2">
                     <div className="mt-0.5 h-5 w-0.5 shrink-0 rounded-full bg-primary/50" />
                     <div className="min-w-0 flex-1">
@@ -305,11 +370,30 @@ export default function PostButton() {
               )}
 
               {/* Message input with attach button */}
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
+              <div className="relative flex gap-2">
+                <div className="relative flex-1">
                   <textarea
+                    ref={textareaRef}
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setMessage(value)
+
+                      // Check for shortcode pattern
+                      const cursorPos = e.target.selectionStart
+                      const textBeforeCursor = value.slice(0, cursorPos)
+                      const shortcodeMatch = textBeforeCursor.match(/:([a-zA-Z0-9_-]*)$/)
+
+                      if (shortcodeMatch && shortcodeMatch[1].length >= 0) {
+                        setEmojiQuery(shortcodeMatch[1])
+                        customEmojiService.searchEmojis(shortcodeMatch[1]).then((results) => {
+                          setEmojiSuggestions(results.slice(0, 20))
+                        })
+                        setEmojiTab('search')
+                      } else {
+                        setEmojiTab('picker')
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
@@ -318,17 +402,26 @@ export default function PostButton() {
                     }}
                     placeholder={t('Type a message...')}
                     rows={3}
-                    className="w-full resize-none rounded-xl border border-border/20 bg-muted/20 px-3 py-2 pr-10 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
+                    className="w-full resize-none rounded-xl border border-border/20 bg-muted/20 px-3 py-2 pr-20 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50"
                     disabled={sending}
                     autoFocus
                   />
-                  <button
-                    onClick={handleFileSelect}
-                    className="absolute bottom-2 right-2 flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-primary"
-                    type="button"
-                  >
-                    <Paperclip className="size-4" />
-                  </button>
+                  <div className="absolute bottom-2 right-2 flex gap-1">
+                    <button
+                      onClick={() => setEmojiTab('picker')}
+                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-primary"
+                      type="button"
+                    >
+                      <Smile className="size-4" />
+                    </button>
+                    <button
+                      onClick={handleFileSelect}
+                      className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-primary"
+                      type="button"
+                    >
+                      <Paperclip className="size-4" />
+                    </button>
+                  </div>
                 </div>
                 <button
                   onClick={handleSend}
@@ -336,8 +429,12 @@ export default function PostButton() {
                     e.preventDefault()
                     handleSend()
                   }}
-                  disabled={(!message.trim() && uploads.every((u) => !u.url)) || sending || uploads.some((u) => u.uploading)}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                  disabled={
+                    (!message.trim() && uploads.every((u) => !u.url)) ||
+                    sending ||
+                    uploads.some((u) => u.uploading)
+                  }
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover active:scale-95 disabled:pointer-events-none disabled:opacity-50"
                 >
                   {sending ? (
                     <Loader2 className="size-5 animate-spin" />
@@ -355,6 +452,89 @@ export default function PostButton() {
                 accept="image/*,video/*"
                 multiple
               />
+
+              {/* Emoji Section */}
+              <div className="flex flex-1 flex-col overflow-hidden border-t border-border/20">
+                <div className="flex border-b border-border/20">
+                  <button
+                    onClick={() => setEmojiTab('picker')}
+                    className={`flex-1 px-4 py-2 text-sm font-medium ${
+                      emojiTab === 'picker'
+                        ? 'border-b-2 border-primary text-primary'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {t('Emoji')}
+                  </button>
+                  <button
+                    onClick={() => setEmojiTab('search')}
+                    className={`flex-1 px-4 py-2 text-sm font-medium ${
+                      emojiTab === 'search'
+                        ? 'border-b-2 border-primary text-primary'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {t('Search')}
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {emojiTab === 'picker' ? (
+                    <EmojiPicker
+                      onEmojiClick={(emoji) => {
+                        if (!emoji) return
+                        if (typeof emoji === 'string') {
+                          setMessage((prev) => prev + emoji)
+                        } else {
+                          setMessage((prev) => prev + `:${emoji.shortcode}:`)
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="grid grid-cols-4 gap-2 p-4">
+                      {emojiSuggestions.length > 0 ? (
+                        emojiSuggestions.map((shortcode) => {
+                          const emoji = customEmojiService.getEmojiById(shortcode)
+                          if (!emoji) return null
+                          return (
+                            <button
+                              key={shortcode}
+                              className="flex flex-col items-center gap-1 rounded-lg p-2 hover:bg-muted"
+                              onClick={() => {
+                                const cursorPos =
+                                  textareaRef.current?.selectionStart || message.length
+                                const textBeforeCursor = message.slice(0, cursorPos)
+                                const shortcodeMatch = textBeforeCursor.match(/:[a-zA-Z0-9_-]*$/)
+                                if (shortcodeMatch) {
+                                  const newText =
+                                    message.slice(0, cursorPos - shortcodeMatch[0].length) +
+                                    ':' +
+                                    emoji.shortcode +
+                                    ':' +
+                                    message.slice(cursorPos)
+                                  setMessage(newText)
+                                }
+                                setEmojiTab('picker')
+                              }}
+                            >
+                              <Emoji
+                                emoji={emoji}
+                                classNames={{ img: 'size-10', text: 'text-2xl' }}
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                :{emoji.shortcode}:
+                              </span>
+                            </button>
+                          )
+                        })
+                      ) : (
+                        <p className="col-span-4 text-center text-sm text-muted-foreground">
+                          {emojiQuery ? t('No emojis found') : t('Type : to search emojis')}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </DrawerContent>
         </Drawer>
