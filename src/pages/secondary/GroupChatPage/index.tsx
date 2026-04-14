@@ -18,10 +18,12 @@ import UserAvatar from '@/components/UserAvatar'
 import { FormattedTimestamp } from '@/components/FormattedTimestamp'
 import { useFetchProfile } from '@/hooks'
 import { toProfile } from '@/lib/link'
+import { getZapInfoFromEvent } from '@/lib/event-metadata'
 import { SecondaryPageLink } from '@/PageManager'
 import Content from '@/components/Content'
 import MessageActions from '@/components/GroupChat/MessageActions'
 import { ReactionPills } from '@/components/GroupChat/ReactionPills'
+import { ZapPills } from '@/components/GroupChat/ZapPills'
 import type { TGroupMessage as TGroupMessageType } from '@/components/GroupChat/MessageActions'
 import ZapDialog from '@/components/ZapDialog'
 import EmojiPicker from '@/components/EmojiPicker'
@@ -117,6 +119,9 @@ const GroupChatPage = forwardRef(
     const [reactTarget, setReactTarget] = useState<TGroupMessageType | null>(null)
     const [reactions, setReactions] = useState<
       Map<string, { emoji: string; emojiInfo?: TEmoji; pubkey: string; eventId: string }[]>
+    >(new Map())
+    const [zaps, setZaps] = useState<
+      Map<string, { pubkey: string; amount: number; invoice: string; created_at: number; comment?: string; eventId: string }[]>
     >(new Map())
     const [repliedEvents, setRepliedEvents] = useState<
       Map<string, { event: Event; pubkey: string }>
@@ -620,6 +625,94 @@ const GroupChatPage = forwardRef(
       }
     }, [groupId, relayDomain])
 
+    // Subscribe to zap receipts
+    useEffect(() => {
+      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      const msgIds = messagesRef.current.map((m) => m.event.id)
+      if (msgIds.length === 0) return
+
+      // Fetch existing zap receipts filtered by message event IDs (e tag)
+      client
+        .fetchEvents(
+          relayUrls,
+          {
+            kinds: [kinds.Zap],
+            '#e': msgIds.slice(0, 500),
+            limit: 500
+          },
+          {
+            onevent: (event: Event) => {
+              const zapInfo = getZapInfoFromEvent(event)
+              if (!zapInfo) return
+
+              const eTag = event.tags.find((t: string[]) => t[0] === 'e')
+              if (!eTag) return
+
+              const messageId = eTag[1]
+              if (!msgIds.includes(messageId)) return
+
+              setZaps((prev) => {
+                const newMap = new Map(prev)
+                const existing = newMap.get(messageId) || []
+                if (existing.some((z) => z.eventId === event.id)) return prev
+                newMap.set(messageId, [
+                  ...existing,
+                  {
+                    pubkey: zapInfo.senderPubkey || event.pubkey,
+                    amount: zapInfo.amount,
+                    invoice: zapInfo.invoice,
+                    created_at: event.created_at,
+                    comment: zapInfo.comment,
+                    eventId: event.id
+                  }
+                ])
+                return newMap
+              })
+            }
+          }
+        )
+        .catch(console.error)
+
+      // Subscribe to new zap receipts — filter locally by message IDs
+      const zapCloser = client.subscribe(
+        relayUrls,
+        { kinds: [kinds.Zap], '#e': msgIds.slice(0, 500) },
+        {
+          onevent: (event: Event) => {
+            const zapInfo = getZapInfoFromEvent(event)
+            if (!zapInfo) return
+
+            const eTag = event.tags.find((t: string[]) => t[0] === 'e')
+            if (!eTag) return
+
+            const messageId = eTag[1]
+
+            setZaps((prev) => {
+              const newMap = new Map(prev)
+              const existing = newMap.get(messageId) || []
+              if (existing.some((z) => z.eventId === event.id)) return prev
+              newMap.set(messageId, [
+                ...existing,
+                {
+                  pubkey: zapInfo.senderPubkey || event.pubkey,
+                  amount: zapInfo.amount,
+                  invoice: zapInfo.invoice,
+                  created_at: event.created_at,
+                  comment: zapInfo.comment,
+                  eventId: event.id
+                }
+              ])
+              return newMap
+            })
+          }
+        }
+      )
+
+      return () => {
+        zapCloser?.close()
+      }
+    }, [groupId, relayDomain, messages.length])
+
     // Track user scroll position to determine auto-scroll behavior
     useEffect(() => {
       const container = messagesContainerRef.current
@@ -814,6 +907,11 @@ const GroupChatPage = forwardRef(
                             handleToggleReaction(msgId, emoji)
                           }
                         }}
+                      />
+                      <ZapPills
+                        messageId={message.event.id}
+                        zaps={zaps}
+                        onZap={() => setZapTarget(message)}
                       />
                     </div>
                   </div>
