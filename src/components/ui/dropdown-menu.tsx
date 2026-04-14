@@ -22,7 +22,7 @@ const DropdownMenu = ({
         ignoreOutsideRef.current = true
         setTimeout(() => {
           ignoreOutsideRef.current = false
-        }, 300)
+        }, 500)
       }
       if (!isControlled) {
         setUncontrolledOpen(newOpen)

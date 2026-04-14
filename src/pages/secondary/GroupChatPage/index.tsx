@@ -27,12 +27,7 @@ import { ZapPills } from '@/components/GroupChat/ZapPills'
 import type { TGroupMessage as TGroupMessageType } from '@/components/GroupChat/MessageActions'
 import ZapDialog from '@/components/ZapDialog'
 import EmojiPicker from '@/components/EmojiPicker'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+// import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import type { TEmoji } from '@/types'
 
 // Derive a consistent HSL color from a pubkey
@@ -51,13 +46,16 @@ function getShortName(pubkey: string): string {
 }
 
 // Parse reaction content to extract emoji info
-function parseReactionContent(content: string, tags: string[][]): { emoji: string; emojiInfo?: TEmoji } {
+function parseReactionContent(
+  content: string,
+  tags: string[][]
+): { emoji: string; emojiInfo?: TEmoji } {
   // Check if content matches :shortcode: format
   const match = content.match(/^:([a-zA-Z0-9_-]+):$/)
   if (match) {
     const shortcode = match[1]
     // Look for emoji tag with this shortcode
-    const emojiTag = tags.find(t => t[0] === 'emoji' && t[1] === shortcode)
+    const emojiTag = tags.find((t) => t[0] === 'emoji' && t[1] === shortcode)
     if (emojiTag && emojiTag[2]) {
       return {
         emoji: shortcode,
@@ -117,11 +115,40 @@ const GroupChatPage = forwardRef(
     const [loading, setLoading] = useState(true)
     const [zapTarget, setZapTarget] = useState<TGroupMessageType | null>(null)
     const [reactTarget, setReactTarget] = useState<TGroupMessageType | null>(null)
+    const [menuOpen, setMenuOpen] = useState(false)
+
+    // Close menu on any click outside
+    useEffect(() => {
+      if (!menuOpen) return
+      const handleAnyClick = (e: MouseEvent | TouchEvent) => {
+        const target = e.target as HTMLElement
+        if (target.closest('.group-menu-btn') || target.closest('.group-menu')) {
+          return
+        }
+        setMenuOpen(false)
+      }
+      document.addEventListener('touchstart', handleAnyClick, { passive: true })
+      document.addEventListener('click', handleAnyClick)
+      return () => {
+        document.removeEventListener('touchstart', handleAnyClick)
+        document.removeEventListener('click', handleAnyClick)
+      }
+    }, [menuOpen])
     const [reactions, setReactions] = useState<
       Map<string, { emoji: string; emojiInfo?: TEmoji; pubkey: string; eventId: string }[]>
     >(new Map())
     const [zaps, setZaps] = useState<
-      Map<string, { pubkey: string; amount: number; invoice: string; created_at: number; comment?: string; eventId: string }[]>
+      Map<
+        string,
+        {
+          pubkey: string
+          amount: number
+          invoice: string
+          created_at: number
+          comment?: string
+          eventId: string
+        }[]
+      >
     >(new Map())
     const [repliedEvents, setRepliedEvents] = useState<
       Map<string, { event: Event; pubkey: string }>
@@ -233,7 +260,7 @@ const GroupChatPage = forwardRef(
         // Parse emoji - could be native emoji or :shortcode: format
         let reactionContent: string
         let emojiInfo: TEmoji | undefined
-        
+
         if (typeof emoji === 'string' && emoji.startsWith(':') && emoji.endsWith(':')) {
           // It's already in shortcode format from EmojiPicker
           reactionContent = emoji
@@ -250,13 +277,24 @@ const GroupChatPage = forwardRef(
           // Native emoji
           reactionContent = emoji
         }
-        
+
         const draftEvent = {
           kind: kinds.Reaction,
           content: reactionContent,
           tags: emojiInfo
-            ? [['e', messageId], ['p', pubkey], ['h', groupId], ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)], ['emoji', emojiInfo.shortcode, emojiInfo.url]] as [string, string][]
-            : [['e', messageId], ['p', pubkey], ['h', groupId], ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)]] as [string, string][],
+            ? ([
+                ['e', messageId],
+                ['p', pubkey],
+                ['h', groupId],
+                ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)],
+                ['emoji', emojiInfo.shortcode, emojiInfo.url]
+              ] as [string, string][])
+            : ([
+                ['e', messageId],
+                ['p', pubkey],
+                ['h', groupId],
+                ['k', String(NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE)]
+              ] as [string, string][]),
           created_at: Math.floor(Date.now() / 1000)
         }
         const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
@@ -588,7 +626,10 @@ const GroupChatPage = forwardRef(
         })
         .then((reactionEvents) => {
           const msgIds = new Set(messagesRef.current.map((m) => m.event.id))
-          const newMap = new Map<string, { emoji: string; emojiInfo?: TEmoji; pubkey: string; eventId: string }[]>(reactions)
+          const newMap = new Map<
+            string,
+            { emoji: string; emojiInfo?: TEmoji; pubkey: string; eventId: string }[]
+          >(reactions)
           reactionEvents.forEach((event: Event) => {
             const eTag = event.tags.find((t: string[]) => t[0] === 'e')
             if (!eTag) return
@@ -650,7 +691,13 @@ const GroupChatPage = forwardRef(
       const msgIds = messagesRef.current.map((m) => m.event.id)
       if (msgIds.length === 0) return
 
-      console.log('[GroupChat] Fetching zap receipts for', msgIds.length, 'messages on', relayUrls.length, 'relays')
+      console.log(
+        '[GroupChat] Fetching zap receipts for',
+        msgIds.length,
+        'messages on',
+        relayUrls.length,
+        'relays'
+      )
 
       // Fetch existing zap receipts filtered by message event IDs (e tag)
       client
@@ -672,7 +719,12 @@ const GroupChatPage = forwardRef(
               const messageId = eTag[1]
               if (!msgIds.includes(messageId)) return
 
-              console.log('[GroupChat] Found zap receipt for message', messageId.slice(0, 8), 'amount:', zapInfo.amount)
+              console.log(
+                '[GroupChat] Found zap receipt for message',
+                messageId.slice(0, 8),
+                'amount:',
+                zapInfo.amount
+              )
 
               setZaps((prev) => {
                 const newMap = new Map(prev)
@@ -710,7 +762,12 @@ const GroupChatPage = forwardRef(
 
             const messageId = eTag[1]
 
-            console.log('[GroupChat] New zap received for message', messageId.slice(0, 8), 'amount:', zapInfo.amount)
+            console.log(
+              '[GroupChat] New zap received for message',
+              messageId.slice(0, 8),
+              'amount:',
+              zapInfo.amount
+            )
 
             setZaps((prev) => {
               const newMap = new Map(prev)
@@ -805,22 +862,40 @@ const GroupChatPage = forwardRef(
               <h2 className="truncate font-semibold">{groupName}</h2>
               {groupAbout && <p className="truncate text-xs text-muted-foreground">{groupAbout}</p>}
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/30">
-                  <MoreVertical className="size-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={handleLeaveGroup}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 size-4" />
-                  {t('Leave Group')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="relative">
+              <button
+                type="button"
+                className="group-menu-btn flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/30 focus:outline-none active:bg-muted/50"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setMenuOpen(!menuOpen)
+                }}
+              >
+                <MoreVertical className="size-4" />
+              </button>
+              {menuOpen && (
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setMenuOpen(false)}
+                  onTouchStart={() => setMenuOpen(false)}
+                />
+              )}
+              {menuOpen && (
+                <div className="group-menu absolute right-0 top-full z-50 mt-1 w-40 rounded-lg border border-border/30 bg-popover p-1 shadow-lg">
+                  <button
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-destructive hover:bg-muted/50"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setMenuOpen(false)
+                      handleLeaveGroup()
+                    }}
+                  >
+                    <LogOut className="size-4" />
+                    {t('Leave Group')}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Messages List */}
