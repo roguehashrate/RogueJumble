@@ -3,6 +3,7 @@ import { NIP29_GROUP_KINDS } from '@/constants'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { normalizeUrl } from '@/lib/url'
 import client from '@/services/client.service'
+import customEmojiService from '@/services/custom-emoji.service'
 import { useNostr } from '@/providers/NostrProvider'
 import { useGroupChatContext } from '@/providers/GroupChatContextProvider'
 import { useSecondaryPage } from '@/PageManager'
@@ -29,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import type { TEmoji } from '@/types'
 
 // Derive a consistent HSL color from a pubkey
 function deriveColorFromPubkey(pubkey: string): string {
@@ -43,6 +45,27 @@ function deriveColorFromPubkey(pubkey: string): string {
 // Get a short display name from pubkey
 function getShortName(pubkey: string): string {
   return pubkey.slice(0, 8)
+}
+
+// Parse reaction content to extract emoji info
+function parseReactionContent(content: string, tags: string[][]): { emoji: string; emojiInfo?: TEmoji } {
+  // Check if content matches :shortcode: format
+  const match = content.match(/^:([a-zA-Z0-9_-]+):$/)
+  if (match) {
+    const shortcode = match[1]
+    // Look for emoji tag with this shortcode
+    const emojiTag = tags.find(t => t[0] === 'emoji' && t[1] === shortcode)
+    if (emojiTag && emojiTag[2]) {
+      return {
+        emoji: shortcode,
+        emojiInfo: { shortcode, url: emojiTag[2] }
+      }
+    }
+    // Return just the shortcode without colons
+    return { emoji: shortcode }
+  }
+  // For native emoji, return as-is
+  return { emoji: content }
 }
 
 // Colored username component that always shows
@@ -92,7 +115,7 @@ const GroupChatPage = forwardRef(
     const [zapTarget, setZapTarget] = useState<TGroupMessageType | null>(null)
     const [reactTarget, setReactTarget] = useState<TGroupMessageType | null>(null)
     const [reactions, setReactions] = useState<
-      Map<string, { emoji: string; pubkey: string; eventId: string }[]>
+      Map<string, { emoji: string; emojiInfo?: TEmoji; pubkey: string; eventId: string }[]>
     >(new Map())
     const [repliedEvents, setRepliedEvents] = useState<
       Map<string, { event: Event; pubkey: string }>
@@ -192,10 +215,31 @@ const GroupChatPage = forwardRef(
           return newMap
         })
       } else {
+        // Parse emoji - could be native emoji or :shortcode: format
+        let reactionContent: string
+        let emojiInfo: TEmoji | undefined
+        
+        if (typeof emoji === 'string' && emoji.startsWith(':') && emoji.endsWith(':')) {
+          // It's already in shortcode format from EmojiPicker
+          reactionContent = emoji
+          // Try to extract the shortcode
+          const shortcodeMatch = emoji.match(/^:([a-zA-Z0-9_-]+):$/)
+          if (shortcodeMatch) {
+            const shortcode = shortcodeMatch[1]
+            const customEmoji = customEmojiService.getEmojiById(shortcode)
+            if (customEmoji) {
+              emojiInfo = customEmoji
+            }
+          }
+        } else {
+          // Native emoji
+          reactionContent = emoji
+        }
+        
         const draftEvent = {
           kind: kinds.Reaction,
-          content: emoji,
-          tags: [['e', messageId]] as [string, string][],
+          content: reactionContent,
+          tags: emojiInfo ? [['e', messageId], ['emoji', emojiInfo.shortcode, emojiInfo.url]] as [string, string][] : [['e', messageId]] as [string, string][],
           created_at: Math.floor(Date.now() / 1000)
         }
         await publish(draftEvent)
@@ -462,7 +506,7 @@ const GroupChatPage = forwardRef(
         })
         .then((reactionEvents) => {
           const msgIds = new Set(messagesRef.current.map((m) => m.event.id))
-          const newMap = new Map(reactions)
+          const newMap = new Map<string, { emoji: string; emojiInfo?: TEmoji; pubkey: string; eventId: string }[]>(reactions)
           reactionEvents.forEach((event: Event) => {
             const eTag = event.tags.find((t: string[]) => t[0] === 'e')
             if (!eTag) return
@@ -470,12 +514,12 @@ const GroupChatPage = forwardRef(
             const messageId = eTag[1]
             if (!msgIds.has(messageId)) return
 
-            const emoji = event.content || '👍'
+            const { emoji, emojiInfo } = parseReactionContent(event.content || '👍', event.tags)
             const existing = newMap.get(messageId) || []
             if (!existing.some((r) => r.eventId === event.id)) {
               newMap.set(messageId, [
                 ...existing,
-                { emoji, pubkey: event.pubkey, eventId: event.id }
+                { emoji, emojiInfo, pubkey: event.pubkey, eventId: event.id }
               ])
             }
           })
@@ -493,7 +537,7 @@ const GroupChatPage = forwardRef(
             if (!eTag) return
 
             const messageId = eTag[1]
-            const emoji = event.content || '👍'
+            const { emoji, emojiInfo } = parseReactionContent(event.content || '👍', event.tags)
 
             setReactions((prev) => {
               const newMap = new Map(prev)
@@ -501,7 +545,7 @@ const GroupChatPage = forwardRef(
               if (existing.some((r) => r.eventId === event.id)) return prev
               newMap.set(messageId, [
                 ...existing,
-                { emoji, pubkey: event.pubkey, eventId: event.id }
+                { emoji, emojiInfo, pubkey: event.pubkey, eventId: event.id }
               ])
               return newMap
             })

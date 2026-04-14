@@ -3,9 +3,11 @@ import { useNostr } from '@/providers/NostrProvider'
 import customEmojiService from '@/services/custom-emoji.service'
 import Emoji from '@/components/Emoji'
 import { cn } from '@/lib/utils'
+import type { TEmoji } from '@/types'
 
 type TReaction = {
   emoji: string
+  emojiInfo?: TEmoji
   pubkey: string
   eventId: string
 }
@@ -25,16 +27,17 @@ export function ReactionPills({
 
   const groupedReactions = useMemo(() => {
     const msgReactions = reactions.get(messageId) || []
-    const map = new Map<string, TReaction[]>()
+    const map = new Map<string, { reactions: TReaction[]; emojiInfo?: TEmoji }>()
 
     msgReactions.forEach((r) => {
-      if (!map.has(r.emoji)) map.set(r.emoji, [])
-      map.get(r.emoji)!.push(r)
+      if (!map.has(r.emoji)) map.set(r.emoji, { reactions: [], emojiInfo: r.emojiInfo })
+      map.get(r.emoji)!.reactions.push(r)
     })
 
     return Array.from(map.entries())
-      .map(([emoji, items]) => ({
+      .map(([emoji, { reactions: items, emojiInfo }]) => ({
         emoji,
+        emojiInfo,
         count: items.length,
         hasActed: items.some((r) => r.pubkey === pubkey)
       }))
@@ -54,21 +57,18 @@ export function ReactionPills({
   )
 
   if (groupedReactions.length === 0) {
-    return (
-      <button
-        onClick={() => onReact(messageId, '👍')}
-        className="mt-1 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-foreground"
-      >
-        <span className="text-sm">👍</span>
-      </button>
-    )
+    return null
   }
 
   return (
     <div className="mt-1.5 flex flex-wrap gap-1">
-      {groupedReactions.map(({ emoji, count, hasActed }) => {
-        const isCustom = customEmojiService.isCustomEmojiId(emoji)
-        const customEmoji = isCustom ? customEmojiService.getEmojiById(emoji) : undefined
+      {groupedReactions.map(({ emoji, emojiInfo, count, hasActed }) => {
+        // Try to get custom emoji - priority: emojiInfo from reaction event, then lookup by shortcode
+        let customEmoji: TEmoji | undefined = emojiInfo
+        if (!customEmoji) {
+          // Try to get from custom emoji service
+          customEmoji = customEmojiService.getEmojiById(emoji)
+        }
 
         return (
           <button

@@ -13,6 +13,7 @@ import {
 } from '@/lib/content-parser'
 import { getImetaInfosFromEvent } from '@/lib/event'
 import { containsMarkdown } from '@/lib/markdown'
+import customEmojiService from '@/services/custom-emoji.service'
 import { getEmojiInfosFromEmojiTags, getImetaInfoFromImetaTag } from '@/lib/tag'
 import { EMOJI_REGEX } from '@/constants'
 import { cn } from '@/lib/utils'
@@ -61,7 +62,10 @@ export default function Content({
   const [selectedText, setSelectedText] = useState('')
   const translatedEvent = useTranslatedEvent(event?.id)
   const resolvedContent = translatedEvent?.content ?? event?.content ?? content
-  const isMarkdown = useMemo(() => resolvedContent ? containsMarkdown(resolvedContent) : false, [resolvedContent])
+  const isMarkdown = useMemo(
+    () => (resolvedContent ? containsMarkdown(resolvedContent) : false),
+    [resolvedContent]
+  )
   const { nodes, allImages, lastNormalUrl, emojiInfos } = useMemo(() => {
     if (!resolvedContent || isMarkdown) return {}
     const _content = resolvedContent
@@ -115,9 +119,7 @@ export default function Content({
   const isEmojiOnly = useMemo(() => {
     if (disableEmojiOnly) return false
     if (!nodes || nodes.length === 0) return false
-    const nonWhitespace = nodes.filter(
-      (node) => !(node.type === 'text' && /^\s*$/.test(node.data))
-    )
+    const nonWhitespace = nodes.filter((node) => !(node.type === 'text' && /^\s*$/.test(node.data)))
     let emojiCount = 0
     for (const node of nonWhitespace) {
       if (node.type === 'emoji') {
@@ -146,12 +148,13 @@ export default function Content({
 
   if (isMarkdown) {
     // Text Only Mode: strip images, media, embeds from markdown
-    const cleanedContent = displayMode === 'textOnlyMode'
-      ? resolvedContent
-          .replace(/!\[.*?\]\(.*?\)/g, '')
-          .replace(/^[^\S\n]*https?:\/\/(www\.)?youtu(be\.com|\.be)\//gim, '')
-          .replace(/^[^\S\n]*https?:\/\/(x\.com|twitter\.com)\//gim, '')
-      : resolvedContent
+    const cleanedContent =
+      displayMode === 'textOnlyMode'
+        ? resolvedContent
+            .replace(/!\[.*?\]\(.*?\)/g, '')
+            .replace(/^[^\S\n]*https?:\/\/(www\.)?youtu(be\.com|\.be)\//gim, '')
+            .replace(/^[^\S\n]*https?:\/\/(x\.com|twitter\.com)\//gim, '')
+        : resolvedContent
 
     return (
       <>
@@ -183,7 +186,10 @@ export default function Content({
   if (displayMode === 'textOnlyMode') {
     return (
       <>
-        <div ref={contentRef} className={cn('whitespace-pre-wrap text-wrap break-words', className)}>
+        <div
+          ref={contentRef}
+          className={cn('whitespace-pre-wrap text-wrap break-words', className)}
+        >
           {nodes.map((node, index) => {
             if (node.type === 'text') {
               return node.data
@@ -205,12 +211,13 @@ export default function Content({
             }
             if (node.type === 'emoji') {
               const shortcode = node.data.split(':')[1]
-              const emoji = emojiInfos.find((e) => e.shortcode === shortcode)
+              const emoji =
+                emojiInfos.find((e) => e.shortcode === shortcode) ||
+                customEmojiService.getEmojiById(shortcode)
               if (!emoji) return node.data
               return <Emoji classNames={{ img: 'mb-1' }} emoji={emoji} key={index} />
             }
             if (node.type === 'youtube') return null
-            if (node.type === 'x-post') return null
             return null
           })}
         </div>
@@ -231,8 +238,23 @@ export default function Content({
 
   // Image Mode: show images/media first (large), then text below
   if (displayMode === 'imageMode') {
-    const mediaNodes = nodes.filter(n => n.type === 'image' || n.type === 'images' || n.type === 'media' || n.type === 'youtube' || n.type === 'x-post')
-    const textNodes = nodes.filter(n => n.type !== 'image' && n.type !== 'images' && n.type !== 'media' && n.type !== 'youtube' && n.type !== 'x-post' && n.type !== 'url')
+    const mediaNodes = nodes.filter(
+      (n) =>
+        n.type === 'image' ||
+        n.type === 'images' ||
+        n.type === 'media' ||
+        n.type === 'youtube' ||
+        n.type === 'x-post'
+    )
+    const textNodes = nodes.filter(
+      (n) =>
+        n.type !== 'image' &&
+        n.type !== 'images' &&
+        n.type !== 'media' &&
+        n.type !== 'youtube' &&
+        n.type !== 'x-post' &&
+        n.type !== 'url'
+    )
 
     return (
       <>
@@ -241,13 +263,15 @@ export default function Content({
             {mediaNodes.map((node, index) => {
               if (node.type === 'image' || node.type === 'images') {
                 const urls = Array.isArray(node.data) ? node.data : [node.data]
-                const images = urls.map(url => {
-                  const imageInfo = (event ? getImetaInfosFromEvent(event) : []).find((img) => img.url === url)
+                const images = urls.map((url) => {
+                  const imageInfo = (event ? getImetaInfosFromEvent(event) : []).find(
+                    (img) => img.url === url
+                  )
                   return imageInfo ?? { url, pubkey: event?.pubkey }
                 })
                 return (
                   <ImageGallery
-                    className="rounded-lg overflow-hidden"
+                    className="overflow-hidden rounded-lg"
                     key={index}
                     images={images}
                     start={0}
@@ -257,19 +281,43 @@ export default function Content({
                 )
               }
               if (node.type === 'media') {
-                return <MediaPlayer className="mt-2" key={index} src={node.data} mustLoad={mustLoadMedia} />
+                return (
+                  <MediaPlayer
+                    className="mt-2"
+                    key={index}
+                    src={node.data}
+                    mustLoad={mustLoadMedia}
+                  />
+                )
               }
               if (node.type === 'youtube') {
-                return <YoutubeEmbeddedPlayer key={index} url={node.data} className="mt-2" mustLoad={mustLoadMedia} />
+                return (
+                  <YoutubeEmbeddedPlayer
+                    key={index}
+                    url={node.data}
+                    className="mt-2"
+                    mustLoad={mustLoadMedia}
+                  />
+                )
               }
               if (node.type === 'x-post') {
-                return <XEmbeddedPost key={index} url={node.data} className="mt-2" mustLoad={mustLoadMedia} />
+                return (
+                  <XEmbeddedPost
+                    key={index}
+                    url={node.data}
+                    className="mt-2"
+                    mustLoad={mustLoadMedia}
+                  />
+                )
               }
               return null
             })}
           </div>
         )}
-        <div ref={contentRef} className={cn('whitespace-pre-wrap text-wrap break-words', className)}>
+        <div
+          ref={contentRef}
+          className={cn('whitespace-pre-wrap text-wrap break-words', className)}
+        >
           {textNodes.map((node, index) => {
             if (node.type === 'text') {
               return node.data
@@ -278,7 +326,8 @@ export default function Content({
             if (node.type === 'invoice') {
               return <EmbeddedLNInvoice invoice={node.data} key={index} className="mt-2" />
             }
-            if (node.type === 'websocket-url') return <EmbeddedWebsocketUrl url={node.data} key={index} />
+            if (node.type === 'websocket-url')
+              return <EmbeddedWebsocketUrl url={node.data} key={index} />
             if (node.type === 'event') {
               const id = node.data.split(':')[1]
               return <EmbeddedNote key={index} noteId={id} className="mt-2" />
@@ -326,11 +375,22 @@ export default function Content({
   // Normal mode
   return (
     <>
-      <div ref={contentRef} className={cn('whitespace-pre-wrap text-wrap break-words', isEmojiOnly && 'flex items-end gap-1', className)}>
+      <div
+        ref={contentRef}
+        className={cn(
+          'whitespace-pre-wrap text-wrap break-words',
+          isEmojiOnly && 'flex items-end gap-1',
+          className
+        )}
+      >
         {nodes.map((node, index) => {
           if (node.type === 'text') {
             if (isEmojiOnly) {
-              return <span key={index} className="text-7xl leading-none">{node.data}</span>
+              return (
+                <span key={index} className="text-7xl leading-none">
+                  {node.data}
+                </span>
+              )
             }
             return node.data
           }
@@ -387,7 +447,13 @@ export default function Content({
             const shortcode = node.data.split(':')[1]
             const emoji = emojiInfos.find((e) => e.shortcode === shortcode)
             if (!emoji) return node.data
-            return <Emoji classNames={{ img: isEmojiOnly ? 'size-20' : 'mb-1' }} emoji={emoji} key={index} />
+            return (
+              <Emoji
+                classNames={{ img: isEmojiOnly ? 'size-20' : 'mb-1' }}
+                emoji={emoji}
+                key={index}
+              />
+            )
           }
           if (node.type === 'youtube') {
             return (
