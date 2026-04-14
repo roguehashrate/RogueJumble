@@ -9,7 +9,8 @@
       "WebSearch",
       "WebFetch(gwfh.mranftl.com)",
       "Bash(node *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npx *)"
     ]
   },
   "$version": 3

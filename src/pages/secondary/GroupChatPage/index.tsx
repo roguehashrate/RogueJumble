@@ -299,7 +299,9 @@ const GroupChatPage = forwardRef(
 
     // Fetch initial messages + subscribe to live updates
     useEffect(() => {
-      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      // Query both the group relay and default relays for redundancy
+      const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
+      const relayUrls = [...new Set([...groupRelay, ...getDefaultRelayUrls()])]
       let isMounted = true
       const cacheKey = `${groupId}:${relayDomain || 'default'}`
 
@@ -414,6 +416,7 @@ const GroupChatPage = forwardRef(
 
         // Step 2: Fetch fresh messages from relay
         try {
+          console.log('[GroupChat] Fetching messages from', relayUrls.length, 'relays')
           const messageEvents = await client.fetchEvents(relayUrls, {
             kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE, 10],
             '#h': [groupId],
@@ -421,6 +424,7 @@ const GroupChatPage = forwardRef(
           })
 
           if (isMounted) {
+            console.log('[GroupChat] Got', messageEvents.length, 'messages from relay')
             const sortedMessages = processMessages(
               messageEvents.map((event) => ({ event, relays: relayUrls })),
               false
@@ -458,6 +462,8 @@ const GroupChatPage = forwardRef(
           {
             onevent: async (event: Event) => {
               if (!isMounted) return
+
+              console.log('[GroupChat] Live message received')
 
               const eTags = event.tags.filter((t: string[]) => t[0] === 'e')
               const pTag = event.tags.find((t: string[]) => t[0] === 'p')
@@ -537,9 +543,10 @@ const GroupChatPage = forwardRef(
       }
     }, [groupId, relayDomain])
 
-    // Subscribe to reactions
+    // Subscribe to group metadata
     useEffect(() => {
-      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
+      const relayUrls = [...new Set([...groupRelay, ...getDefaultRelayUrls()])]
       client
         .fetchEvents(relayUrls, {
           kinds: [NIP29_GROUP_KINDS.GROUP_METADATA],
@@ -562,7 +569,8 @@ const GroupChatPage = forwardRef(
 
     // Subscribe to reactions
     useEffect(() => {
-      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      const groupRelay = relayDomain ? [normalizeUrl(relayDomain)] : []
+      const relayUrls = [...new Set([...groupRelay, ...getDefaultRelayUrls()])]
 
       // Fetch existing reactions filtered by group (h tag)
       client

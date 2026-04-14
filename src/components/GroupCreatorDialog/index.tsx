@@ -127,8 +127,13 @@ export default function GroupCreatorDialog({
       await publish(draftEvent)
 
       // Add to user's group list (kind 10009)
+      // Fetch existing list from user's write relays (where it was published)
+      const userRelayList = await client.fetchRelayList(pubkey)
+      const listFetchRelays = userRelayList.write.length > 0
+        ? userRelayList.write.slice(0, 3)
+        : getDefaultRelayUrls()
       const groupListEvents = await client.fetchEvents(
-        relayUrl ? [relayUrl] : getDefaultRelayUrls(),
+        listFetchRelays,
         { kinds: [10009], authors: [pubkey], limit: 1 }
       )
 

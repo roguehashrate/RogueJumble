@@ -113,8 +113,13 @@ export default function GroupJoinDialog({
     setJoining(true)
     try {
       // Add group to user's kind 10009 list
+      // Fetch existing list from user's write relays (where it was published)
+      const userRelayList = await client.fetchRelayList(pubkey)
+      const listFetchRelays = userRelayList.write.length > 0
+        ? userRelayList.write.slice(0, 3)
+        : getDefaultRelayUrls()
       const groupListEvents = await client.fetchEvents(
-        targetGroup.relayUrl ? [targetGroup.relayUrl] : getDefaultRelayUrls(),
+        listFetchRelays,
         { kinds: [10009], authors: [pubkey], limit: 1 }
       )
 

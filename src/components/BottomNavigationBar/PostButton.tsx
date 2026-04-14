@@ -8,6 +8,7 @@ import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useTranslation } from 'react-i18next'
 import mediaUpload, { UPLOAD_ABORTED_ERROR_MSG } from '@/services/media-upload.service'
 import { NIP29_GROUP_KINDS } from '@/constants'
+import { getDefaultRelayUrls } from '@/lib/relay'
 import { toast } from 'sonner'
 import client from '@/services/client.service'
 import UserAvatar from '@/components/UserAvatar'
@@ -108,9 +109,10 @@ export default function PostButton() {
       }
 
       console.log('[PostButton] Publishing with relayUrl:', relayUrl)
-      // For group messages, publish directly to the group relay
+      // For group messages, publish to the group relay AND default relays for redundancy
       if (relayUrl) {
-        await publish(draftEvent, { specifiedRelayUrls: [relayUrl] })
+        const publishRelays = [relayUrl, ...getDefaultRelayUrls().slice(0, 4)]
+        await publish(draftEvent, { specifiedRelayUrls: publishRelays })
       } else {
         await publish(draftEvent)
       }

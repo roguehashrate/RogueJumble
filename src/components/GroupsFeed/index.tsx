@@ -1,7 +1,7 @@
 import { getDefaultRelayUrls } from '@/lib/relay'
 import client from '@/services/client.service'
 import { MessageCircle, Plus, Loader2, Globe } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNostr } from '@/providers/NostrProvider'
 import GroupCard from './GroupCard'
@@ -21,6 +21,20 @@ export type TGroupInfo = {
   lastActivity?: number
 }
 
+// Deduplicate groups by relayDomain + id
+function deduplicateGroups(groups: TGroupInfo[]): TGroupInfo[] {
+  const seen = new Set<string>()
+  const result: TGroupInfo[] = []
+  for (const g of groups) {
+    const key = `${g.relayDomain}|${g.id}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      result.push(g)
+    }
+  }
+  return result
+}
+
 export default function GroupsFeed() {
   const { t } = useTranslation()
   const { pubkey } = useNostr()
@@ -28,17 +42,30 @@ export default function GroupsFeed() {
   const [loading, setLoading] = useState(true)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showJoinDialog, setShowJoinDialog] = useState(false)
+  const groupsRef = useRef<TGroupInfo[]>([])
+  groupsRef.current = groups
 
   // Load user's group list from kind 10009
   useEffect(() => {
     if (!pubkey) return
 
+    let unsub: { close: () => void } | null = null
+    let cancelled = false
+
     const loadGroups = async () => {
       setLoading(true)
       try {
-        // Fetch kind 10009 (groups list) event for the user
+        // Fetch user's relay list to find where their data is published
+        const relayList = await client.fetchRelayList(pubkey)
+        // Query both user's write relays and default relays
+        const fetchRelays = relayList.write.length > 0
+          ? relayList.write.concat(getDefaultRelayUrls()).slice(0, 5)
+          : getDefaultRelayUrls()
+
+        console.log('[GroupsFeed] Fetching group list from', fetchRelays.length, 'relays')
+
         const events = await client.fetchEvents(
-          getDefaultRelayUrls(),
+          fetchRelays,
           {
             kinds: [10009],
             authors: [pubkey],
@@ -46,83 +73,117 @@ export default function GroupsFeed() {
           }
         )
 
+        if (cancelled) return
         if (events.length === 0) {
           setGroups([])
           setLoading(false)
           return
         }
 
-        const groupListEvent = events[0]
-        const groupInfos: TGroupInfo[] = []
+        const groupInfos = parseGroupTags(events[0])
 
-        // Extract group tags from the event
-        // Format: ["group", "<group_id>", "<relay_url>", "<optional_name>"]
-        groupListEvent.tags.forEach((tag) => {
-          if (tag[0] === 'group' && tag.length >= 3) {
-            const [, groupId, relayUrl, groupName] = tag
-            
-            groupInfos.push({
-              id: groupId,
-              relayDomain: relayUrl.replace(/^wss?:\/\//, '').replace(/\/$/, ''),
-              relayUrl,
-              name: groupName || groupId,
-              private: false,
-              restricted: false,
-              closed: false
-            })
-          }
-        })
+        // Fetch metadata (kind 39000) for each group
+        await enrichWithMetadata(groupInfos)
 
-        // Now fetch metadata (kind 39000) for each group
-        const relayUrls = [...new Set(groupInfos.map((g) => g.relayUrl))]
-        
-        if (groupInfos.length > 0) {
-          const metadataEvents = await client.fetchEvents(
-            relayUrls.length > 0 ? relayUrls : getDefaultRelayUrls(),
-            {
-              kinds: [39000],
-              limit: 100
-            }
-          )
-
-          // Merge metadata into group infos
-          metadataEvents.forEach((metadataEvent: any) => {
-            const dTag = metadataEvent.tags.find((t: string[]) => t[0] === 'd')
-            if (!dTag) return
-
-            const groupId = dTag[1]
-            const group = groupInfos.find((g) => g.id === groupId)
-            if (!group) return
-
-            metadataEvent.tags.forEach((tag: string[]) => {
-              const [tagName, tagValue] = tag
-              if (tagName === 'name' && tagValue) {
-                group.name = tagValue
-              } else if (tagName === 'about' && tagValue) {
-                group.about = tagValue
-              } else if (tagName === 'picture' && tagValue) {
-                group.picture = tagValue
-              } else if (tagName === 'private') {
-                group.private = tagValue === 'true'
-              } else if (tagName === 'restricted') {
-                group.restricted = tagValue === 'true'
-              } else if (tagName === 'closed') {
-                group.closed = tagValue === 'true'
-              }
-            })
-          })
-        }
-
-        setGroups(groupInfos)
+        if (cancelled) return
+        const deduped = deduplicateGroups(groupInfos)
+        setGroups(deduped)
       } catch (error) {
-        console.error('Failed to load groups:', error)
+        console.error('[GroupsFeed] Failed to load groups:', error)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
+    // Subscribe to updates
+    const subscribeToUpdates = async () => {
+      const relayList = await client.fetchRelayList(pubkey)
+      const subRelays = relayList.write.length > 0
+        ? relayList.write.concat(getDefaultRelayUrls()).slice(0, 5)
+        : getDefaultRelayUrls()
+
+      unsub = client.subscribe(
+        subRelays,
+        { kinds: [10009], authors: [pubkey] },
+        {
+          onevent: async (event) => {
+            console.log('[GroupsFeed] Received group list update')
+            const newGroups = parseGroupTags(event)
+            await enrichWithMetadata(newGroups)
+            const deduped = deduplicateGroups(newGroups)
+            setGroups(deduped)
+          }
+        }
+      )
+    }
+
     loadGroups()
+    subscribeToUpdates()
+
+    return () => {
+      cancelled = true
+      unsub?.close()
+    }
   }, [pubkey])
+
+  const parseGroupTags = (groupListEvent: any): TGroupInfo[] => {
+    const groupInfos: TGroupInfo[] = []
+    groupListEvent.tags.forEach((tag: string[]) => {
+      if (tag[0] === 'group' && tag.length >= 3) {
+        const [, groupId, relayUrl, groupName] = tag
+        groupInfos.push({
+          id: groupId,
+          relayDomain: relayUrl.replace(/^wss?:\/\//, '').replace(/\/$/, ''),
+          relayUrl,
+          name: groupName || groupId.slice(0, 8),
+          private: false,
+          restricted: false,
+          closed: false
+        })
+      }
+    })
+    return groupInfos
+  }
+
+  const enrichWithMetadata = async (groupInfos: TGroupInfo[]) => {
+    if (groupInfos.length === 0) return
+
+    const relayUrls = [...new Set(groupInfos.map((g) => g.relayUrl))]
+
+    const metadataEvents = await client.fetchEvents(
+      relayUrls.length > 0 ? relayUrls : getDefaultRelayUrls(),
+      {
+        kinds: [39000],
+        limit: 100
+      }
+    )
+
+    metadataEvents.forEach((metadataEvent: any) => {
+      const dTag = metadataEvent.tags.find((t: string[]) => t[0] === 'd')
+      if (!dTag) return
+
+      const groupId = dTag[1]
+      const group = groupInfos.find((g) => g.id === groupId)
+      if (!group) return
+
+      metadataEvent.tags.forEach((tag: string[]) => {
+        const [tagName, tagValue] = tag
+        if (tagName === 'name' && tagValue) {
+          group.name = tagValue
+        } else if (tagName === 'about' && tagValue) {
+          group.about = tagValue
+        } else if (tagName === 'picture' && tagValue) {
+          group.picture = tagValue
+        } else if (tagName === 'private') {
+          group.private = tagValue === 'true'
+        } else if (tagName === 'restricted') {
+          group.restricted = tagValue === 'true'
+        } else if (tagName === 'closed') {
+          group.closed = tagValue === 'true'
+        }
+      })
+    })
+  }
 
   const handleCreateGroup = () => {
     setShowCreateDialog(true)
