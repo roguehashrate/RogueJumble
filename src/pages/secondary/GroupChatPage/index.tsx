@@ -627,9 +627,15 @@ const GroupChatPage = forwardRef(
 
     // Subscribe to zap receipts
     useEffect(() => {
-      const relayUrls = relayDomain ? [normalizeUrl(relayDomain)] : getDefaultRelayUrls()
+      // Zap receipts are published to relays from zap request (not group relay),
+      // so we need to query both the group relay and default relays
+      const relayUrls = relayDomain
+        ? [normalizeUrl(relayDomain)].concat(getDefaultRelayUrls())
+        : getDefaultRelayUrls()
       const msgIds = messagesRef.current.map((m) => m.event.id)
       if (msgIds.length === 0) return
+
+      console.log('[GroupChat] Fetching zap receipts for', msgIds.length, 'messages on', relayUrls.length, 'relays')
 
       // Fetch existing zap receipts filtered by message event IDs (e tag)
       client
@@ -650,6 +656,8 @@ const GroupChatPage = forwardRef(
 
               const messageId = eTag[1]
               if (!msgIds.includes(messageId)) return
+
+              console.log('[GroupChat] Found zap receipt for message', messageId.slice(0, 8), 'amount:', zapInfo.amount)
 
               setZaps((prev) => {
                 const newMap = new Map(prev)
@@ -686,6 +694,8 @@ const GroupChatPage = forwardRef(
             if (!eTag) return
 
             const messageId = eTag[1]
+
+            console.log('[GroupChat] New zap received for message', messageId.slice(0, 8), 'amount:', zapInfo.amount)
 
             setZaps((prev) => {
               const newMap = new Map(prev)
