@@ -1,5 +1,11 @@
+import { LRUCache } from 'lru-cache'
 import { TWebMetadata } from '@/types'
 import DataLoader from 'dataloader'
+
+const webMetadataCache = new LRUCache<string, TWebMetadata>({
+  max: 500,
+  ttl: 1000 * 60 * 60 * 24 // 24 hours
+})
 
 class WebService {
   static instance: WebService
@@ -8,6 +14,9 @@ class WebService {
     async (urls) => {
       return await Promise.all(
         urls.map(async (url) => {
+          const cached = webMetadataCache.get(url)
+          if (cached) return cached
+
           try {
             const res = await fetch(url)
             const html = await res.text()
@@ -23,7 +32,9 @@ class WebService {
             const image = (doc.querySelector('meta[property="og:image"]') as HTMLMetaElement | null)
               ?.content
 
-            return { title, description, image }
+            const metadata = { title, description, image }
+            webMetadataCache.set(url, metadata)
+            return metadata
           } catch {
             return {}
           }

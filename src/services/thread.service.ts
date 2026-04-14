@@ -14,6 +14,7 @@ import { generateBech32IdFromETag } from '@/lib/tag'
 import client from '@/services/client.service'
 import dayjs from 'dayjs'
 import { Filter, kinds, NostrEvent } from 'nostr-tools'
+import { LRUCache } from 'lru-cache'
 
 type TRootInfo =
   | { type: 'E'; id: string; pubkey: string }
@@ -23,7 +24,10 @@ type TRootInfo =
 class ThreadService {
   static instance: ThreadService
 
-  private rootInfoCache = new Map<string, Promise<TRootInfo | undefined>>()
+  private rootInfoCache = new LRUCache<string, Promise<TRootInfo | undefined>>({
+    max: 1000,
+    ttl: 1000 * 60 * 60 // 1 hour
+  })
   private subscriptions = new Map<
     string,
     {
@@ -35,9 +39,18 @@ class ThreadService {
       until?: number
     }
   >()
-  private threadMap = new Map<string, NostrEvent[]>()
-  private processedReplyKeys = new Set<string>()
-  private parentKeyMap = new Map<string, string>()
+  private threadMap = new LRUCache<string, NostrEvent[]>({
+    max: 500,
+    ttl: 1000 * 60 * 60 * 24 // 24 hours
+  })
+  private processedReplyKeys = new LRUCache<string, boolean>({
+    max: 10000,
+    ttl: 1000 * 60 * 60 * 24 // 24 hours
+  })
+  private parentKeyMap = new LRUCache<string, string>({
+    max: 10000,
+    ttl: 1000 * 60 * 60 * 24 // 24 hours
+  })
   private descendantCache = new Map<string, Map<string, NostrEvent[]>>()
 
   private threadListeners = new Map<string, Set<() => void>>()
@@ -204,7 +217,7 @@ class ThreadService {
     replies.forEach((reply) => {
       const key = getEventKey(reply)
       if (this.processedReplyKeys.has(key)) return
-      this.processedReplyKeys.add(key)
+      this.processedReplyKeys.set(key, true)
 
       if (!isReplyNoteEvent(reply)) return
 
@@ -222,8 +235,8 @@ class ThreadService {
     if (newReplyEventMap.size === 0) return
 
     for (const [key, newReplyEvents] of newReplyEventMap.entries()) {
-      const thread = this.threadMap.get(key) ?? []
-      thread.push(...newReplyEvents)
+      const existingThread = this.threadMap.get(key)
+      const thread = existingThread ? [...existingThread, ...newReplyEvents] : newReplyEvents
       this.threadMap.set(key, thread)
     }
 

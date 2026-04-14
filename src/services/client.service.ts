@@ -53,8 +53,14 @@ class ClientService extends EventTarget {
     | string[]
     | undefined
   > = {}
-  private replaceableEventCacheMap = new Map<string, NEvent>()
-  private eventCacheMap = new Map<string, Promise<NEvent | undefined>>()
+  private replaceableEventCacheMap = new LRUCache<string, NEvent>({
+    max: 5000,
+    ttl: 1000 * 60 * 60 * 24 // 24 hours
+  })
+  private eventCacheMap = new LRUCache<string, Promise<NEvent | undefined>>({
+    max: 5000,
+    ttl: 1000 * 60 * 60 * 24 // 24 hours
+  })
   private eventDataLoader = new DataLoader<string, NEvent | undefined>(
     (ids) => Promise.all(ids.map((id) => this._fetchEvent(id))),
     { cacheMap: this.eventCacheMap }
@@ -194,7 +200,7 @@ class ClientService extends EventTarget {
 
   async publishEvent(relayUrls: string[], event: NEvent) {
     const uniqueRelayUrls = Array.from(new Set(relayUrls))
-    
+
     await new Promise<void>((resolve, reject) => {
       let successCount = 0
       let finishedCount = 0
@@ -617,9 +623,9 @@ class ClientService extends EventTarget {
     const timeline = this.timelines[key]
     let cachedEvents: NEvent[] = []
     let since: number | undefined
-    
+
     // Try to load timeline refs from IndexedDB if not in memory
-    if ((!timeline || (Array.isArray(timeline) || !timeline.refs.length)) && needSort) {
+    if ((!timeline || Array.isArray(timeline) || !timeline.refs.length) && needSort) {
       const persistedRefs = await indexedDb.getTimelineRefs(key)
       if (persistedRefs && persistedRefs.length > 0) {
         this.timelines[key] = {
@@ -629,12 +635,17 @@ class ClientService extends EventTarget {
         }
       }
     }
-    
+
     const currentTimeline = this.timelines[key]
-    if (currentTimeline && !Array.isArray(currentTimeline) && currentTimeline.refs.length && needSort) {
-      cachedEvents = (await this.eventDataLoader.loadMany(currentTimeline.refs.map(([id]) => id))).filter(
-        (evt) => !!evt && !(evt instanceof Error)
-      ) as NEvent[]
+    if (
+      currentTimeline &&
+      !Array.isArray(currentTimeline) &&
+      currentTimeline.refs.length &&
+      needSort
+    ) {
+      cachedEvents = (
+        await this.eventDataLoader.loadMany(currentTimeline.refs.map(([id]) => id))
+      ).filter((evt) => !!evt && !(evt instanceof Error)) as NEvent[]
       if (cachedEvents.length) {
         onEvents([...cachedEvents], false)
         since = cachedEvents[0].created_at + 1
@@ -714,7 +725,10 @@ class ClientService extends EventTarget {
           }
           // Persist timeline refs to IndexedDB
           if (needSaveToDb) {
-            indexedDb.putTimelineRefs(key, events.map((evt) => ({ event: evt, relays: that.getEventHints(evt.id) })))
+            indexedDb.putTimelineRefs(
+              key,
+              events.map((evt) => ({ event: evt, relays: that.getEventHints(evt.id) }))
+            )
           }
           return onEvents([...events], true)
         }
@@ -730,7 +744,10 @@ class ClientService extends EventTarget {
           timeline.refs = newRefs
           onEvents([...events], true)
           if (needSaveToDb) {
-            indexedDb.putTimelineRefs(key, events.map((evt) => ({ event: evt, relays: that.getEventHints(evt.id) })))
+            indexedDb.putTimelineRefs(
+              key,
+              events.map((evt) => ({ event: evt, relays: that.getEventHints(evt.id) }))
+            )
             indexedDb.deleteEvents({ ...filter, until: events[events.length - 1].created_at })
           }
         } else {
