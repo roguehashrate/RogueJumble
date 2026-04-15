@@ -182,8 +182,6 @@ export async function createShortTextNoteDraftEvent(
       ? { content: textContent, emojiTags: preStripEmojiTags }
       : transformCustomEmojisInContent(textContent)
 
-  console.log('[createShortTextNoteDraftEvent] Final emojiTags:', emojiTags)
-  console.log('[createShortTextNoteDraftEvent] Final content:', transformedEmojisContent)
   const { quoteTags, rootTag, parentTag } = await extractRelatedEventIds(
     transformedEmojisContent,
     options.parentEvent
@@ -191,8 +189,6 @@ export async function createShortTextNoteDraftEvent(
   const hashtags = extractHashtags(transformedEmojisContent)
 
   const tags = emojiTags.concat(hashtags.map((hashtag) => buildTTag(hashtag)))
-
-  console.log('[createShortTextNoteDraftEvent] tags after adding emoji+hashtags:', tags)
 
   // imeta tags for pictures (picture post)
   const images =
@@ -202,8 +198,6 @@ export async function createShortTextNoteDraftEvent(
   if (images && images.length) {
     tags.push(...generateImetaTags(images))
   }
-
-  console.log('[createShortTextNoteDraftEvent] tags after adding imeta:', tags)
 
   // imeta tags for videos (video post)
   const videos =
@@ -1045,27 +1039,17 @@ export function transformCustomEmojisInContent(content: string) {
   let processedContent = content
   const matches = content.match(/:[a-zA-Z0-9_-]+:/g)
 
-  console.log('[transformCustomEmojisInContent] Input:', content, 'Matches:', matches)
-
   const emojiIdSet = new Set<string>()
   matches?.forEach((m) => {
     if (emojiIdSet.has(m)) return
     emojiIdSet.add(m)
 
     const emoji = customEmojiService.getEmojiById(m.slice(1, -1))
-    console.log('[transformCustomEmojisInContent] Looking for:', m.slice(1, -1), 'Found:', emoji)
     if (emoji) {
       emojiTags.push(buildEmojiTag(emoji))
       processedContent = processedContent.replace(new RegExp(m, 'g'), `:${emoji.shortcode}:`)
     }
   })
-
-  console.log(
-    '[transformCustomEmojisInContent] Output tags:',
-    emojiTags,
-    'Content:',
-    processedContent
-  )
 
   return {
     emojiTags,

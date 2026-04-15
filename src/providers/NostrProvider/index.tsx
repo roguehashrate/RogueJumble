@@ -661,7 +661,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     }
 
     const draft = JSON.parse(JSON.stringify(draftEvent)) as TDraftEvent
-    console.log('[publish] Draft event:', JSON.stringify(draftEvent, null, 2))
     let event: VerifiedEvent
     if (minPow > 0) {
       const unsignedEvent = await minePow({ ...draft, pubkey: account.pubkey }, minPow)
