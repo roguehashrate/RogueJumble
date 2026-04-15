@@ -14,7 +14,8 @@ export default function RepostNoteCard({
   filterMutedNotes = true,
   pinned = false,
   reposters,
-  displayMode
+  displayMode,
+  hideFollowingBadge = false
 }: {
   event: Event
   className?: string
@@ -22,6 +23,7 @@ export default function RepostNoteCard({
   pinned?: boolean
   reposters?: string[]
   displayMode?: TDisplayMode
+  hideFollowingBadge?: boolean
 }) {
   const { mutePubkeySet } = useMuteList()
   const { hideContentMentioningMutedUsers } = useContentPolicy()
@@ -96,6 +98,7 @@ export default function RepostNoteCard({
       event={targetEvent}
       pinned={pinned}
       displayMode={displayMode}
+      hideFollowingBadge={hideFollowingBadge}
     />
   )
 }

@@ -59,6 +59,7 @@ const NoteList = forwardRef<
     filterFn?: (event: Event) => boolean
     showNewNotesDirectly?: boolean
     displayMode?: 'imageMode' | 'textOnlyMode'
+    hideFollowingBadge?: boolean
   }
 >(
   (
@@ -74,7 +75,8 @@ const NoteList = forwardRef<
       pinnedEventIds,
       filterFn,
       showNewNotesDirectly = false,
-      displayMode
+      displayMode,
+      hideFollowingBadge = false
     },
     ref
   ) => {
@@ -478,7 +480,9 @@ const NoteList = forwardRef<
     const list = (
       <div className="min-h-screen">
         {initialLoading && shouldShowLoadingIndicator && <LoadingBar />}
-        {pinnedEventIds?.map((id) => <PinnedNoteCard key={id} eventId={id} className="w-full" />)}
+        {pinnedEventIds?.map((id) => (
+          <PinnedNoteCard key={id} eventId={id} className="w-full" />
+        ))}
         {visibleItems.map(({ key, event, reposters }) => (
           <NoteCard
             key={key}
@@ -487,6 +491,7 @@ const NoteList = forwardRef<
             filterMutedNotes={filterMutedNotes}
             reposters={reposters}
             displayMode={displayMode}
+            hideFollowingBadge={hideFollowingBadge}
           />
         ))}
         <div ref={bottomRef} />

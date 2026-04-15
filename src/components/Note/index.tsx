@@ -46,7 +46,8 @@ export default function Note({
   className,
   hideParentNotePreview = false,
   showFull = false,
-  displayMode
+  displayMode,
+  hideFollowingBadge = false
 }: {
   event: Event
   originalNoteId?: string
@@ -55,6 +56,7 @@ export default function Note({
   hideParentNotePreview?: boolean
   showFull?: boolean
   displayMode?: 'imageMode' | 'textOnlyMode'
+  hideFollowingBadge?: boolean
 }) {
   const { t } = useTranslation()
   const { push } = useSecondaryPage()
@@ -158,7 +160,7 @@ export default function Note({
                 className={`w-0 flex-1 truncate font-semibold ${size === 'small' ? 'text-sm' : 'text-base sm:text-lg'}`}
                 skeletonClassName={size === 'small' ? 'h-3' : 'h-4'}
               />
-              <FollowingBadge pubkey={event.pubkey} />
+              {!hideFollowingBadge && <FollowingBadge pubkey={event.pubkey} />}
               <TrustScoreBadge pubkey={event.pubkey} />
               <ProtectedBadge event={event} />
               <ClientTag event={event} />

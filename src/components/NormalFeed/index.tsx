@@ -27,7 +27,8 @@ export default function NormalFeed({
   showRelayCloseReason = false,
   disable24hMode = false,
   onRefresh,
-  feedVariant = 'following'
+  feedVariant = 'following',
+  hideFollowingBadge = false
 }: {
   trustScoreFilterId?: string
   subRequests: TFeedSubRequest[]
@@ -37,6 +38,7 @@ export default function NormalFeed({
   disable24hMode?: boolean
   onRefresh?: () => void
   feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed' | 'communityFeed'
+  hideFollowingBadge?: boolean
 }) {
   const { showKinds } = useKindFilter()
   const { getMinTrustScore } = useUserTrust()
@@ -86,7 +88,15 @@ export default function NormalFeed({
       return [{ filter: { kinds: [kinds.LongFormArticle], limit: 50 }, urls }]
     }
     if (isMediaFeed) {
-      return [{ filter: { kinds: [ExtendedKind.PICTURE, ExtendedKind.VIDEO, ExtendedKind.SHORT_VIDEO], limit: 50 }, urls }]
+      return [
+        {
+          filter: {
+            kinds: [ExtendedKind.PICTURE, ExtendedKind.VIDEO, ExtendedKind.SHORT_VIDEO],
+            limit: 50
+          },
+          urls
+        }
+      ]
     }
     if (isTextFeed) {
       return [{ filter: { kinds: [kinds.ShortTextNote], limit: 50 }, urls }]
@@ -135,7 +145,13 @@ export default function NormalFeed({
     ]
   }, [isCommunityFeed, isScopedFeed, disable24hMode])
 
-  const activeTab = isCommunityFeed ? communityTab : (isScopedFeed ? scope : (listMode === '24h' && disable24hMode ? 'posts' : listMode))
+  const activeTab = isCommunityFeed
+    ? communityTab
+    : isScopedFeed
+      ? scope
+      : listMode === '24h' && disable24hMode
+        ? 'posts'
+        : listMode
 
   const handleTabChange = (value: string) => {
     if (isCommunityFeed) {
@@ -205,6 +221,7 @@ export default function NormalFeed({
           showRelayCloseReason={showRelayCloseReason}
           trustScoreThreshold={trustScoreThreshold}
           displayMode={isTextFeed ? 'textOnlyMode' : undefined}
+          hideFollowingBadge={hideFollowingBadge}
         />
       )}
 
@@ -230,6 +247,7 @@ export default function NormalFeed({
               showRelayCloseReason={showRelayCloseReason}
               trustScoreThreshold={trustScoreThreshold}
               displayMode={isTextFeed ? 'textOnlyMode' : undefined}
+              hideFollowingBadge={hideFollowingBadge}
             />
           )}
         </>

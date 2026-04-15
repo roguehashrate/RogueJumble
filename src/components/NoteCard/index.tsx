@@ -17,7 +17,8 @@ export default function NoteCard({
   filterMutedNotes = true,
   pinned = false,
   reposters,
-  displayMode
+  displayMode,
+  hideFollowingBadge = false
 }: {
   event: Event
   className?: string
@@ -25,6 +26,7 @@ export default function NoteCard({
   pinned?: boolean
   reposters?: string[]
   displayMode?: TDisplayMode
+  hideFollowingBadge?: boolean
 }) {
   const { mutePubkeySet } = useMuteList()
   const { hideContentMentioningMutedUsers, nsfwDisplayPolicy } = useContentPolicy()
@@ -51,10 +53,20 @@ export default function NoteCard({
         pinned={pinned}
         reposters={reposters}
         displayMode={displayMode}
+        hideFollowingBadge={hideFollowingBadge}
       />
     )
   }
-  return <MainNoteCard event={event} className={className} pinned={pinned} reposters={reposters} displayMode={displayMode} />
+  return (
+    <MainNoteCard
+      event={event}
+      className={className}
+      pinned={pinned}
+      reposters={reposters}
+      displayMode={displayMode}
+      hideFollowingBadge={hideFollowingBadge}
+    />
+  )
 }
 
 export function NoteCardLoadingSkeleton({ className }: { className?: string }) {

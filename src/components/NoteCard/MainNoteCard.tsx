@@ -16,7 +16,8 @@ export default function MainNoteCard({
   embedded,
   originalNoteId,
   pinned = false,
-  displayMode
+  displayMode,
+  hideFollowingBadge = false
 }: {
   event: Event
   className?: string
@@ -25,6 +26,7 @@ export default function MainNoteCard({
   originalNoteId?: string
   pinned?: boolean
   displayMode?: TDisplayMode
+  hideFollowingBadge?: boolean
 }) {
   const { push } = useSecondaryPage()
 
@@ -40,8 +42,8 @@ export default function MainNoteCard({
         className={cn(
           'clickable transition-colors duration-200',
           embedded
-            ? 'rounded-2xl glass-card p-3 sm:p-4'
-            : 'rounded-2xl mx-1 mb-3 sm:mx-2 sm:mb-4 glass-card px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6'
+            ? 'glass-card rounded-2xl p-3 sm:p-4'
+            : 'glass-card mx-1 mb-3 rounded-2xl px-4 py-4 sm:mx-2 sm:mb-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6'
         )}
       >
         <Collapsible alwaysExpand={embedded}>
@@ -53,6 +55,7 @@ export default function MainNoteCard({
             event={event}
             originalNoteId={originalNoteId}
             displayMode={displayMode}
+            hideFollowingBadge={hideFollowingBadge}
           />
         </Collapsible>
         {!embedded && <StuffStats className="mt-3 sm:mt-4" stuff={event} />}

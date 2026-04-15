@@ -161,16 +161,26 @@ export async function createShortTextNoteDraftEvent(
   const originalImages = isPicturePost ? extractImagesFromContent(content) : []
   const originalVideos = isVideoPost ? extractVideosFromContent(content) : []
 
+  // Transform custom emojis first so :shortcode: is preserved before stripping URLs
+  const { content: contentWithEmojis, emojiTags: preStripEmojiTags } =
+    transformCustomEmojisInContent(content)
+
   // For media posts, strip image/video URLs from content text — they go into imeta tags instead
   const textContent = isMediaPost
-    ? content
-        .replace(/https?:\/\/[^\s"']*\.(jpg|jpeg|png|gif|webp|heic|mp4|webm|mov|avi|mkv|m4v)[^\s"']*/gi, '')
+    ? contentWithEmojis
+        .replace(
+          /https?:\/\/[^\s"']*\.(jpg|jpeg|png|gif|webp|heic|mp4|webm|mov|avi|mkv|m4v)[^\s"']*/gi,
+          ''
+        )
         .replace(/\n\s*\n/g, '\n')
         .trim()
-    : content
+    : contentWithEmojis
 
+  // Re-transform emojis after URL stripping (in case any were in stripped sections)
   const { content: transformedEmojisContent, emojiTags } =
-    transformCustomEmojisInContent(textContent)
+    preStripEmojiTags.length > 0
+      ? { content: textContent, emojiTags: preStripEmojiTags }
+      : transformCustomEmojisInContent(textContent)
   const { quoteTags, rootTag, parentTag } = await extractRelatedEventIds(
     transformedEmojisContent,
     options.parentEvent
