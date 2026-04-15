@@ -1,4 +1,5 @@
 import lightningService, { TTransaction } from '@/services/lightning.service'
+import client from '@/services/client.service'
 import storage from '@/services/local-storage.service'
 import { onConnected, onDisconnected } from '@getalby/bitcoin-connect-react'
 import { GetInfoResponse, WebLNProvider } from '@webbtc/webln-types'
@@ -23,6 +24,7 @@ type TZapContext = {
   transactionHistory: TTransaction[]
   refreshTransactionHistory: () => Promise<void>
   clearTransactionHistory: () => void
+  refreshBalance: () => Promise<void>
 }
 
 const ZapContext = createContext<TZapContext | undefined>(undefined)
@@ -50,7 +52,8 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
 
   const refreshTransactionHistory = async () => {
     if (lightningService.provider) {
-      const history = await lightningService.getTransactionHistory()
+      const pubkey = client.pubkey
+      const history = await lightningService.getTransactionHistory(pubkey)
       setTransactionHistory(history)
     }
   }
@@ -58,6 +61,21 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
   const clearTransactionHistory = () => {
     lightningService.clearTransactionCache()
     setTransactionHistory([])
+  }
+
+  const refreshBalance = async () => {
+    if (lightningService.provider) {
+      try {
+        if (typeof lightningService.provider.getBalance === 'function') {
+          const balanceResponse = await lightningService.provider.getBalance()
+          if (balanceResponse?.balance !== undefined) {
+            setBalance(balanceResponse.balance)
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to refresh balance:', e)
+      }
+    }
   }
 
   const formatBalance = (sats: number): string => {
@@ -109,9 +127,14 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
     }
     onDisconnected(unSubOnDisconnected)
 
+    const unSubBalance = lightningService.onBalanceChange(refreshBalance)
+    const unSubTransactions = lightningService.onTransactionChange(refreshTransactionHistory)
+
     return () => {
       unSubOnConnected()
       unSubOnDisconnected()
+      unSubBalance()
+      unSubTransactions()
     }
   }, [])
 
@@ -148,7 +171,8 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
         updateQuickZap,
         transactionHistory,
         refreshTransactionHistory,
-        clearTransactionHistory
+        clearTransactionHistory,
+        refreshBalance
       }}
     >
       {children}

@@ -37,6 +37,8 @@ class LightningService {
   provider: WebLNProvider | null = null
   private recentSupportersCache: TRecentSupporter[] | null = null
   private transactionHistoryCache: TTransaction[] | null = null
+  private onBalanceChangeCallbacks: Array<() => void> = []
+  private onTransactionChangeCallbacks: Array<() => void> = []
 
   constructor() {
     if (!LightningService.instance) {
@@ -47,6 +49,31 @@ class LightningService {
       })
     }
     return LightningService.instance
+  }
+
+  onBalanceChange(callback: () => void): () => void {
+    this.onBalanceChangeCallbacks.push(callback)
+    return () => {
+      this.onBalanceChangeCallbacks = this.onBalanceChangeCallbacks.filter((cb) => cb !== callback)
+    }
+  }
+
+  onTransactionChange(callback: () => void): () => void {
+    this.onTransactionChangeCallbacks.push(callback)
+    return () => {
+      this.onTransactionChangeCallbacks = this.onTransactionChangeCallbacks.filter(
+        (cb) => cb !== callback
+      )
+    }
+  }
+
+  private notifyBalanceChange() {
+    this.onBalanceChangeCallbacks.forEach((cb) => cb())
+  }
+
+  private notifyTransactionChange() {
+    this.transactionHistoryCache = null
+    this.onTransactionChangeCallbacks.forEach((cb) => cb())
   }
 
   async zap(
@@ -109,6 +136,8 @@ class LightningService {
     if (this.provider) {
       const { preimage } = await this.provider.sendPayment(pr)
       closeOuterModel?.()
+      this.notifyBalanceChange()
+      this.notifyTransactionChange()
       return { preimage, invoice: pr }
     }
 
@@ -121,6 +150,8 @@ class LightningService {
         onPaid: (response) => {
           clearInterval(checkPaymentInterval)
           subCloser?.close()
+          this.notifyBalanceChange()
+          this.notifyTransactionChange()
           resolve({ preimage: response.preimage, invoice: pr })
         },
         onCancelled: () => {
@@ -175,6 +206,8 @@ class LightningService {
     if (this.provider) {
       const { preimage } = await this.provider.sendPayment(invoice)
       closeOuterModel?.()
+      this.notifyBalanceChange()
+      this.notifyTransactionChange()
       return { preimage, invoice: invoice }
     }
 
@@ -183,6 +216,8 @@ class LightningService {
       launchPaymentModal({
         invoice: invoice,
         onPaid: (response) => {
+          this.notifyBalanceChange()
+          this.notifyTransactionChange()
           resolve({ preimage: response.preimage, invoice: invoice })
         },
         onCancelled: () => {
@@ -323,6 +358,8 @@ class LightningService {
       }
 
       const { preimage } = await this.provider.sendPayment(pr)
+      this.notifyBalanceChange()
+      this.notifyTransactionChange()
       return { preimage, invoice: pr }
     } catch (error) {
       console.error('Failed to send to address:', error)
@@ -330,7 +367,7 @@ class LightningService {
     }
   }
 
-  async getTransactionHistory(): Promise<TTransaction[]> {
+  async getTransactionHistory(pubkey?: string): Promise<TTransaction[]> {
     if (!this.provider) {
       return []
     }
@@ -340,6 +377,7 @@ class LightningService {
     }
 
     const transactions: TTransaction[] = []
+    const existingIds = new Set<string>()
 
     try {
       if (typeof this.provider.request === 'function') {
@@ -423,8 +461,71 @@ class LightningService {
           }
         }
       }
+
+      transactions.forEach((t) => existingIds.add(t.id))
     } catch (error) {
-      console.error('Failed to get transaction history:', error)
+      console.error('Failed to get WebLN transaction history:', error)
+    }
+
+    if (pubkey) {
+      try {
+        const since = dayjs().subtract(3, 'month').unix()
+        const zapFilter: Filter = {
+          kinds: [kinds.Zap],
+          since
+        }
+
+        const relayUrls = getDefaultRelayUrls()
+        const receivedZaps = await client.fetchEvents(relayUrls.slice(0, 4), {
+          ...zapFilter,
+          '#p': [pubkey]
+        })
+
+        for (const zapEvent of receivedZaps) {
+          const info = getZapInfoFromEvent(zapEvent)
+          if (!info || !info.senderPubkey) continue
+
+          if (existingIds.has(info.invoice || zapEvent.id)) continue
+
+          transactions.push({
+            id: info.invoice || zapEvent.id,
+            type: 'received',
+            amount: info.amount || 0,
+            status: info.preimage ? 'completed' : 'pending',
+            date: new Date(zapEvent.created_at * 1000),
+            invoice: info.invoice,
+            preimage: info.preimage,
+            description: info.comment || ''
+          })
+          existingIds.add(info.invoice || zapEvent.id)
+        }
+
+        const sentZaps = await client.fetchEvents(relayUrls.slice(0, 4), {
+          ...zapFilter,
+          authors: [pubkey]
+        })
+
+        for (const zapEvent of sentZaps) {
+          const info = getZapInfoFromEvent(zapEvent)
+          if (!info || !info.recipientPubkey) continue
+
+          if (existingIds.has(info.invoice || zapEvent.id)) continue
+
+          transactions.push({
+            id: info.invoice || zapEvent.id,
+            type: 'sent',
+            amount: info.amount || 0,
+            status: info.preimage ? 'completed' : 'pending',
+            date: new Date(zapEvent.created_at * 1000),
+            invoice: info.invoice,
+            preimage: info.preimage,
+            description: info.comment || ''
+          })
+          existingIds.add(info.invoice || zapEvent.id)
+        }
+      } catch (error) {
+        console.error('Failed to fetch zap history:', error)
+      }
     }
 
     transactions.sort((a, b) => b.date.getTime() - a.date.getTime())
