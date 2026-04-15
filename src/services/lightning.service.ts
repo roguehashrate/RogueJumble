@@ -155,9 +155,8 @@ class LightningService {
       throw new Error(reason ?? 'Failed to create invoice')
     }
 
-    const pendingId = `pending-${Date.now()}`
     this.recordTransaction({
-      id: pendingId,
+      id: pr,
       type: 'sent',
       amount: sats,
       status: 'pending',
@@ -169,7 +168,7 @@ class LightningService {
     if (this.provider) {
       const { preimage } = await this.provider.sendPayment(pr)
       closeOuterModel?.()
-      this.completePendingTransaction(pendingId, preimage)
+      this.completePendingTransaction(pr, preimage)
       this.notifyBalanceChange()
       this.notifyTransactionChange()
       return { preimage, invoice: pr }
@@ -184,7 +183,7 @@ class LightningService {
         onPaid: (response) => {
           clearInterval(checkPaymentInterval)
           subCloser?.close()
-          this.completePendingTransaction(pendingId, response.preimage)
+          this.completePendingTransaction(pr, response.preimage)
           this.notifyBalanceChange()
           this.notifyTransactionChange()
           resolve({ preimage: response.preimage, invoice: pr })
@@ -260,7 +259,7 @@ class LightningService {
     if (this.provider) {
       const { preimage } = await this.provider.sendPayment(invoice)
       closeOuterModel?.()
-      this.completePendingTransaction(pendingId, preimage)
+      this.completePendingTransaction(invoice, preimage)
       this.notifyBalanceChange()
       this.notifyTransactionChange()
       return { preimage, invoice: invoice }
@@ -271,13 +270,13 @@ class LightningService {
       launchPaymentModal({
         invoice: invoice,
         onPaid: (response) => {
-          this.completePendingTransaction(pendingId, response.preimage)
+          this.completePendingTransaction(invoice, response.preimage)
           this.notifyBalanceChange()
           this.notifyTransactionChange()
           resolve({ preimage: response.preimage, invoice: invoice })
         },
         onCancelled: () => {
-          const index = this.pendingTransactions.findIndex((t) => t.id === pendingId)
+          const index = this.pendingTransactions.findIndex((t) => t.id === invoice)
           if (index !== -1) this.pendingTransactions.splice(index, 1)
           this.notifyTransactionChange()
           resolve(null)
@@ -416,9 +415,8 @@ class LightningService {
         throw new Error('No invoice returned')
       }
 
-      const pendingId = `pending-${Date.now()}`
       this.recordTransaction({
-        id: pendingId,
+        id: pr,
         type: 'sent',
         amount,
         status: 'pending',
@@ -428,7 +426,7 @@ class LightningService {
       })
 
       const { preimage } = await this.provider.sendPayment(pr)
-      this.completePendingTransaction(pendingId, preimage)
+      this.completePendingTransaction(pr, preimage)
       this.notifyBalanceChange()
       this.notifyTransactionChange()
       return { preimage, invoice: pr }
@@ -467,6 +465,11 @@ class LightningService {
 
         if (paymentsResponse.payments) {
           for (const payment of paymentsResponse.payments) {
+            // Skip if already exists (could be in pendingTransactions)
+            if (existingIds.has(payment.payment_hash) || existingIds.has(payment.payment_request)) {
+              continue
+            }
+
             const invoice = payment.payment_request
             let description = ''
             try {
@@ -476,7 +479,7 @@ class LightningService {
               // ignore
             }
 
-            transactions.push({
+            const transaction: TTransaction = {
               id: payment.payment_hash,
               type: 'sent',
               amount: parseInt(payment.value_sat) || Math.round(parseInt(payment.value) / 1000),
@@ -490,7 +493,12 @@ class LightningService {
               invoice: payment.payment_request,
               preimage: payment.payment_preimage,
               description
-            })
+            }
+            transactions.push(transaction)
+            existingIds.add(payment.payment_hash)
+            if (payment.payment_request) {
+              existingIds.add(payment.payment_request)
+            }
           }
         }
 
@@ -512,8 +520,13 @@ class LightningService {
 
         if (invoicesResponse.invoices) {
           for (const invoice of invoicesResponse.invoices) {
+            // Skip if already exists (could be in pendingTransactions or payments)
+            if (existingIds.has(invoice.r_hash) || existingIds.has(invoice.payment_request)) {
+              continue
+            }
+
             if (invoice.r_preimage) {
-              transactions.push({
+              const transaction: TTransaction = {
                 id: invoice.r_hash,
                 type: 'received',
                 amount: parseInt(invoice.value_sat) || Math.round(parseInt(invoice.value) / 1000),
@@ -527,13 +540,16 @@ class LightningService {
                 invoice: invoice.payment_request,
                 preimage: invoice.r_preimage,
                 description: invoice.memo
-              })
+              }
+              transactions.push(transaction)
+              existingIds.add(invoice.r_hash)
+              if (invoice.payment_request) {
+                existingIds.add(invoice.payment_request)
+              }
             }
           }
         }
       }
-
-      transactions.forEach((t) => existingIds.add(t.id))
     } catch (error) {
       console.error('Failed to get WebLN transaction history:', error)
     }
