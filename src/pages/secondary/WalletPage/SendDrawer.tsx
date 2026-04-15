@@ -20,7 +20,7 @@ interface SendDrawerProps {
 
 export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
   const { t } = useTranslation()
-  const { formatBalance, formatAmount } = useZap()
+  const { formatBalance, balanceDisplayUnit, toSats } = useZap()
   const [mode, setMode] = useState<'address' | 'invoice'>('address')
   const [lightningAddress, setLightningAddress] = useState('')
   const [invoice, setInvoice] = useState('')
@@ -81,7 +81,8 @@ export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
     if (!lightningAddress || !amount) return
     setIsLoading(true)
     try {
-      const result = await lightningService.sendToAddress(lightningAddress, parseInt(amount), memo)
+      const satsAmount = toSats(parseFloat(amount) || 0)
+      const result = await lightningService.sendToAddress(lightningAddress, satsAmount, memo)
       if (result) {
         toast.success(t('Payment sent successfully'))
         onOpenChange(false)
@@ -171,11 +172,11 @@ export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="send-amount">{t('Amount ({{unit}})', { unit: formatAmount(1).unit })}</Label>
+                <Label htmlFor="send-amount">{t('Amount')} ({balanceDisplayUnit})</Label>
                 <Input
                   id="send-amount"
                   type="number"
-                  placeholder="100"
+                  placeholder={balanceDisplayUnit === 'sats' ? '100' : balanceDisplayUnit === 'bits' ? '1' : '0.00000100'}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
@@ -194,14 +195,11 @@ export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
               <Button
                 className="w-full"
                 onClick={handlePayAddress}
-                disabled={!lightningAddress || !amount || isLoading}
+                disabled={!lightningAddress || !amount || parseFloat(amount) <= 0 || isLoading}
               >
                 {isLoading
                   ? t('Sending...')
-                  : t('Send {{amount}} {{unit}}', { 
-                      amount: formatAmount(parseInt(amount) || 0).value,
-                      unit: formatAmount(parseInt(amount) || 0).unit
-                    })}
+                  : t('Send {{amount}}', { amount: formatBalance(toSats(parseFloat(amount) || 0)) })}
               </Button>
             </TabsContent>
 

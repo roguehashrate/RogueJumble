@@ -17,7 +17,7 @@ interface ReceiveDrawerProps {
 
 export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps) {
   const { t } = useTranslation()
-  const { formatBalance, formatAmount } = useZap()
+  const { formatBalance, balanceDisplayUnit, toSats } = useZap()
   const [amount, setAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -55,7 +55,8 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
     if (!amount) return
     setIsLoading(true)
     try {
-      const result = await lightningService.makeInvoice(parseInt(amount), memo)
+      const satsAmount = toSats(parseFloat(amount) || 0)
+      const result = await lightningService.makeInvoice(satsAmount, memo)
       if (result) {
         setInvoice(result.paymentRequest)
       }
@@ -90,11 +91,11 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
           {!invoice ? (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="receive-amount">{t('Amount ({{unit}})', { unit: formatAmount(1).unit })}</Label>
+                <Label htmlFor="receive-amount">{t('Amount')} ({balanceDisplayUnit})</Label>
                 <Input
                   id="receive-amount"
                   type="number"
-                  placeholder="100"
+                  placeholder={balanceDisplayUnit === 'sats' ? '100' : balanceDisplayUnit === 'bits' ? '1' : '0.00000100'}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />

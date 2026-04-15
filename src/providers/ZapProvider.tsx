@@ -15,7 +15,7 @@ type TZapContext = {
   balanceDisplayUnit: TWalletDisplayUnit
   setBalanceDisplayUnit: (unit: TWalletDisplayUnit) => void
   formatBalance: (sats: number) => string
-  formatAmount: (sats: number) => { value: string; unit: string }
+  toSats: (value: number) => number
   defaultZapSats: number
   updateDefaultSats: (sats: number) => void
   defaultZapComment: string
@@ -84,20 +84,20 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
       case 'sats':
         return `${sats.toLocaleString()} sats`
       case 'bits':
-        return `${(sats / 100).toFixed(2)} μ`
+        return `${(sats / 100).toFixed(2)} bits`
       case 'btc':
-        return `${(sats / 100000000).toFixed(8)} ₿`
+        return `${(sats / 100000000).toFixed(8)} BTC`
     }
   }
 
-  const formatAmount = (sats: number): { value: string; unit: string } => {
+  const toSats = (value: number): number => {
     switch (balanceDisplayUnit) {
       case 'sats':
-        return { value: sats.toLocaleString(), unit: 'sats' }
+        return value
       case 'bits':
-        return { value: (sats / 100).toFixed(2), unit: 'bits' }
+        return Math.round(value * 100)
       case 'btc':
-        return { value: (sats / 100000000).toFixed(8), unit: 'btc' }
+        return Math.round(value * 100000000)
     }
   }
 
@@ -175,7 +175,7 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
         balanceDisplayUnit,
         setBalanceDisplayUnit,
         formatBalance,
-        formatAmount,
+        toSats,
         defaultZapSats,
         updateDefaultSats,
         defaultZapComment,

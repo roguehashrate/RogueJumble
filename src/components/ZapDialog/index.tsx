@@ -137,53 +137,53 @@ function ZapDialogContent({
 }) {
   const { t, i18n } = useTranslation()
   const { pubkey } = useNostr()
-  const { defaultZapSats, defaultZapComment, formatAmount } = useZap()
-  const [sats, setSats] = useState(defaultAmount ?? defaultZapSats)
+  const { defaultZapSats, defaultZapComment, balanceDisplayUnit, toSats, formatBalance } = useZap()
+
+  const toDisplayUnit = (sats: number): number => {
+    switch (balanceDisplayUnit) {
+      case 'sats':
+        return sats
+      case 'bits':
+        return sats / 100
+      case 'btc':
+        return sats / 100000000
+    }
+  }
+
+  const [amount, setAmount] = useState(defaultAmount ? toDisplayUnit(defaultAmount) : toDisplayUnit(defaultZapSats))
   const [comment, setComment] = useState(defaultComment ?? defaultZapComment)
   const isSelfZap = useMemo(() => pubkey === recipient, [pubkey, recipient])
   const [zapping, setZapping] = useState(false)
-  const { unit } = formatAmount(1)
-  const presetAmounts = useMemo(() => {
-    if (i18n.language.startsWith('zh')) {
-      return [
-        { display: '21', val: 21 },
-        { display: '66', val: 66 },
-        { display: '210', val: 210 },
-        { display: '666', val: 666 },
-        { display: '1k', val: 1000 },
-        { display: '2.1k', val: 2100 },
-        { display: '6.6k', val: 6666 },
-        { display: '10k', val: 10000 },
-        { display: '21k', val: 21000 },
-        { display: '66k', val: 66666 },
-        { display: '100k', val: 100000 },
-        { display: '210k', val: 210000 }
-      ]
-    }
 
-    return [
-      { display: '21', val: 21 },
-      { display: '42', val: 42 },
-      { display: '210', val: 210 },
-      { display: '420', val: 420 },
-      { display: '1k', val: 1000 },
-      { display: '2.1k', val: 2100 },
-      { display: '4.2k', val: 4200 },
-      { display: '10k', val: 10000 },
-      { display: '21k', val: 21000 },
-      { display: '42k', val: 42000 },
-      { display: '100k', val: 100000 },
-      { display: '210k', val: 210000 }
-    ]
-  }, [i18n.language])
+  const presetAmounts = useMemo(() => {
+    const basePresets = i18n.language.startsWith('zh')
+      ? [21, 66, 210, 666, 1000, 2100, 6666, 10000, 21000, 66666, 100000, 210000]
+      : [21, 42, 210, 420, 1000, 2100, 4200, 10000, 21000, 42000, 100000, 210000]
+
+    return basePresets.map((sats) => {
+      switch (balanceDisplayUnit) {
+        case 'sats':
+          return { display: sats >= 1000 ? `${(sats / 1000).toFixed(0)}k` : sats.toString(), val: sats }
+        case 'bits': {
+          const bits = sats / 100
+          return { display: bits < 10 ? bits.toFixed(1) : bits.toFixed(0), val: bits }
+        }
+        case 'btc': {
+          const btc = sats / 100000000
+          return { display: btc < 0.001 ? btc.toFixed(6) : btc.toFixed(4), val: btc }
+        }
+      }
+    })
+  }, [i18n.language, balanceDisplayUnit])
 
   const handleZap = async () => {
     try {
       if (!pubkey) {
         throw new Error('You need to be logged in to zap')
       }
+      const satsAmount = toSats(amount)
       setZapping(true)
-      const zapResult = await lightning.zap(pubkey, event ?? recipient, sats, comment, () =>
+      const zapResult = await lightning.zap(pubkey, event ?? recipient, satsAmount, comment, () =>
         setOpen(false)
       )
       // user canceled
@@ -191,7 +191,7 @@ function ZapDialogContent({
         return
       }
       if (event) {
-        stuffStatsService.addZap(pubkey, event.id, zapResult.invoice, sats, comment)
+        stuffStatsService.addZap(pubkey, event.id, zapResult.invoice, satsAmount, comment)
       }
     } catch (error) {
       toast.error(`${t('Zap failed')}: ${(error as Error).message}`)
@@ -202,18 +202,18 @@ function ZapDialogContent({
 
   return (
     <>
-      {/* Sats slider or input */}
+      {/* Amount input */}
       <div className="flex flex-col items-center">
         <div className="flex w-full justify-center">
           <input
-            id="sats"
-            value={sats}
+            id="amount"
+            value={amount}
             onChange={(e) => {
-              setSats((pre) => {
+              setAmount((pre) => {
                 if (e.target.value === '') {
                   return 0
                 }
-                let num = parseInt(e.target.value, 10)
+                let num = parseFloat(e.target.value)
                 if (isNaN(num) || num < 0) {
                   num = pre
                 }
@@ -229,7 +229,7 @@ function ZapDialogContent({
             className="w-full bg-transparent p-0 text-center text-6xl font-bold focus-visible:outline-none"
           />
         </div>
-        <Label htmlFor="sats">{unit.charAt(0).toUpperCase() + unit.slice(1)}</Label>
+        <Label htmlFor="amount">{balanceDisplayUnit.charAt(0).toUpperCase() + balanceDisplayUnit.slice(1)}</Label>
       </div>
 
       {/* Self-zap easter egg warning */}
@@ -239,10 +239,10 @@ function ZapDialogContent({
         </div>
       )}
 
-      {/* Preset sats buttons */}
+      {/* Preset amount buttons */}
       <div className="grid grid-cols-6 gap-2">
         {presetAmounts.map(({ display, val }) => (
-          <Button variant="secondary" key={val} onClick={() => setSats(val)}>
+          <Button variant="secondary" key={val} onClick={() => setAmount(val)}>
             {display}
           </Button>
         ))}
@@ -255,7 +255,7 @@ function ZapDialogContent({
       </div>
 
       <Button onClick={handleZap}>
-        {zapping && <Loader className="animate-spin" />} {t('Zap n sats', { n: `${formatAmount(sats).value} ${unit}` })}
+        {zapping && <Loader className="animate-spin" />} {t('Zap n sats', { n: formatBalance(toSats(amount)) })}
       </Button>
     </>
   )
