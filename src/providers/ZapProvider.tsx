@@ -1,4 +1,4 @@
-import lightningService from '@/services/lightning.service'
+import lightningService, { TTransaction } from '@/services/lightning.service'
 import storage from '@/services/local-storage.service'
 import { onConnected, onDisconnected } from '@getalby/bitcoin-connect-react'
 import { GetInfoResponse, WebLNProvider } from '@webbtc/webln-types'
@@ -20,6 +20,9 @@ type TZapContext = {
   updateDefaultComment: (comment: string) => void
   quickZap: boolean
   updateQuickZap: (quickZap: boolean) => void
+  transactionHistory: TTransaction[]
+  refreshTransactionHistory: () => Promise<void>
+  clearTransactionHistory: () => void
 }
 
 const ZapContext = createContext<TZapContext | undefined>(undefined)
@@ -43,6 +46,19 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
   const [provider, setProvider] = useState<WebLNProvider | null>(null)
   const [walletInfo, setWalletInfo] = useState<GetInfoResponse | null>(null)
   const [balance, setBalance] = useState<number | null>(null)
+  const [transactionHistory, setTransactionHistory] = useState<TTransaction[]>([])
+
+  const refreshTransactionHistory = async () => {
+    if (lightningService.provider) {
+      const history = await lightningService.getTransactionHistory()
+      setTransactionHistory(history)
+    }
+  }
+
+  const clearTransactionHistory = () => {
+    lightningService.clearTransactionCache()
+    setTransactionHistory([])
+  }
 
   const formatBalance = (sats: number): string => {
     switch (balanceDisplayUnit) {
@@ -79,11 +95,15 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.warn('Failed to get balance:', e)
       }
+      const history = await lightningService.getTransactionHistory()
+      setTransactionHistory(history)
     })
     const unSubOnDisconnected = () => {
       setIsWalletConnected(false)
       setProvider(null)
       setWalletInfo(null)
+      setTransactionHistory([])
+      lightningService.clearTransactionCache()
       setBalance(null)
       lightningService.provider = null
     }
@@ -125,7 +145,10 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
         defaultZapComment,
         updateDefaultComment,
         quickZap,
-        updateQuickZap
+        updateQuickZap,
+        transactionHistory,
+        refreshTransactionHistory,
+        clearTransactionHistory
       }}
     >
       {children}

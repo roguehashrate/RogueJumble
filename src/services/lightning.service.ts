@@ -15,12 +15,28 @@ import client from './client.service'
 
 export type TRecentSupporter = { pubkey: string; amount: number; comment?: string }
 
+export type TTransactionType = 'sent' | 'received'
+export type TTransactionStatus = 'completed' | 'pending' | 'failed'
+
+export type TTransaction = {
+  id: string
+  type: TTransactionType
+  amount: number
+  status: TTransactionStatus
+  date: Date
+  invoice?: string
+  preimage?: string
+  description?: string
+  lightningAddress?: string
+}
+
 const OFFICIAL_PUBKEYS = [ROGUEJUMBLE_PUBKEY, ROGUE_HASHRATE_PUBKEY]
 
 class LightningService {
   static instance: LightningService
   provider: WebLNProvider | null = null
   private recentSupportersCache: TRecentSupporter[] | null = null
+  private transactionHistoryCache: TTransaction[] | null = null
 
   constructor() {
     if (!LightningService.instance) {
@@ -245,6 +261,179 @@ class LightningService {
     }
 
     return null
+  }
+
+  async makeInvoice(amount: number, memo?: string): Promise<{ paymentRequest: string } | null> {
+    if (!this.provider) {
+      throw new Error('No wallet connected')
+    }
+    try {
+      const response = await this.provider.makeInvoice({
+        amount: amount.toString(),
+        defaultMemo: memo || ''
+      })
+      return response
+    } catch (error) {
+      console.error('Failed to make invoice:', error)
+      throw error
+    }
+  }
+
+  async sendToAddress(
+    address: string,
+    amount: number,
+    memo?: string
+  ): Promise<{ preimage: string; invoice: string } | null> {
+    if (!this.provider) {
+      throw new Error('No wallet connected')
+    }
+
+    let lnurl: string
+    if (address.includes('@')) {
+      const [name, domain] = address.split('@')
+      lnurl = new URL(`/.well-known/lnurlp/${name}`, `https://${domain}`).toString()
+    } else {
+      lnurl = address
+    }
+
+    try {
+      const res = await fetch(lnurl)
+      const body = await res.json()
+
+      if (body.status === 'ERROR') {
+        throw new Error(body.reason || 'Failed to fetch invoice')
+      }
+
+      const callbackUrl = new URL(body.callback)
+      callbackUrl.searchParams.set('amount', (amount * 1000).toString())
+      if (memo) {
+        callbackUrl.searchParams.set('comment', memo)
+      }
+
+      const invoiceRes = await fetch(callbackUrl.toString())
+      const invoiceBody = await invoiceRes.json()
+
+      if (invoiceBody.status === 'ERROR') {
+        throw new Error(invoiceBody.reason || 'Failed to create invoice')
+      }
+
+      const pr = invoiceBody.pr
+      if (!pr) {
+        throw new Error('No invoice returned')
+      }
+
+      const { preimage } = await this.provider.sendPayment(pr)
+      return { preimage, invoice: pr }
+    } catch (error) {
+      console.error('Failed to send to address:', error)
+      throw error
+    }
+  }
+
+  async getTransactionHistory(): Promise<TTransaction[]> {
+    if (!this.provider) {
+      return []
+    }
+
+    if (this.transactionHistoryCache) {
+      return this.transactionHistoryCache
+    }
+
+    const transactions: TTransaction[] = []
+
+    try {
+      if (typeof this.provider.request === 'function') {
+        const paymentsResponse = (await this.provider.request('request.listpayments')) as {
+          payments: Array<{
+            payment_hash: string
+            value: string
+            creation_date: string
+            fee: string
+            payment_preimage: string
+            value_sat: string
+            payment_request: string
+            status: string
+          }>
+        }
+
+        if (paymentsResponse.payments) {
+          for (const payment of paymentsResponse.payments) {
+            const invoice = payment.payment_request
+            let description = ''
+            try {
+              const invoiceObj = new Invoice({ pr: invoice })
+              description = invoiceObj.description || ''
+            } catch {
+              // ignore
+            }
+
+            transactions.push({
+              id: payment.payment_hash,
+              type: 'sent',
+              amount: parseInt(payment.value_sat) || Math.round(parseInt(payment.value) / 1000),
+              status:
+                payment.status === 'complete'
+                  ? 'completed'
+                  : payment.status === 'failed'
+                    ? 'failed'
+                    : 'pending',
+              date: new Date(parseInt(payment.creation_date) * 1000),
+              invoice: payment.payment_request,
+              preimage: payment.payment_preimage,
+              description
+            })
+          }
+        }
+
+        const invoicesResponse = (await this.provider.request('request.listinvoices', {
+          reversed: true
+        })) as {
+          invoices: Array<{
+            memo: string
+            r_preimage: string
+            r_hash: string
+            value: string
+            value_sat: string
+            settled: boolean
+            creation_date: string
+            payment_request: string
+            state: string
+          }>
+        }
+
+        if (invoicesResponse.invoices) {
+          for (const invoice of invoicesResponse.invoices) {
+            if (invoice.r_preimage) {
+              transactions.push({
+                id: invoice.r_hash,
+                type: 'received',
+                amount: parseInt(invoice.value_sat) || Math.round(parseInt(invoice.value) / 1000),
+                status:
+                  invoice.state === 'SETTLED'
+                    ? 'completed'
+                    : invoice.state === 'CANCELED'
+                      ? 'failed'
+                      : 'pending',
+                date: new Date(parseInt(invoice.creation_date) * 1000),
+                invoice: invoice.payment_request,
+                preimage: invoice.r_preimage,
+                description: invoice.memo
+              })
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get transaction history:', error)
+    }
+
+    transactions.sort((a, b) => b.date.getTime() - a.date.getTime())
+    this.transactionHistoryCache = transactions
+    return transactions
+  }
+
+  clearTransactionCache() {
+    this.transactionHistoryCache = null
   }
 }
 
