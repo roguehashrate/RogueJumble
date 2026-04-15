@@ -1,4 +1,5 @@
 import { ROGUEJUMBLE_PUBKEY, ROGUE_HASHRATE_PUBKEY } from '@/constants'
+import { getAmountFromInvoice } from '@/lib/lightning'
 import { getZapInfoFromEvent } from '@/lib/event-metadata'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { TProfile } from '@/types'
@@ -37,6 +38,7 @@ class LightningService {
   provider: WebLNProvider | null = null
   private recentSupportersCache: TRecentSupporter[] | null = null
   private transactionHistoryCache: TTransaction[] | null = null
+  private pendingTransactions: TTransaction[] = []
   private onBalanceChangeCallbacks: Array<() => void> = []
   private onTransactionChangeCallbacks: Array<() => void> = []
 
@@ -74,6 +76,26 @@ class LightningService {
   private notifyTransactionChange() {
     this.transactionHistoryCache = null
     this.onTransactionChangeCallbacks.forEach((cb) => cb())
+  }
+
+  private recordTransaction(transaction: TTransaction) {
+    this.pendingTransactions.unshift(transaction)
+    this.onTransactionChangeCallbacks.forEach((cb) => cb())
+  }
+
+  private completePendingTransaction(pendingId: string, preimage?: string) {
+    const index = this.pendingTransactions.findIndex((t) => t.id === pendingId)
+    if (index !== -1) {
+      const pending = this.pendingTransactions[index]
+      this.pendingTransactions.splice(index, 1)
+      const completed: TTransaction = {
+        ...pending,
+        status: 'completed',
+        preimage
+      }
+      this.pendingTransactions.unshift(completed)
+      this.onTransactionChangeCallbacks.forEach((cb) => cb())
+    }
   }
 
   async zap(
@@ -133,9 +155,21 @@ class LightningService {
       throw new Error(reason ?? 'Failed to create invoice')
     }
 
+    const pendingId = `pending-${Date.now()}`
+    this.recordTransaction({
+      id: pendingId,
+      type: 'sent',
+      amount: sats,
+      status: 'pending',
+      date: new Date(),
+      invoice: pr,
+      description: comment
+    })
+
     if (this.provider) {
       const { preimage } = await this.provider.sendPayment(pr)
       closeOuterModel?.()
+      this.completePendingTransaction(pendingId, preimage)
       this.notifyBalanceChange()
       this.notifyTransactionChange()
       return { preimage, invoice: pr }
@@ -150,6 +184,7 @@ class LightningService {
         onPaid: (response) => {
           clearInterval(checkPaymentInterval)
           subCloser?.close()
+          this.completePendingTransaction(pendingId, response.preimage)
           this.notifyBalanceChange()
           this.notifyTransactionChange()
           resolve({ preimage: response.preimage, invoice: pr })
@@ -203,9 +238,29 @@ class LightningService {
     invoice: string,
     closeOuterModel?: () => void
   ): Promise<{ preimage: string; invoice: string } | null> {
+    let amount = 0
+    try {
+      const invoiceObj = new Invoice({ pr: invoice })
+      amount = invoiceObj.satoshi
+    } catch {
+      amount = getAmountFromInvoice(invoice)
+    }
+
+    const pendingId = `pending-${Date.now()}`
+    this.recordTransaction({
+      id: pendingId,
+      type: 'sent',
+      amount,
+      status: 'pending',
+      date: new Date(),
+      invoice,
+      description: ''
+    })
+
     if (this.provider) {
       const { preimage } = await this.provider.sendPayment(invoice)
       closeOuterModel?.()
+      this.completePendingTransaction(pendingId, preimage)
       this.notifyBalanceChange()
       this.notifyTransactionChange()
       return { preimage, invoice: invoice }
@@ -216,11 +271,15 @@ class LightningService {
       launchPaymentModal({
         invoice: invoice,
         onPaid: (response) => {
+          this.completePendingTransaction(pendingId, response.preimage)
           this.notifyBalanceChange()
           this.notifyTransactionChange()
           resolve({ preimage: response.preimage, invoice: invoice })
         },
         onCancelled: () => {
+          const index = this.pendingTransactions.findIndex((t) => t.id === pendingId)
+          if (index !== -1) this.pendingTransactions.splice(index, 1)
+          this.notifyTransactionChange()
           resolve(null)
         }
       })
@@ -357,7 +416,19 @@ class LightningService {
         throw new Error('No invoice returned')
       }
 
+      const pendingId = `pending-${Date.now()}`
+      this.recordTransaction({
+        id: pendingId,
+        type: 'sent',
+        amount,
+        status: 'pending',
+        date: new Date(),
+        invoice: pr,
+        description: memo || ''
+      })
+
       const { preimage } = await this.provider.sendPayment(pr)
+      this.completePendingTransaction(pendingId, preimage)
       this.notifyBalanceChange()
       this.notifyTransactionChange()
       return { preimage, invoice: pr }
@@ -373,11 +444,11 @@ class LightningService {
     }
 
     if (this.transactionHistoryCache) {
-      return this.transactionHistoryCache
+      return [...this.pendingTransactions, ...this.transactionHistoryCache]
     }
 
-    const transactions: TTransaction[] = []
-    const existingIds = new Set<string>()
+    const transactions: TTransaction[] = [...this.pendingTransactions]
+    const existingIds = new Set<string>(this.pendingTransactions.map((t) => t.id))
 
     try {
       if (typeof this.provider.request === 'function') {
