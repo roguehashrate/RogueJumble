@@ -17,7 +17,7 @@ interface ReceiveDrawerProps {
 
 export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps) {
   const { t } = useTranslation()
-  const { formatBalance } = useZap()
+  const { formatBalance, formatAmount } = useZap()
   const [amount, setAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -90,7 +90,7 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
           {!invoice ? (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="receive-amount">{t('Amount (sats)')}</Label>
+                <Label htmlFor="receive-amount">{t('Amount ({{unit}})', { unit: formatAmount(1).unit })}</Label>
                 <Input
                   id="receive-amount"
                   type="number"

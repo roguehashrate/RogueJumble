@@ -137,11 +137,12 @@ function ZapDialogContent({
 }) {
   const { t, i18n } = useTranslation()
   const { pubkey } = useNostr()
-  const { defaultZapSats, defaultZapComment } = useZap()
+  const { defaultZapSats, defaultZapComment, formatAmount } = useZap()
   const [sats, setSats] = useState(defaultAmount ?? defaultZapSats)
   const [comment, setComment] = useState(defaultComment ?? defaultZapComment)
   const isSelfZap = useMemo(() => pubkey === recipient, [pubkey, recipient])
   const [zapping, setZapping] = useState(false)
+  const { unit } = formatAmount(1)
   const presetAmounts = useMemo(() => {
     if (i18n.language.startsWith('zh')) {
       return [
@@ -228,7 +229,7 @@ function ZapDialogContent({
             className="w-full bg-transparent p-0 text-center text-6xl font-bold focus-visible:outline-none"
           />
         </div>
-        <Label htmlFor="sats">{t('Sats')}</Label>
+        <Label htmlFor="sats">{unit.charAt(0).toUpperCase() + unit.slice(1)}</Label>
       </div>
 
       {/* Self-zap easter egg warning */}
@@ -254,7 +255,7 @@ function ZapDialogContent({
       </div>
 
       <Button onClick={handleZap}>
-        {zapping && <Loader className="animate-spin" />} {t('Zap n sats', { n: sats })}
+        {zapping && <Loader className="animate-spin" />} {t('Zap n sats', { n: `${formatAmount(sats).value} ${unit}` })}
       </Button>
     </>
   )

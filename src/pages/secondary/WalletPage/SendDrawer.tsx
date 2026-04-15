@@ -20,7 +20,7 @@ interface SendDrawerProps {
 
 export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
   const { t } = useTranslation()
-  const { formatBalance } = useZap()
+  const { formatBalance, formatAmount } = useZap()
   const [mode, setMode] = useState<'address' | 'invoice'>('address')
   const [lightningAddress, setLightningAddress] = useState('')
   const [invoice, setInvoice] = useState('')
@@ -171,7 +171,7 @@ export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="send-amount">{t('Amount (sats)')}</Label>
+                <Label htmlFor="send-amount">{t('Amount ({{unit}})', { unit: formatAmount(1).unit })}</Label>
                 <Input
                   id="send-amount"
                   type="number"
@@ -198,7 +198,10 @@ export default function SendDrawer({ open, onOpenChange }: SendDrawerProps) {
               >
                 {isLoading
                   ? t('Sending...')
-                  : t('Send {{amount}}', { amount: formatBalance(parseInt(amount) || 0) })}
+                  : t('Send {{amount}} {{unit}}', { 
+                      amount: formatAmount(parseInt(amount) || 0).value,
+                      unit: formatAmount(parseInt(amount) || 0).unit
+                    })}
               </Button>
             </TabsContent>
 
