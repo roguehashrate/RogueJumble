@@ -255,7 +255,7 @@ function ZapDialogContent({
       </div>
 
       <Button onClick={handleZap}>
-        {zapping && <Loader className="animate-spin" />} {t('Zap n sats', { n: formatBalance(toSats(amount)) })}
+        {zapping && <Loader className="animate-spin" />} {t('Zap {{amount}}', { amount: formatBalance(toSats(amount)) })}
       </Button>
     </>
   )

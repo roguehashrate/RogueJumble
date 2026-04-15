@@ -188,6 +188,7 @@ export default {
     sats: 'sats',
     'Zap to': 'Zap to',
     'Zap n sats': 'Zap {{n}} sats',
+    'Zap {{amount}}': 'Zap {{amount}}',
     zapComment: 'Comment',
     'Default zap amount': 'Default zap amount',
     'Default zap comment': 'Default zap comment',
