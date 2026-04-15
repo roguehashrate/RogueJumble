@@ -1038,17 +1038,27 @@ export function transformCustomEmojisInContent(content: string) {
   let processedContent = content
   const matches = content.match(/:[a-zA-Z0-9_-]+:/g)
 
+  console.log('[transformCustomEmojisInContent] Input:', content, 'Matches:', matches)
+
   const emojiIdSet = new Set<string>()
   matches?.forEach((m) => {
     if (emojiIdSet.has(m)) return
     emojiIdSet.add(m)
 
     const emoji = customEmojiService.getEmojiById(m.slice(1, -1))
+    console.log('[transformCustomEmojisInContent] Looking for:', m.slice(1, -1), 'Found:', emoji)
     if (emoji) {
       emojiTags.push(buildEmojiTag(emoji))
       processedContent = processedContent.replace(new RegExp(m, 'g'), `:${emoji.shortcode}:`)
     }
   })
+
+  console.log(
+    '[transformCustomEmojisInContent] Output tags:',
+    emojiTags,
+    'Content:',
+    processedContent
+  )
 
   return {
     emojiTags,
