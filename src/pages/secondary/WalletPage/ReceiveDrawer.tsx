@@ -102,7 +102,10 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
   return (
     <>
       <Dialog open={!!invoice} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-        <DialogContent className="flex h-dvh max-h-dvh flex-col gap-0 p-0">
+        <DialogContent
+          hideOverlay
+          className="flex h-dvh max-h-dvh flex-col gap-0 border-t border-border/20 bg-card/90 backdrop-blur-xl"
+        >
           <div className="flex items-center justify-between border-b px-4 py-3">
             <div className="flex items-center gap-2 text-lg font-semibold">
               <ArrowDownCircle className="size-5" />
