@@ -2,7 +2,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { useStuff } from '@/hooks/useStuff'
 import { useStuffStatsById } from '@/hooks/useStuffStatsById'
 import { createFakeEvent } from '@/lib/event'
-import { formatAmount } from '@/lib/lightning'
+import { useZap } from '@/providers/ZapProvider'
 import { Zap } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useMemo, useState } from 'react'
@@ -12,6 +12,7 @@ import ZapDetailDialog from '../ZapDetailDialog'
 
 export default function TopZaps({ stuff }: { stuff: Event | string }) {
   const { event, stuffKey } = useStuff(stuff)
+  const { formatBalance } = useZap()
   const noteStats = useStuffStatsById(stuffKey)
   const [zapIndex, setZapIndex] = useState(-1)
   const topZaps = useMemo(() => {
@@ -34,7 +35,7 @@ export default function TopZaps({ stuff }: { stuff: Event | string }) {
             >
               <SimpleUserAvatar userId={zap.pubkey} size="xSmall" />
               <Zap className="size-3 shrink-0 fill-zap" />
-              <div className="font-semibold">{formatAmount(zap.amount)}</div>
+              <div className="font-semibold">{formatBalance(zap.amount)}</div>
               <ContentPreview
                 className="truncate"
                 event={createFakeEvent({

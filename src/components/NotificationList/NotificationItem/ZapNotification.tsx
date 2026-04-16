@@ -1,6 +1,6 @@
 import { useFetchEvent } from '@/hooks'
 import { getZapInfoFromEvent } from '@/lib/event-metadata'
-import { formatAmount } from '@/lib/lightning'
+import { useZap } from '@/providers/ZapProvider'
 import { Zap } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useMemo } from 'react'
@@ -15,6 +15,7 @@ export function ZapNotification({
   isNew?: boolean
 }) {
   const { t } = useTranslation()
+  const { formatBalance } = useZap()
   const { senderPubkey, eventId, amount, comment } = useMemo(
     () => getZapInfoFromEvent(notification) ?? ({} as any),
     [notification]
@@ -32,7 +33,7 @@ export function ZapNotification({
       targetEvent={event}
       middle={
         <div className="truncate font-semibold text-zap">
-          {formatAmount(amount)} {t('sats')} {comment}
+          {formatBalance(amount)} {comment}
         </div>
       }
       description={event ? t('zapped your note') : t('zapped you')}

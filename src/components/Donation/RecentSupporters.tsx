@@ -1,5 +1,5 @@
-import { formatAmount } from '@/lib/lightning'
 import lightning, { TRecentSupporter } from '@/services/lightning.service'
+import { useZap } from '@/providers/ZapProvider'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import UserAvatar from '../UserAvatar'
@@ -7,6 +7,7 @@ import Username from '../Username'
 
 export default function RecentSupporters() {
   const { t } = useTranslation()
+  const { formatBalance } = useZap()
   const [supporters, setSupporters] = useState<TRecentSupporter[]>([])
 
   useEffect(() => {
@@ -37,9 +38,7 @@ export default function RecentSupporters() {
                 </div>
               </div>
             </div>
-            <div className="shrink-0 font-semibold text-zap">
-              {formatAmount(item.amount)} {t('sats')}
-            </div>
+            <div className="shrink-0 font-semibold text-zap">{formatBalance(item.amount)}</div>
           </div>
         ))}
       </div>

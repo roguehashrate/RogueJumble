@@ -1,6 +1,6 @@
-import { formatAmount } from '@/lib/lightning'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
+import { useZap } from '@/providers/ZapProvider'
 import { Zap } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -26,6 +26,7 @@ export function ZapPills({
   onZap: () => void
 }) {
   const { pubkey } = useNostr()
+  const { formatBalance } = useZap()
   const { t } = useTranslation()
 
   const { totalAmount, hasZapped, count } = useMemo(() => {
@@ -51,17 +52,18 @@ export function ZapPills({
       onClick={handleClick}
       className={cn(
         'mt-1.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs transition-colors',
-        hasZapped
-          ? 'border-yellow-500/50 bg-yellow-500/10'
-          : 'border-border/30 hover:border-border'
+        hasZapped ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-border/30 hover:border-border'
       )}
       title={t('Zap this message')}
     >
       <Zap
-        className={cn('size-3.5', hasZapped ? 'fill-yellow-500 text-yellow-500' : 'text-yellow-500')}
+        className={cn(
+          'size-3.5',
+          hasZapped ? 'fill-yellow-500 text-yellow-500' : 'text-yellow-500'
+        )}
       />
       <span className={cn('font-medium', hasZapped ? 'text-yellow-500' : 'text-muted-foreground')}>
-        {formatAmount(totalAmount)}
+        {formatBalance(totalAmount)}
       </span>
     </button>
   )

@@ -1,10 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
-import { formatAmount } from '@/lib/lightning'
 import { Zap } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
+import { useZap } from '@/providers/ZapProvider'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
 import Content from '../Content'
@@ -24,6 +24,7 @@ interface ZapDetailDialogProps {
 export default function ZapDetailDialog({ open, setOpen, zap }: ZapDetailDialogProps) {
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
+  const { formatBalance } = useZap()
 
   const content = (
     <div className="flex flex-col gap-2">
@@ -37,7 +38,7 @@ export default function ZapDetailDialog({ open, setOpen, zap }: ZapDetailDialogP
         </div>
         <div className="flex items-center gap-1 text-zap">
           <Zap className="size-5 fill-zap" />
-          <span className="text-lg font-bold">{formatAmount(zap.amount)}</span>
+          <span className="text-lg font-bold">{formatBalance(zap.amount)}</span>
         </div>
       </div>
       {zap.comment && <Content content={zap.comment} />}

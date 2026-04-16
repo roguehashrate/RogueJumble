@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button'
-import { formatAmount, getInvoiceDetails } from '@/lib/lightning'
+import { getInvoiceDetails } from '@/lib/lightning'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
+import { useZap } from '@/providers/ZapProvider'
 import lightning from '@/services/lightning.service'
 import { Loader, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -11,6 +12,7 @@ import { toast } from 'sonner'
 export function EmbeddedLNInvoice({ invoice, className }: { invoice: string; className?: string }) {
   const { t } = useTranslation()
   const { checkLogin, pubkey } = useNostr()
+  const { formatBalance } = useZap()
   const [paying, setPaying] = useState(false)
 
   const { amount, description } = useMemo(() => {
@@ -52,9 +54,7 @@ export function EmbeddedLNInvoice({ invoice, className }: { invoice: string; cla
       {description && (
         <div className="break-words text-sm text-muted-foreground">{description}</div>
       )}
-      <div className="text-lg font-bold">
-        {formatAmount(amount)} {t('sats')}
-      </div>
+      <div className="text-lg font-bold">{formatBalance(amount)}</div>
       <Button onClick={handlePayClick}>
         {paying && <Loader className="h-4 w-4 animate-spin" />}
         {t('Pay')}

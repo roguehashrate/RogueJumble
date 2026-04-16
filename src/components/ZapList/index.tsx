@@ -1,8 +1,8 @@
 import { useSecondaryPage } from '@/PageManager'
 import { useStuffStatsById } from '@/hooks/useStuffStatsById'
-import { formatAmount } from '@/lib/lightning'
 import { toProfile } from '@/lib/link'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
+import { useZap } from '@/providers/ZapProvider'
 import { Zap } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -19,6 +19,7 @@ export default function ZapList({ event }: { event: Event }) {
   const { t } = useTranslation()
   const { push } = useSecondaryPage()
   const { isSmallScreen } = useScreenSize()
+  const { formatBalance } = useZap()
   const noteStats = useStuffStatsById(event.id)
   const filteredZaps = useMemo(() => {
     return (noteStats?.zaps ?? []).sort((a, b) => b.amount - a.amount)
@@ -49,7 +50,7 @@ export default function ZapList({ event }: { event: Event }) {
         >
           <div className="mt-0.5 flex w-8 flex-col items-center">
             <Zap className="size-5 text-zap" />
-            <div className="text-sm font-semibold text-zap">{formatAmount(zap.amount)}</div>
+            <div className="text-sm font-semibold text-zap">{formatBalance(zap.amount)}</div>
           </div>
 
           <div className="flex items-start space-x-2">
