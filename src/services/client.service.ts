@@ -19,15 +19,7 @@ import DataLoader from 'dataloader'
 import dayjs from 'dayjs'
 import FlexSearch from 'flexsearch'
 import { LRUCache } from 'lru-cache'
-import {
-  EventTemplate,
-  Filter,
-  kinds,
-  matchFilters,
-  Event as NEvent,
-  nip19,
-  VerifiedEvent
-} from 'nostr-tools'
+import { Filter, kinds, matchFilters, Event as NEvent, nip19 } from 'nostr-tools'
 import { AbstractRelay } from 'nostr-tools/abstract-relay'
 import indexedDb from './indexed-db.service'
 import storage from './local-storage.service'
@@ -248,7 +240,6 @@ class ClientService extends EventTarget {
           }
 
           relay.publishTimeout = 10_000 // 10s
-          let hasAuthed = false
 
           const publishPromise = async () => {
             try {
@@ -256,24 +247,7 @@ class ClientService extends EventTarget {
               that.trackEventSeenOn(event.id, relay)
               checkCompletion(url, true)
             } catch (error) {
-              if (
-                !hasAuthed &&
-                error instanceof Error &&
-                error.message.startsWith('auth-required') &&
-                !!that.signer
-              ) {
-                try {
-                  await relay.auth((authEvt: EventTemplate) => that.signer!.signEvent(authEvt))
-                  hasAuthed = true
-                  // Retry after auth and track completion properly
-                  await publishPromise()
-                } catch (retryError) {
-                  // Auth retry failed - track as failure
-                  checkCompletion(url, false, retryError)
-                }
-              } else {
-                checkCompletion(url, false, error)
-              }
+              checkCompletion(url, false, error)
             }
           }
 
@@ -368,6 +342,8 @@ class ClientService extends EventTarget {
       needSaveToDb?: boolean
     } = {}
   ) {
+    // startLogin is kept for API compatibility but intentionally not used (NIP-42 disabled for privacy)
+    void startLogin
     const newEventIdSet = new Set<string>()
     const requestCount = subRequests.length
     const threshold = Math.floor(requestCount / 2)
@@ -398,7 +374,7 @@ class ClientService extends EventTarget {
             },
             onClose
           },
-          { startLogin, needSort, needSaveToDb }
+          { needSort, needSaveToDb }
         )
       })
     )
@@ -448,13 +424,11 @@ class ClientService extends EventTarget {
       onevent,
       oneose,
       onclose,
-      startLogin,
       onAllClose
     }: {
       onevent?: (evt: NEvent) => void
       oneose?: (eosed: boolean) => void
       onclose?: (url: string, reason: string) => void
-      startLogin?: () => void
       onAllClose?: (reasons: string[]) => void
     }
   ) {
@@ -471,8 +445,6 @@ class ClientService extends EventTarget {
     const closeReasons: string[] = []
     const subPromises: Promise<{ close: () => void }>[] = []
     relays.forEach((url) => {
-      let hasAuthed = false
-
       subPromises.push(startSub())
 
       async function startSub() {
@@ -515,38 +487,6 @@ class ClientService extends EventTarget {
             oneose?.(eosed)
           },
           onclose: (reason: string) => {
-            // auth-required
-            if (reason.startsWith('auth-required') && !hasAuthed) {
-              // already logged in
-              if (that.signer) {
-                relay
-                  .auth(async (authEvt: EventTemplate) => {
-                    const evt = await that.signer!.signEvent(authEvt)
-                    if (!evt) {
-                      throw new Error('sign event failed')
-                    }
-                    return evt as VerifiedEvent
-                  })
-                  .then(() => {
-                    hasAuthed = true
-                    if (!eosed) {
-                      startedCount++
-                      subPromises.push(startSub())
-                    }
-                  })
-                  .catch(() => {
-                    // ignore
-                  })
-                return
-              }
-
-              // open login dialog
-              if (startLogin) {
-                startLogin()
-                return
-              }
-            }
-
             // close the subscription
             closedCount++
             closeReasons.push(reason)
@@ -554,7 +494,6 @@ class ClientService extends EventTarget {
             if (closedCount >= startedCount) {
               onAllClose?.(closeReasons)
             }
-            return
           },
           eoseTimeout: 10_000 // 10s
         })
@@ -609,11 +548,9 @@ class ClientService extends EventTarget {
       onClose?: (url: string, reason: string) => void
     },
     {
-      startLogin,
       needSort = true,
       needSaveToDb = false
     }: {
-      startLogin?: () => void
       needSort?: boolean
       needSaveToDb?: boolean
     } = {}
@@ -657,7 +594,6 @@ class ClientService extends EventTarget {
     let events: NEvent[] = []
     let eosedAt: number | null = null
     const subCloser = this.subscribe(relays, since ? { ...filter, since } : filter, {
-      startLogin,
       onevent: (evt: NEvent) => {
         that.addEventToCache(evt)
         // not eosed yet, push to events
