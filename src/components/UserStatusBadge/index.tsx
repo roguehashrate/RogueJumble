@@ -1,5 +1,6 @@
 import { getUserStatusFromEvent } from '@/lib/event-metadata'
 import client from '@/services/client.service'
+import { useNostr } from '@/providers/NostrProvider'
 import { useEffect, useState } from 'react'
 
 export default function UserStatusBadge({
@@ -9,6 +10,7 @@ export default function UserStatusBadge({
   pubkey: string
   className?: string
 }) {
+  const { pubkey: myPubkey, userStatusEvent } = useNostr()
   const [status, setStatus] = useState<string | null>(null)
   const [expiration, setExpiration] = useState<number | null>(null)
 
@@ -17,7 +19,14 @@ export default function UserStatusBadge({
 
     const fetchStatus = async () => {
       try {
-        const event = await client.fetchUserStatus(pubkey)
+        let event = null
+
+        if (myPubkey && pubkey === myPubkey && userStatusEvent) {
+          event = userStatusEvent
+        } else {
+          event = await client.fetchUserStatus(pubkey)
+        }
+
         if (!mounted || !event) return
 
         const userStatus = getUserStatusFromEvent(event)
@@ -35,7 +44,7 @@ export default function UserStatusBadge({
     return () => {
       mounted = false
     }
-  }, [pubkey])
+  }, [pubkey, myPubkey, userStatusEvent])
 
   if (!status) return null
 

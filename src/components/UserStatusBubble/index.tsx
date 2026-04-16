@@ -1,8 +1,10 @@
 import { getUserStatusFromEvent } from '@/lib/event-metadata'
 import client from '@/services/client.service'
+import { useNostr } from '@/providers/NostrProvider'
 import { useEffect, useState } from 'react'
 
 export default function UserStatusBubble({ pubkey }: { pubkey: string }) {
+  const { pubkey: myPubkey, userStatusEvent } = useNostr()
   const [status, setStatus] = useState<string | null>(null)
   const [expiration, setExpiration] = useState<number | null>(null)
 
@@ -11,7 +13,14 @@ export default function UserStatusBubble({ pubkey }: { pubkey: string }) {
 
     const fetchStatus = async () => {
       try {
-        const event = await client.fetchUserStatus(pubkey)
+        let event = null
+
+        if (myPubkey && pubkey === myPubkey && userStatusEvent) {
+          event = userStatusEvent
+        } else {
+          event = await client.fetchUserStatus(pubkey)
+        }
+
         if (!mounted || !event) return
 
         const userStatus = getUserStatusFromEvent(event)
@@ -29,7 +38,7 @@ export default function UserStatusBubble({ pubkey }: { pubkey: string }) {
     return () => {
       mounted = false
     }
-  }, [pubkey])
+  }, [pubkey, myPubkey, userStatusEvent])
 
   if (!status) return null
 
@@ -50,9 +59,7 @@ export default function UserStatusBubble({ pubkey }: { pubkey: string }) {
     <div className="absolute -top-20 left-[123px] z-10 max-w-[240px]">
       <div className="relative rounded-2xl bg-card/70 px-4 py-3 text-sm backdrop-blur-sm">
         <div className="relative">
-          <p className="line-clamp-3 leading-snug text-foreground">
-            {status}
-          </p>
+          <p className="line-clamp-3 leading-snug text-foreground">{status}</p>
           {expiration && (
             <span className="mt-1 block text-[10px] font-medium text-muted-foreground">
               {formatTimeRemaining(expiration)}

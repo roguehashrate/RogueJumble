@@ -51,6 +51,7 @@ type TNostrContext = {
   pubkey: string | null
   profile: TProfile | null
   profileEvent: Event | null
+  userStatusEvent: Event | null
   relayList: TRelayList | null
   followListEvent: Event | null
   muteListEvent: Event | null
@@ -87,6 +88,7 @@ type TNostrContext = {
   checkLogin: <T>(cb?: () => T) => Promise<T | void>
   updateRelayListEvent: (relayListEvent: Event) => Promise<void>
   updateProfileEvent: (profileEvent: Event) => Promise<void>
+  updateUserStatusEvent: (userStatusEvent: Event) => Promise<void>
   updateFollowListEvent: (followListEvent: Event) => Promise<void>
   updateMuteListEvent: (muteListEvent: Event, privateTags: string[][]) => Promise<void>
   updateBookmarkListEvent: (bookmarkListEvent: Event) => Promise<void>
@@ -130,6 +132,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
   const [favoriteRelaysEvent, setFavoriteRelaysEvent] = useState<Event | null>(null)
   const [userEmojiListEvent, setUserEmojiListEvent] = useState<Event | null>(null)
   const [pinListEvent, setPinListEvent] = useState<Event | null>(null)
+  const [userStatusEvent, setUserStatusEvent] = useState<Event | null>(null)
   const [notificationsSeenAt, setNotificationsSeenAt] = useState(-1)
   const [isInitialized, setIsInitialized] = useState(false)
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
@@ -207,7 +210,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         storedFavoriteRelaysEvent,
         storedUserEmojiListEvent,
         storedPinListEvent,
-        storedPinnedUsersEvent
+        storedPinnedUsersEvent,
+        storedUserStatusEvent
       ] = await Promise.all([
         indexedDb.getReplaceableEvent(account.pubkey, kinds.RelayList),
         indexedDb.getReplaceableEvent(account.pubkey, kinds.Metadata),
@@ -217,7 +221,8 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         indexedDb.getReplaceableEvent(account.pubkey, ExtendedKind.FAVORITE_RELAYS),
         indexedDb.getReplaceableEvent(account.pubkey, kinds.UserEmojiList),
         indexedDb.getReplaceableEvent(account.pubkey, kinds.Pinlist),
-        indexedDb.getReplaceableEvent(account.pubkey, ExtendedKind.PINNED_USERS)
+        indexedDb.getReplaceableEvent(account.pubkey, ExtendedKind.PINNED_USERS),
+        indexedDb.getReplaceableEvent(account.pubkey, 30315)
       ])
       if (controller.signal.aborted) return
       if (storedRelayListEvent) {
@@ -247,6 +252,9 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       }
       if (storedPinnedUsersEvent) {
         setPinnedUsersEvent(storedPinnedUsersEvent)
+      }
+      if (storedUserStatusEvent) {
+        setUserStatusEvent(storedUserStatusEvent)
       }
 
       const defaultRelays = getDefaultRelayUrls()
@@ -757,6 +765,10 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     setProfile(getProfileFromEvent(newProfileEvent))
   }
 
+  const updateUserStatusEvent = async (userStatusEvent: Event) => {
+    setUserStatusEvent(userStatusEvent)
+  }
+
   const updateFollowListEvent = async (followListEvent: Event) => {
     const newFollowListEvent = await indexedDb.putReplaceableEvent(followListEvent)
     if (newFollowListEvent.id !== followListEvent.id) return
@@ -840,6 +852,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         pubkey: account?.pubkey ?? null,
         profile,
         profileEvent,
+        userStatusEvent,
         relayList,
         followListEvent,
         muteListEvent,
@@ -873,6 +886,7 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         signEvent,
         updateRelayListEvent,
         updateProfileEvent,
+        updateUserStatusEvent,
         updateFollowListEvent,
         updateMuteListEvent,
         updateBookmarkListEvent,

@@ -24,7 +24,8 @@ import { toast } from 'sonner'
 const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { pop } = useSecondaryPage()
-  const { account, profile, profileEvent, publish, updateProfileEvent } = useNostr()
+  const { account, profile, profileEvent, publish, updateProfileEvent, updateUserStatusEvent } =
+    useNostr()
   const [banner, setBanner] = useState<string>('')
   const [avatar, setAvatar] = useState<string>('')
   const [username, setUsername] = useState<string>('')
@@ -186,15 +187,14 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           '6mo': 180 * 24 * 60 * 60,
           '1y': 365 * 24 * 60 * 60
         }
-        statusExpiration = dayjs().add(durations[expireDurationKey] || 15 * 60, 'second').unix()
+        statusExpiration = dayjs()
+          .add(durations[expireDurationKey] || 15 * 60, 'second')
+          .unix()
       }
-      const statusDraftEvent = createUserStatusDraftEvent(
-        status,
-        undefined,
-        statusExpiration
-      )
+      const statusDraftEvent = createUserStatusDraftEvent(status, undefined, statusExpiration)
       const statusEvent = await publish(statusDraftEvent)
       await client.updateProfileEventCache(statusEvent)
+      await updateUserStatusEvent(statusEvent)
 
       setSaving(false)
       pop()
@@ -255,7 +255,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           </div>
         </Uploader>
       </div>
-      <div className="flex flex-col gap-4 px-4 pt-14 pb-32">
+      <div className="flex flex-col gap-4 px-4 pb-32 pt-14">
         <Item>
           <Label htmlFor="profile-username-input">{t('Display Name')}</Label>
           <Input
