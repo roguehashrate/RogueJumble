@@ -18,7 +18,7 @@ interface ReceiveDrawerProps {
 
 export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps) {
   const { t } = useTranslation()
-  const { formatBalance, balanceDisplayUnit, toSats } = useZap()
+  const { balanceDisplayUnit, toSats } = useZap()
   const [amount, setAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -117,7 +117,7 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
 
             {amount && (
               <div className="text-center text-2xl font-bold">
-                {formatBalance(parseInt(amount))}
+                {amount} {balanceDisplayUnit}
               </div>
             )}
 
