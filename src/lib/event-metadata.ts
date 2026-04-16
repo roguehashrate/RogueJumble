@@ -9,6 +9,7 @@ import { formatPubkey, isValidPubkey, pubkeyToNpub } from './pubkey'
 import { getDefaultRelayUrls } from './relay'
 import { generateBech32IdFromETag, getEmojiInfosFromEmojiTags, tagNameEquals } from './tag'
 import { isOnionUrl, isWebsocketUrl, normalizeHttpUrl, normalizeUrl } from './url'
+import storage from '@/services/local-storage.service'
 
 export function getRelayListFromEvent(
   event?: Event | null,
@@ -20,6 +21,10 @@ export function getRelayListFromEvent(
     return { write: defaultRelays, read: defaultRelays, originalRelays: [] }
   }
 
+  // When Tor mode is enabled, don't filter out onion relays
+  const torMode = storage.getEnableTorMode()
+  const shouldFilterOnion = filterOutOnionRelays && !torMode
+
   const relayList = { write: [], read: [], originalRelays: [] } as TRelayList
   event.tags.filter(tagNameEquals('r')).forEach(([, url, type]) => {
     if (!url || !isWebsocketUrl(url)) return
@@ -30,7 +35,7 @@ export function getRelayListFromEvent(
     const scope = type === 'read' ? 'read' : type === 'write' ? 'write' : 'both'
     relayList.originalRelays.push({ url: normalizedUrl, scope })
 
-    if (filterOutOnionRelays && isOnionUrl(normalizedUrl)) return
+    if (shouldFilterOnion && isOnionUrl(normalizedUrl)) return
 
     if (type === 'write') {
       relayList.write.push(normalizedUrl)

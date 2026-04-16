@@ -46,6 +46,7 @@ export const StorageKey = {
   FAVICON_URL_TEMPLATE: 'faviconUrlTemplate',
   FILTER_OUT_ONION_RELAYS: 'filterOutOnionRelays',
   ALLOW_INSECURE_CONNECTION: 'allowInsecureConnection',
+  ENABLE_TOR_MODE: 'enableTorMode',
   QUICK_REACTION: 'quickReaction',
   QUICK_REACTION_EMOJI: 'quickReactionEmoji',
   NSFW_DISPLAY_POLICY: 'nsfwDisplayPolicy',
@@ -86,7 +87,11 @@ export const BIG_RELAY_URLS = [
   'wss://relay.ditto.pub/'
 ]
 
-export const SEARCHABLE_RELAY_URLS = ['wss://search.nos.today/', 'wss://relay.ditto.pub/', 'wss://nostr.polyserv.xyz/']
+export const SEARCHABLE_RELAY_URLS = [
+  'wss://search.nos.today/',
+  'wss://relay.ditto.pub/',
+  'wss://nostr.polyserv.xyz/'
+]
 
 export const TRENDING_NOTES_RELAY_URLS = ['wss://trending.relays.land/']
 
@@ -712,7 +717,8 @@ export const THEME_COLORS = {
       scanlineOpacity: '0.08',
       bgGradient: 'none',
       textShadow: '0 0 4px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.2)',
-      fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
+      fontFamily:
+        '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
       meshOpacity: '0.3',
       cardBorderWidth: '1px'
     }
@@ -752,7 +758,8 @@ export const THEME_COLORS = {
       scanlineOpacity: '0.08',
       bgGradient: 'none',
       textShadow: '0 0 4px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.2)',
-      fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
+      fontFamily:
+        '"JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace',
       meshOpacity: '0.3',
       cardBorderWidth: '1px'
     }

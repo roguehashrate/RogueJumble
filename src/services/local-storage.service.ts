@@ -93,6 +93,7 @@ class LocalStorageService {
   private faviconUrlTemplate: string = DEFAULT_FAVICON_URL_TEMPLATE
   private filterOutOnionRelays: boolean = !isTorBrowser()
   private allowInsecureConnection: boolean = false
+  private enableTorMode: boolean = false
   private quickReaction: boolean = false
   private quickReactionEmoji: string | TEmoji = '+'
   private nsfwDisplayPolicy: TNsfwDisplayPolicy = NSFW_DISPLAY_POLICY.HIDE_CONTENT
@@ -306,6 +307,8 @@ class LocalStorageService {
 
     this.allowInsecureConnection =
       window.localStorage.getItem(StorageKey.ALLOW_INSECURE_CONNECTION) === 'true'
+
+    this.enableTorMode = window.localStorage.getItem(StorageKey.ENABLE_TOR_MODE) === 'true'
 
     this.quickReaction = window.localStorage.getItem(StorageKey.QUICK_REACTION) === 'true'
     const quickReactionEmojiStr =
@@ -738,6 +741,15 @@ class LocalStorageService {
   setAllowInsecureConnection(allow: boolean) {
     this.allowInsecureConnection = allow
     window.localStorage.setItem(StorageKey.ALLOW_INSECURE_CONNECTION, allow.toString())
+  }
+
+  getEnableTorMode() {
+    return this.enableTorMode
+  }
+
+  setEnableTorMode(enabled: boolean) {
+    this.enableTorMode = enabled
+    window.localStorage.setItem(StorageKey.ENABLE_TOR_MODE, enabled.toString())
   }
 
   getQuickReaction() {

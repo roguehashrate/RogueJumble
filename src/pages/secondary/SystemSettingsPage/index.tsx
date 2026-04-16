@@ -14,7 +14,12 @@ import { useTranslation } from 'react-i18next'
 const SystemSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   const { t } = useTranslation()
   const { faviconUrlTemplate, setFaviconUrlTemplate } = useContentPolicy()
-  const { allowInsecureConnection, updateAllowInsecureConnection } = useUserPreferences()
+  const {
+    allowInsecureConnection,
+    updateAllowInsecureConnection,
+    enableTorMode,
+    updateEnableTorMode
+  } = useUserPreferences()
   const [filterOutOnionRelays, setFilterOutOnionRelays] = useState(
     storage.getFilterOutOnionRelays()
   )
@@ -58,6 +63,17 @@ const SystemSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
             id="allow-insecure-connection"
             checked={allowInsecureConnection}
             onCheckedChange={updateAllowInsecureConnection}
+          />
+        </div>
+        <div className="flex min-h-9 items-center justify-between px-4">
+          <Label htmlFor="enable-tor-mode" className="text-base font-normal">
+            <div>{t('Enable Tor mode')}</div>
+            <div className="text-muted-foreground">{t('Enable Tor mode description')}</div>
+          </Label>
+          <Switch
+            id="enable-tor-mode"
+            checked={enableTorMode}
+            onCheckedChange={updateEnableTorMode}
           />
         </div>
         <div className="space-y-2 px-4">

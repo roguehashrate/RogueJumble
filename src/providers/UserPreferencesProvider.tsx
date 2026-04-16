@@ -1,4 +1,5 @@
 import { applyFont } from '@/lib/fontLoader'
+import { isTorBrowser } from '@/lib/utils'
 import storage from '@/services/local-storage.service'
 import { TEmoji, TFont, TFontSize, TNotificationStyle } from '@/types'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -27,6 +28,9 @@ type TUserPreferencesContext = {
 
   allowInsecureConnection: boolean
   updateAllowInsecureConnection: (allow: boolean) => void
+
+  enableTorMode: boolean
+  updateEnableTorMode: (enable: boolean) => void
 }
 
 const UserPreferencesContext = createContext<TUserPreferencesContext | undefined>(undefined)
@@ -53,6 +57,8 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const [allowInsecureConnection, setAllowInsecureConnection] = useState(
     storage.getAllowInsecureConnection()
   )
+  // Auto-enable Tor mode when Tor Browser is detected
+  const [enableTorMode, setEnableTorMode] = useState(storage.getEnableTorMode() || isTorBrowser())
 
   const updateNotificationListStyle = (style: TNotificationStyle) => {
     setNotificationListStyle(style)
@@ -77,6 +83,11 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const updateAllowInsecureConnection = (allow: boolean) => {
     setAllowInsecureConnection(allow)
     storage.setAllowInsecureConnection(allow)
+  }
+
+  const updateEnableTorMode = (enable: boolean) => {
+    setEnableTorMode(enable)
+    storage.setEnableTorMode(enable)
   }
 
   const updateFont = (font: TFont) => {
@@ -119,7 +130,9 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         quickReactionEmoji,
         updateQuickReactionEmoji,
         allowInsecureConnection,
-        updateAllowInsecureConnection
+        updateAllowInsecureConnection,
+        enableTorMode,
+        updateEnableTorMode
       }}
     >
       {children}

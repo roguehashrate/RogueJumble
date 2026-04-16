@@ -762,6 +762,9 @@ export default {
     'History refreshed': 'History refreshed',
     'Failed to refresh history': 'Failed to refresh history',
     'Full history coming soon': 'Full history coming soon',
-    'Balance Display Unit': 'Balance Display Unit'
+    'Balance Display Unit': 'Balance Display Unit',
+    'Enable Tor mode': 'Enable Tor mode',
+    'Enable Tor mode description':
+      'Enhanced privacy mode. When using Tor Browser, all relays work normally. In other browsers, only .onion relays are allowed to prevent IP leakage.'
   }
 }

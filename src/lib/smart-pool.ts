@@ -1,7 +1,8 @@
 import storage from '@/services/local-storage.service'
 import { SimplePool } from 'nostr-tools'
 import { AbstractRelay } from 'nostr-tools/abstract-relay'
-import { isInsecureUrl } from './url'
+import { isInsecureUrl, isOnionUrl } from './url'
+import { isTorBrowser } from './utils'
 
 const DEFAULT_CONNECTION_TIMEOUT = 10 * 1000 // 10 seconds
 const CLEANUP_THRESHOLD = 15 // number of relays to trigger cleanup
@@ -22,6 +23,14 @@ export class SmartPool extends SimplePool {
     if (!storage.getAllowInsecureConnection() && isInsecureUrl(url)) {
       return Promise.reject(new Error(`Insecure relay connection blocked: ${url}`))
     }
+
+    // Tor mode: route through Tor
+    const torMode = storage.getEnableTorMode()
+    const inTorBrowser = isTorBrowser()
+    if (torMode && !inTorBrowser && !isOnionUrl(url)) {
+      return Promise.reject(new Error(`Tor mode enabled: only .onion relays allowed (${url})`))
+    }
+
     // If relay is new and we have many relays, trigger cleanup
     if (!this.relayIdleTracker.has(url) && this.relayIdleTracker.size > CLEANUP_THRESHOLD) {
       this.cleanIdleRelays()
