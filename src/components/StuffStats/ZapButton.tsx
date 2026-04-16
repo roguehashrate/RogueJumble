@@ -21,7 +21,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
   const { checkLogin, pubkey } = useNostr()
   const { event, stuffKey } = useStuff(stuff)
   const noteStats = useStuffStatsById(stuffKey)
-  const { defaultZapSats, defaultZapComment, quickZap } = useZap()
+  const { defaultZapSats, defaultZapComment, quickZap, formatBalance } = useZap()
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
   const [openZapDialog, setOpenZapDialog] = useState(false)
   const [zapping, setZapping] = useState(false)
@@ -153,7 +153,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
         ) : (
           <Zap className={hasZapped ? 'fill-zap' : ''} />
         )}
-        {!!zapAmount && <div className="text-sm">{formatAmount(zapAmount)}</div>}
+        {!!zapAmount && <div className="text-sm">{formatBalance(zapAmount)}</div>}
       </button>
       {event && (
         <ZapDialog
@@ -168,10 +168,4 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
       )}
     </>
   )
-}
-
-function formatAmount(amount: number) {
-  if (amount < 1000) return amount
-  if (amount < 1000000) return `${Math.round(amount / 100) / 10}k`
-  return `${Math.round(amount / 100000) / 10}M`
 }
