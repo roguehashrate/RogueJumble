@@ -9,6 +9,7 @@ import { getZapInfoFromEvent } from '@/lib/event-metadata'
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { getEmojiInfosFromEmojiTags, tagNameEquals } from '@/lib/tag'
 import client from '@/services/client.service'
+import indexedDb from '@/services/indexed-db.service'
 import { TEmoji } from '@/types'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
@@ -29,10 +30,21 @@ export type TStuffStats = {
   updatedAt?: number
 }
 
+type TStuffStatsDbFormat = {
+  likeIdSet: string[]
+  likes: TStuffStats['likes']
+  repostPubkeySet: string[]
+  reposts: TStuffStats['reposts']
+  zapPrSet: string[]
+  zaps: TStuffStats['zaps']
+  updatedAt?: number
+}
+
 class StuffStatsService {
   static instance: StuffStatsService
   private stuffStatsMap: Map<string, Partial<TStuffStats>> = new Map()
   private stuffStatsSubscribers = new Map<string, Set<() => void>>()
+  private initialized = false
 
   constructor() {
     if (!StuffStatsService.instance) {
@@ -41,12 +53,67 @@ class StuffStatsService {
     return StuffStatsService.instance
   }
 
+  private async init() {
+    if (this.initialized) return
+    this.initialized = true
+  }
+
+  private serializeForDb(stats: Partial<TStuffStats>): TStuffStatsDbFormat | null {
+    if (!stats) return null
+    return {
+      likeIdSet: Array.from(stats.likeIdSet || []),
+      likes: stats.likes || [],
+      repostPubkeySet: Array.from(stats.repostPubkeySet || []),
+      reposts: stats.reposts || [],
+      zapPrSet: Array.from(stats.zapPrSet || []),
+      zaps: stats.zaps || [],
+      updatedAt: stats.updatedAt
+    }
+  }
+
+  private deserializeFromDb(data: TStuffStatsDbFormat): Partial<TStuffStats> {
+    return {
+      likeIdSet: new Set(data.likeIdSet),
+      likes: data.likes,
+      repostPubkeySet: new Set(data.repostPubkeySet),
+      reposts: data.reposts,
+      zapPrSet: new Set(data.zapPrSet),
+      zaps: data.zaps,
+      updatedAt: data.updatedAt
+    }
+  }
+
+  private async loadFromCache(key: string) {
+    await this.init()
+    const cached = await indexedDb.getStuffStats(key)
+    if (cached) {
+      const stats = this.deserializeFromDb(cached as TStuffStatsDbFormat)
+      this.stuffStatsMap.set(key, stats)
+    }
+  }
+
+  private async saveToCache(key: string) {
+    const stats = this.stuffStatsMap.get(key)
+    if (stats) {
+      const serialized = this.serializeForDb(stats)
+      if (serialized) {
+        await indexedDb.putStuffStats(key, serialized)
+      }
+    }
+  }
+
   async fetchStuffStats(stuff: Event | string, pubkey?: string | null) {
+    await this.init()
     const { event, externalContent } =
       typeof stuff === 'string'
         ? { event: undefined, externalContent: stuff }
         : { event: stuff, externalContent: undefined }
     const key = event ? getEventKey(event) : externalContent
+
+    if (!this.stuffStatsMap.has(key)) {
+      await this.loadFromCache(key)
+    }
+
     const oldStats = this.stuffStatsMap.get(key)
     let since: number | undefined
     if (oldStats?.updatedAt) {
@@ -177,6 +244,7 @@ class StuffStatsService {
       ...(this.stuffStatsMap.get(key) ?? {}),
       updatedAt: dayjs().unix()
     })
+    await this.saveToCache(key)
     return this.stuffStatsMap.get(key) ?? {}
   }
 
@@ -204,7 +272,7 @@ class StuffStatsService {
     return this.stuffStatsMap.get(stuffKey)
   }
 
-  addZap(
+  async addZap(
     pubkey: string,
     eventId: string,
     pr: string,
@@ -213,6 +281,10 @@ class StuffStatsService {
     created_at: number = dayjs().unix(),
     notify: boolean = true
   ) {
+    await this.init()
+    if (!this.stuffStatsMap.has(eventId)) {
+      await this.loadFromCache(eventId)
+    }
     const old = this.stuffStatsMap.get(eventId) || {}
     const zapPrSet = old.zapPrSet || new Set()
     const zaps = old.zaps || []
@@ -221,35 +293,37 @@ class StuffStatsService {
     zapPrSet.add(pr)
     zaps.push({ pr, pubkey, amount, comment, created_at })
     this.stuffStatsMap.set(eventId, { ...old, zapPrSet, zaps })
+    await this.saveToCache(eventId)
     if (notify) {
       this.notifyStuffStats(eventId)
     }
     return eventId
   }
 
-  updateStuffStatsByEvents(events: Event[]) {
+  async updateStuffStatsByEvents(events: Event[]) {
+    await this.init()
     const targetKeySet = new Set<string>()
-    events.forEach((evt) => {
+    for (const evt of events) {
       let targetKey: string | undefined
       if (evt.kind === kinds.Reaction) {
-        targetKey = this.addLikeByEvent(evt)
+        targetKey = await this.addLikeByEvent(evt)
       } else if (evt.kind === ExtendedKind.EXTERNAL_CONTENT_REACTION) {
-        targetKey = this.addExternalContentLikeByEvent(evt)
+        targetKey = await this.addExternalContentLikeByEvent(evt)
       } else if (evt.kind === kinds.Repost || evt.kind === kinds.GenericRepost) {
-        targetKey = this.addRepostByEvent(evt)
+        targetKey = await this.addRepostByEvent(evt)
       } else if (evt.kind === kinds.Zap) {
-        targetKey = this.addZapByEvent(evt)
+        targetKey = await this.addZapByEvent(evt)
       }
       if (targetKey) {
         targetKeySet.add(targetKey)
       }
-    })
+    }
     targetKeySet.forEach((targetKey) => {
       this.notifyStuffStats(targetKey)
     })
   }
 
-  private addLikeByEvent(evt: Event) {
+  private async addLikeByEvent(evt: Event) {
     let targetEventKey
     targetEventKey = evt.tags.findLast(tagNameEquals('a'))?.[1]
     if (!targetEventKey) {
@@ -258,6 +332,10 @@ class StuffStatsService {
 
     if (!targetEventKey) {
       return
+    }
+
+    if (!this.stuffStatsMap.has(targetEventKey)) {
+      await this.loadFromCache(targetEventKey)
     }
 
     const old = this.stuffStatsMap.get(targetEventKey) || {}
@@ -288,12 +366,17 @@ class StuffStatsService {
       emoji
     })
     this.stuffStatsMap.set(targetEventKey, { ...old, likeIdSet, likes })
+    await this.saveToCache(targetEventKey)
     return targetEventKey
   }
 
-  private addExternalContentLikeByEvent(evt: Event) {
+  private async addExternalContentLikeByEvent(evt: Event) {
     const target = evt.tags.findLast(tagNameEquals('i'))?.[1]
     if (!target) return
+
+    if (!this.stuffStatsMap.has(target)) {
+      await this.loadFromCache(target)
+    }
 
     const old = this.stuffStatsMap.get(target) || {}
     const likeIdSet = old.likeIdSet || new Set()
@@ -323,10 +406,11 @@ class StuffStatsService {
       emoji
     })
     this.stuffStatsMap.set(target, { ...old, likeIdSet, likes })
+    await this.saveToCache(target)
     return target
   }
 
-  private addRepostByEvent(evt: Event) {
+  private async addRepostByEvent(evt: Event) {
     let targetEventKey
     targetEventKey = evt.tags.find(tagNameEquals('a'))?.[1]
     if (!targetEventKey) {
@@ -337,6 +421,10 @@ class StuffStatsService {
       return
     }
 
+    if (!this.stuffStatsMap.has(targetEventKey)) {
+      await this.loadFromCache(targetEventKey)
+    }
+
     const old = this.stuffStatsMap.get(targetEventKey) || {}
     const repostPubkeySet = old.repostPubkeySet || new Set()
     const reposts = old.reposts || []
@@ -345,10 +433,11 @@ class StuffStatsService {
     repostPubkeySet.add(evt.pubkey)
     reposts.push({ id: evt.id, pubkey: evt.pubkey, created_at: evt.created_at })
     this.stuffStatsMap.set(targetEventKey, { ...old, repostPubkeySet, reposts })
+    await this.saveToCache(targetEventKey)
     return targetEventKey
   }
 
-  private addZapByEvent(evt: Event) {
+  private async addZapByEvent(evt: Event) {
     const info = getZapInfoFromEvent(evt)
     if (!info) return
     const { originalEventId, senderPubkey, invoice, amount, comment } = info

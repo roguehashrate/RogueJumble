@@ -12,6 +12,7 @@ import {
 import { getDefaultRelayUrls } from '@/lib/relay'
 import { generateBech32IdFromETag } from '@/lib/tag'
 import client from '@/services/client.service'
+import indexedDb from '@/services/indexed-db.service'
 import dayjs from 'dayjs'
 import { Filter, kinds, NostrEvent } from 'nostr-tools'
 import { LRUCache } from 'lru-cache'
@@ -52,6 +53,7 @@ class ThreadService {
     ttl: 1000 * 60 * 60 * 24 // 24 hours
   })
   private descendantCache = new Map<string, Map<string, NostrEvent[]>>()
+  private threadCacheInitialized = new Set<string>()
 
   private threadListeners = new Map<string, Set<() => void>>()
   private allDescendantThreadsListeners = new Map<string, Set<() => void>>()
@@ -63,6 +65,38 @@ class ThreadService {
       ThreadService.instance = this
     }
     return ThreadService.instance
+  }
+
+  private async loadThreadFromCache(key: string) {
+    if (this.threadCacheInitialized.has(key)) return
+    this.threadCacheInitialized.add(key)
+
+    const cached = await indexedDb.getThreadReplies(key)
+    if (cached && cached.length > 0) {
+      const events = cached.map((item) => item.event)
+      this.threadMap.set(key, events)
+      events.forEach((evt) => {
+        const evtKey = getEventKey(evt)
+        this.processedReplyKeys.set(evtKey, true)
+        const parentTag = getParentTag(evt)
+        if (parentTag) {
+          const parentKey = getKeyFromTag(parentTag.tag)
+          if (parentKey) {
+            this.parentKeyMap.set(evtKey, parentKey)
+          }
+        }
+      })
+    }
+  }
+
+  private async saveThreadToCache(key: string) {
+    const thread = this.threadMap.get(key)
+    if (thread && thread.length > 0) {
+      await indexedDb.putThreadReplies(
+        key,
+        thread.map((evt) => ({ event: evt, relays: [] }))
+      )
+    }
   }
 
   async subscribe(stuff: NostrEvent | string, limit = 100) {
@@ -238,6 +272,7 @@ class ThreadService {
       const existingThread = this.threadMap.get(key)
       const thread = existingThread ? [...existingThread, ...newReplyEvents] : newReplyEvents
       this.threadMap.set(key, thread)
+      this.saveThreadToCache(key)
     }
 
     this.descendantCache.clear()
@@ -248,6 +283,7 @@ class ThreadService {
   }
 
   getThread(stuffKey: string): NostrEvent[] {
+    this.loadThreadFromCache(stuffKey)
     return this.threadMap.get(stuffKey) ?? this.EMPTY_ARRAY
   }
 

@@ -30,7 +30,9 @@ const StoreNames = {
   MUTE_DECRYPTED_TAGS: 'muteDecryptedTags', // deprecated
   RELAY_INFO_EVENTS: 'relayInfoEvents', // deprecated
   TIMELINE_REFS: 'timelineRefs',
-  GROUP_MESSAGES: 'groupMessages'
+  GROUP_MESSAGES: 'groupMessages',
+  STUFF_STATS: 'stuffStats',
+  THREAD_REPLIES: 'threadReplies'
 }
 
 class IndexedDbService {
@@ -49,7 +51,7 @@ class IndexedDbService {
   init(): Promise<void> {
     if (!this.initPromise) {
       this.initPromise = new Promise((resolve, reject) => {
-        const request = window.indexedDB.open('roguejumble', 13)
+        const request = window.indexedDB.open('roguejumble', 14)
 
         request.onerror = (event) => {
           reject(event)
@@ -121,6 +123,16 @@ class IndexedDbService {
               keyPath: 'key'
             })
             groupMessagesStore.createIndex('addedAtIndex', 'addedAt')
+          }
+          if (!db.objectStoreNames.contains(StoreNames.STUFF_STATS)) {
+            const stuffStatsStore = db.createObjectStore(StoreNames.STUFF_STATS, { keyPath: 'key' })
+            stuffStatsStore.createIndex('addedAtIndex', 'addedAt')
+          }
+          if (!db.objectStoreNames.contains(StoreNames.THREAD_REPLIES)) {
+            const threadRepliesStore = db.createObjectStore(StoreNames.THREAD_REPLIES, {
+              keyPath: 'key'
+            })
+            threadRepliesStore.createIndex('addedAtIndex', 'addedAt')
           }
 
           if (db.objectStoreNames.contains(StoreNames.RELAY_INFO_EVENTS)) {
@@ -555,7 +567,10 @@ class IndexedDbService {
     })
   }
 
-  async putTimelineRefs(key: string, refs: { event: { id: string; created_at: number }; relays: string[] }[]): Promise<void> {
+  async putTimelineRefs(
+    key: string,
+    refs: { event: { id: string; created_at: number }; relays: string[] }[]
+  ): Promise<void> {
     await this.initPromise
     return new Promise((resolve, reject) => {
       if (!this.db) {
@@ -566,7 +581,7 @@ class IndexedDbService {
 
       const timelineData = {
         key,
-        refs: refs.map(r => [r.event.id, r.event.created_at]),
+        refs: refs.map((r) => [r.event.id, r.event.created_at]),
         addedAt: Date.now()
       }
 
@@ -650,9 +665,7 @@ class IndexedDbService {
     })
   }
 
-  async getGroupMessages(
-    key: string
-  ): Promise<{ event: Event; relays: string[] }[] | null> {
+  async getGroupMessages(key: string): Promise<{ event: Event; relays: string[] }[] | null> {
     await this.initPromise
     return new Promise((resolve, reject) => {
       if (!this.db) {
@@ -670,15 +683,141 @@ class IndexedDbService {
         if (result?.messages) {
           // Clean up group messages older than 7 days
           if (result.addedAt < Date.now() - 1000 * 60 * 60 * 24 * 7) {
-            const deleteTransaction = this.db!.transaction(
-              StoreNames.GROUP_MESSAGES,
-              'readwrite'
-            )
+            const deleteTransaction = this.db!.transaction(StoreNames.GROUP_MESSAGES, 'readwrite')
             deleteTransaction.objectStore(StoreNames.GROUP_MESSAGES).delete(key)
             deleteTransaction.commit()
             resolve(null)
           } else {
             resolve(result.messages)
+          }
+        } else {
+          resolve(null)
+        }
+      }
+
+      request.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async putStuffStats(key: string, stats: unknown): Promise<void> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.STUFF_STATS, 'readwrite')
+      const store = transaction.objectStore(StoreNames.STUFF_STATS)
+
+      const data = {
+        key,
+        stats,
+        addedAt: Date.now()
+      }
+
+      const putRequest = store.put(data)
+      putRequest.onsuccess = () => {
+        transaction.commit()
+        resolve()
+      }
+
+      putRequest.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async getStuffStats(key: string): Promise<unknown | null> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.STUFF_STATS, 'readonly')
+      const store = transaction.objectStore(StoreNames.STUFF_STATS)
+      const request = store.get(key)
+
+      request.onsuccess = () => {
+        transaction.commit()
+        const result = request.result as { stats: unknown; addedAt: number } | undefined
+        if (result?.stats) {
+          if (result.addedAt < Date.now() - 1000 * 60 * 60 * 24 * 14) {
+            const deleteTransaction = this.db!.transaction(StoreNames.STUFF_STATS, 'readwrite')
+            deleteTransaction.objectStore(StoreNames.STUFF_STATS).delete(key)
+            deleteTransaction.commit()
+            resolve(null)
+          } else {
+            resolve(result.stats)
+          }
+        } else {
+          resolve(null)
+        }
+      }
+
+      request.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async putThreadReplies(
+    key: string,
+    replies: { event: Event; relays: string[] }[]
+  ): Promise<void> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.THREAD_REPLIES, 'readwrite')
+      const store = transaction.objectStore(StoreNames.THREAD_REPLIES)
+
+      const data = {
+        key,
+        replies,
+        addedAt: Date.now()
+      }
+
+      const putRequest = store.put(data)
+      putRequest.onsuccess = () => {
+        transaction.commit()
+        resolve()
+      }
+
+      putRequest.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async getThreadReplies(key: string): Promise<{ event: Event; relays: string[] }[] | null> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.THREAD_REPLIES, 'readonly')
+      const store = transaction.objectStore(StoreNames.THREAD_REPLIES)
+      const request = store.get(key)
+
+      request.onsuccess = () => {
+        transaction.commit()
+        const result = request.result as
+          | { replies: { event: Event; relays: string[] }[]; addedAt: number }
+          | undefined
+        if (result?.replies) {
+          if (result.addedAt < Date.now() - 1000 * 60 * 60 * 24 * 7) {
+            const deleteTransaction = this.db!.transaction(StoreNames.THREAD_REPLIES, 'readwrite')
+            deleteTransaction.objectStore(StoreNames.THREAD_REPLIES).delete(key)
+            deleteTransaction.commit()
+            resolve(null)
+          } else {
+            resolve(result.replies)
           }
         } else {
           resolve(null)
@@ -784,6 +923,14 @@ class IndexedDbService {
       },
       {
         name: StoreNames.EMOJI_SET_EVENTS,
+        expirationTimestamp: Date.now() - 1000 * 60 * 60 * 24 * 7 // 7 days
+      },
+      {
+        name: StoreNames.STUFF_STATS,
+        expirationTimestamp: Date.now() - 1000 * 60 * 60 * 24 * 14 // 14 days
+      },
+      {
+        name: StoreNames.THREAD_REPLIES,
         expirationTimestamp: Date.now() - 1000 * 60 * 60 * 24 * 7 // 7 days
       }
     ]
