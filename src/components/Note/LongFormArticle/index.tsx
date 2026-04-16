@@ -91,7 +91,7 @@ export default function LongFormArticle({
     <>
       <div
         ref={contentRef}
-        className={`overflow-wrap-anywhere prose max-w-none break-words prose-headings:text-foreground prose-body:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-blockquote:text-muted-foreground prose-a:text-foreground ${className || ''}`}
+        className={`overflow-wrap-anywhere prose-body:text-foreground prose max-w-none break-words prose-headings:text-foreground prose-h1:text-foreground prose-h2:text-foreground prose-h3:text-foreground prose-h4:text-foreground prose-h5:text-foreground prose-h6:text-foreground prose-p:text-foreground prose-a:text-foreground prose-blockquote:text-muted-foreground prose-strong:text-foreground prose-em:text-foreground prose-code:text-foreground prose-pre:text-foreground prose-ol:text-muted-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground prose-th:text-foreground prose-td:text-foreground prose-hr:text-muted-foreground ${className || ''}`}
       >
         <h1 className="break-words">{metadata.title}</h1>
         {metadata.summary && (
