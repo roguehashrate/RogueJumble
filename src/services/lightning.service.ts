@@ -13,6 +13,7 @@ import { SubCloser } from 'nostr-tools/abstract-pool'
 import { makeZapRequest } from 'nostr-tools/nip57'
 import { utf8Decoder } from 'nostr-tools/utils'
 import client from './client.service'
+import storage from './local-storage.service'
 
 export type TRecentSupporter = { pubkey: string; amount: number; comment?: string }
 
@@ -74,8 +75,34 @@ class LightningService {
   }
 
   private notifyTransactionChange() {
+    // Persist BEFORE clearing cache to ensure all data is saved
+    this.persistTransactions()
     this.transactionHistoryCache = null
     this.onTransactionChangeCallbacks.forEach((cb) => cb())
+  }
+
+  private persistTransactions() {
+    const allTransactions = [...this.pendingTransactions, ...(this.transactionHistoryCache || [])]
+    
+    // Deduplicate transactions before persisting
+    const deduplicated = this.deduplicateTransactions(allTransactions)
+    storage.setWalletTransactions(deduplicated)
+  }
+
+  private deduplicateTransactions(transactions: TTransaction[]): TTransaction[] {
+    const seen = new Set<string>()
+    const unique: TTransaction[] = []
+    
+    for (const tx of transactions) {
+      const isDuplicate = seen.has(tx.id) || (tx.invoice && seen.has(tx.invoice))
+      if (!isDuplicate) {
+        unique.push(tx)
+        seen.add(tx.id)
+        if (tx.invoice) seen.add(tx.invoice)
+      }
+    }
+    
+    return unique
   }
 
   private recordTransaction(transaction: TTransaction) {
@@ -438,15 +465,41 @@ class LightningService {
 
   async getTransactionHistory(pubkey?: string): Promise<TTransaction[]> {
     if (!this.provider) {
-      return []
+      // Even if no provider, return cached transactions from localStorage
+      const persisted = storage.getWalletTransactions()
+      return persisted || []
     }
 
     if (this.transactionHistoryCache) {
-      return [...this.pendingTransactions, ...this.transactionHistoryCache]
+      // Deduplicate pending + cached transactions
+      return this.deduplicateTransactions([
+        ...this.pendingTransactions,
+        ...this.transactionHistoryCache
+      ])
     }
 
+    // Load persisted transactions
+    const persistedTransactions = storage.getWalletTransactions()
+
     const transactions: TTransaction[] = [...this.pendingTransactions]
-    const existingIds = new Set<string>(this.pendingTransactions.map((t) => t.id))
+    const existingIds = new Set<string>()
+    
+    // Add all pending transaction IDs
+    for (const t of this.pendingTransactions) {
+      existingIds.add(t.id)
+      if (t.invoice) existingIds.add(t.invoice)
+    }
+
+    // Add persisted transactions that aren't already in the list
+    for (const persisted of persistedTransactions) {
+      const isDuplicate = existingIds.has(persisted.id) || 
+        (persisted.invoice && existingIds.has(persisted.invoice))
+      if (!isDuplicate) {
+        transactions.push(persisted as TTransaction)
+        existingIds.add(persisted.id)
+        if (persisted.invoice) existingIds.add(persisted.invoice)
+      }
+    }
 
     try {
       if (typeof this.provider.request === 'function') {
@@ -465,7 +518,8 @@ class LightningService {
 
         if (paymentsResponse.payments) {
           for (const payment of paymentsResponse.payments) {
-            // Skip if already exists (could be in pendingTransactions)
+            // Skip if already exists (could be in pendingTransactions or persisted)
+            // Check both payment_hash and payment_request (invoice) for deduplication
             if (existingIds.has(payment.payment_hash) || existingIds.has(payment.payment_request)) {
               continue
             }
@@ -596,10 +650,14 @@ class LightningService {
           const info = getZapInfoFromEvent(zapEvent)
           if (!info || !info.recipientPubkey) continue
 
-          if (existingIds.has(info.invoice || zapEvent.id)) continue
+          // Check multiple identifiers for deduplication
+          const zapId = info.invoice || zapEvent.id
+          if (existingIds.has(zapId)) continue
+          // Also check if we already have a transaction with this invoice
+          if (info.invoice && existingIds.has(info.invoice)) continue
 
           transactions.push({
-            id: info.invoice || zapEvent.id,
+            id: zapId,
             type: 'sent',
             amount: info.amount || 0,
             status: info.preimage ? 'completed' : 'pending',
@@ -608,7 +666,8 @@ class LightningService {
             preimage: info.preimage,
             description: info.comment || ''
           })
-          existingIds.add(info.invoice || zapEvent.id)
+          existingIds.add(zapId)
+          if (info.invoice) existingIds.add(info.invoice)
         }
       } catch (error) {
         console.error('Failed to fetch zap history:', error)
@@ -616,12 +675,16 @@ class LightningService {
     }
 
     transactions.sort((a, b) => b.date.getTime() - a.date.getTime())
-    this.transactionHistoryCache = transactions
-    return transactions
+    
+    // Final deduplication before caching
+    const deduplicated = this.deduplicateTransactions(transactions)
+    this.transactionHistoryCache = deduplicated
+    return deduplicated
   }
 
   clearTransactionCache() {
     this.transactionHistoryCache = null
+    storage.clearWalletTransactions()
   }
 }
 

@@ -25,6 +25,7 @@ export const StorageKey = {
   DEFAULT_ZAP_COMMENT: 'defaultZapComment',
   QUICK_ZAP: 'quickZap',
   WALLET_DISPLAY_UNIT: 'walletDisplayUnit',
+  WALLET_TRANSACTIONS: 'walletTransactions',
   LAST_READ_NOTIFICATION_TIME_MAP: 'lastReadNotificationTimeMap',
   ACCOUNT_FEED_INFO_MAP: 'accountFeedInfoMap',
   AUTOPLAY: 'autoplay',

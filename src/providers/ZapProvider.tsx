@@ -55,7 +55,17 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
     if (lightningService.provider) {
       const pubkey = client.pubkey
       const history = await lightningService.getTransactionHistory(pubkey)
-      setTransactionHistory(history)
+      
+      // Deduplicate before setting state
+      const seen = new Set<string>()
+      const unique = history.filter((tx) => {
+        const key = tx.id || tx.invoice || ''
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      
+      setTransactionHistory(unique)
     }
   }
 
@@ -107,6 +117,12 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    // Load persisted transactions on init
+    const persistedTransactions = storage.getWalletTransactions()
+    if (persistedTransactions.length > 0) {
+      setTransactionHistory(persistedTransactions)
+    }
+
     const unSubOnConnected = onConnected(async (provider) => {
       setIsWalletConnected(true)
       setWalletInfo(null)

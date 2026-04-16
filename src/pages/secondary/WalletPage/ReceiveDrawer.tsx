@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useZap } from '@/providers/ZapProvider'
 import lightningService from '@/services/lightning.service'
 import { ArrowDownCircle, Copy } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import QRCodeStyling from 'qr-code-styling'
 import { toast } from 'sonner'
@@ -22,7 +23,11 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
   const [memo, setMemo] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [invoice, setInvoice] = useState<string | null>(null)
-  const qrRef = useRef<HTMLDivElement>(null)
+  const [qrElement, setQrElement] = useState<HTMLDivElement | null>(null)
+
+  const qrRef = (node: HTMLDivElement | null) => {
+    setQrElement(node)
+  }
 
   useEffect(() => {
     if (!open) {
@@ -34,11 +39,11 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
   }, [open])
 
   useEffect(() => {
-    if (invoice && qrRef.current) {
-      qrRef.current.innerHTML = ''
+    if (qrElement && invoice) {
+      qrElement.innerHTML = ''
       const qrCode = new QRCodeStyling({
-        width: 200,
-        height: 200,
+        width: 300,
+        height: 300,
         data: invoice,
         dotsOptions: {
           color: '#000000'
@@ -47,9 +52,20 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
           color: '#ffffff'
         }
       })
-      qrCode.append(qrRef.current)
+      qrCode.append(qrElement)
     }
-  }, [invoice])
+  }, [qrElement, invoice])
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
   const handleGenerateInvoice = async () => {
     if (!amount) return
@@ -74,28 +90,92 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
     }
   }
 
-  return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center gap-2">
-            <ArrowDownCircle className="size-5" />
-            {t('Receive')}
-          </DrawerTitle>
-        </DrawerHeader>
+  const handleClose = () => {
+    setInvoice(null)
+    onOpenChange(false)
+  }
 
-        <div
-          className="overflow-y-auto overscroll-contain px-4 pb-4"
-          style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
-        >
-          {!invoice ? (
+  const handleNewInvoice = () => {
+    setInvoice(null)
+  }
+
+  return (
+    <>
+      <Dialog open={!!invoice} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+        <DialogContent className="flex h-dvh max-h-dvh flex-col gap-0 p-0">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <div className="flex items-center gap-2 text-lg font-semibold">
+              <ArrowDownCircle className="size-5" />
+              {t('Receive')}
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 overflow-y-auto px-4 py-8">
+            <div className="rounded-xl bg-white p-6 shadow-lg">
+              <div ref={qrRef} className="size-[300px]" />
+            </div>
+
+            {amount && (
+              <div className="text-center text-2xl font-bold">
+                {formatBalance(parseInt(amount))}
+              </div>
+            )}
+
+            <div className="w-full max-w-md space-y-3">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="flex-1" onClick={handleCopyInvoice}>
+                  <Copy className="mr-2 size-4" />
+                  {t('Copy Invoice')}
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={handleNewInvoice}>
+                  {t('New Invoice')}
+                </Button>
+              </div>
+
+              <div className="w-full rounded-lg bg-muted/30 p-3">
+                <div className="mb-1 text-xs text-muted-foreground">{t('Invoice')}</div>
+                <div className="truncate font-mono text-sm">{invoice}</div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Drawer
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleClose()
+          }
+        }}
+      >
+        <DrawerContent className="max-h-[100dvh]">
+          <DrawerHeader>
+            <DrawerTitle className="flex items-center gap-2">
+              <ArrowDownCircle className="size-5" />
+              {t('Receive')}
+            </DrawerTitle>
+          </DrawerHeader>
+
+          <div
+            className="overflow-y-auto overscroll-contain px-4 pb-4"
+            style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
+          >
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="receive-amount">{t('Amount')} ({balanceDisplayUnit})</Label>
+                <Label htmlFor="receive-amount">
+                  {t('Amount')} ({balanceDisplayUnit})
+                </Label>
                 <Input
                   id="receive-amount"
                   type="number"
-                  placeholder={balanceDisplayUnit === 'sats' ? '100' : balanceDisplayUnit === 'bits' ? '1' : '0.00000100'}
+                  placeholder={
+                    balanceDisplayUnit === 'sats'
+                      ? '100'
+                      : balanceDisplayUnit === 'bits'
+                        ? '1'
+                        : '0.00000100'
+                  }
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
@@ -119,55 +199,9 @@ export default function ReceiveDrawer({ open, onOpenChange }: ReceiveDrawerProps
                 {isLoading ? t('Generating...') : t('Generate Invoice')}
               </Button>
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="rounded-lg bg-white p-4">
-                <div ref={qrRef} className="size-[200px]" />
-              </div>
-
-              <div className="w-full space-y-2">
-                <div className="flex items-center justify-between rounded-lg bg-muted/30 p-3">
-                  <div className="flex-1 truncate text-sm font-medium">
-                    {amount && formatBalance(parseInt(amount))}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-8"
-                    onClick={() => {
-                      navigator.clipboard.writeText(amount)
-                      toast.success(t('Amount copied'))
-                    }}
-                  >
-                    <Copy className="size-4" />
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" className="flex-1" onClick={handleCopyInvoice}>
-                    <Copy className="mr-2 size-4" />
-                    {t('Copy Invoice')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      setInvoice(null)
-                    }}
-                  >
-                    {t('New Invoice')}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="w-full rounded-lg bg-muted/30 p-3">
-                <div className="mb-1 text-xs text-muted-foreground">{t('Invoice')}</div>
-                <div className="truncate text-sm">{invoice}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </DrawerContent>
-    </Drawer>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }

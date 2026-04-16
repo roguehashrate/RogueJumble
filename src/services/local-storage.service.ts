@@ -36,6 +36,30 @@ import {
 } from '@/types'
 import { kinds } from 'nostr-tools'
 
+interface TTransactionStorage {
+  id: string
+  type: 'sent' | 'received'
+  amount: number
+  status: 'completed' | 'pending' | 'failed'
+  date: string | Date
+  invoice?: string
+  preimage?: string
+  description?: string
+  lightningAddress?: string
+}
+
+interface TTransaction {
+  id: string
+  type: 'sent' | 'received'
+  amount: number
+  status: 'completed' | 'pending' | 'failed'
+  date: Date
+  invoice?: string
+  preimage?: string
+  description?: string
+  lightningAddress?: string
+}
+
 class LocalStorageService {
   static instance: LocalStorageService
 
@@ -800,6 +824,34 @@ class LocalStorageService {
   setHideIndirectNotifications(onlyShow: boolean) {
     this.hideIndirectNotifications = onlyShow
     window.localStorage.setItem(StorageKey.HIDE_INDIRECT_NOTIFICATIONS, onlyShow.toString())
+  }
+
+  getWalletTransactions(): TTransaction[] {
+    try {
+      const transactionsStr = window.localStorage.getItem(StorageKey.WALLET_TRANSACTIONS)
+      if (!transactionsStr) return []
+      const transactions = JSON.parse(transactionsStr) as TTransactionStorage[]
+      // Convert date strings back to Date objects
+      return transactions.map((t) => ({
+        ...t,
+        date: new Date(t.date)
+      })) as TTransaction[]
+    } catch (error) {
+      console.error('Failed to load wallet transactions:', error)
+      return []
+    }
+  }
+
+  setWalletTransactions(transactions: TTransactionStorage[]) {
+    try {
+      window.localStorage.setItem(StorageKey.WALLET_TRANSACTIONS, JSON.stringify(transactions))
+    } catch (error) {
+      console.error('Failed to save wallet transactions:', error)
+    }
+  }
+
+  clearWalletTransactions() {
+    window.localStorage.removeItem(StorageKey.WALLET_TRANSACTIONS)
   }
 }
 

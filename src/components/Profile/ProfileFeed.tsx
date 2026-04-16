@@ -149,7 +149,7 @@ export default function ProfileFeed({
           showKinds={temporaryShowKinds}
           hideReplies={listMode === 'posts'}
           filterMutedNotes={false}
-          pinnedEventIds={!!search ? [] : pinnedEventIds}
+          pinnedEventIds={search ? [] : pinnedEventIds}
           showNewNotesDirectly={myPubkey === pubkey}
         />
       )}

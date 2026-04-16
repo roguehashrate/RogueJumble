@@ -151,9 +151,30 @@ function ZapDialogContent({
   }
 
   const [amount, setAmount] = useState(defaultAmount ? toDisplayUnit(defaultAmount) : toDisplayUnit(defaultZapSats))
+  const [amountInput, setAmountInput] = useState(
+    defaultAmount ? toDisplayUnit(defaultAmount).toString() : toDisplayUnit(defaultZapSats).toString()
+  )
   const [comment, setComment] = useState(defaultComment ?? defaultZapComment)
   const isSelfZap = useMemo(() => pubkey === recipient, [pubkey, recipient])
   const [zapping, setZapping] = useState(false)
+
+  const handleAmountChange = (value: string) => {
+    // Allow empty string
+    if (value === '') {
+      setAmountInput('')
+      setAmount(0)
+      return
+    }
+    
+    // Allow just a decimal point or numbers with one decimal point
+    if (/^\d*\.?\d*$/.test(value)) {
+      setAmountInput(value)
+      const num = parseFloat(value)
+      if (!isNaN(num) && num >= 0) {
+        setAmount(num)
+      }
+    }
+  }
 
   const presetAmounts = useMemo(() => {
     const basePresets = i18n.language.startsWith('zh')
@@ -207,19 +228,8 @@ function ZapDialogContent({
         <div className="flex w-full justify-center">
           <input
             id="amount"
-            value={amount}
-            onChange={(e) => {
-              setAmount((pre) => {
-                if (e.target.value === '') {
-                  return 0
-                }
-                let num = parseFloat(e.target.value)
-                if (isNaN(num) || num < 0) {
-                  num = pre
-                }
-                return num
-              })
-            }}
+            value={amountInput}
+            onChange={(e) => handleAmountChange(e.target.value)}
             onFocus={(e) => {
               requestAnimationFrame(() => {
                 const val = e.target.value
@@ -242,7 +252,10 @@ function ZapDialogContent({
       {/* Preset amount buttons */}
       <div className="grid grid-cols-6 gap-2">
         {presetAmounts.map(({ display, val }) => (
-          <Button variant="secondary" key={val} onClick={() => setAmount(val)}>
+          <Button variant="secondary" key={val} onClick={() => {
+            setAmount(val)
+            setAmountInput(val.toString())
+          }}>
             {display}
           </Button>
         ))}
