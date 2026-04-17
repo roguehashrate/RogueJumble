@@ -24,7 +24,7 @@ const TransactionHistoryPage = forwardRef(({ index }: { index?: number }, ref) =
 
   return (
     <SecondaryPageLayout ref={ref} index={index} title={t('Transaction History')}>
-      <div className="space-y-4 px-4 pt-3">
+      <div className="space-y-4 px-4 pb-10 pt-3">
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
