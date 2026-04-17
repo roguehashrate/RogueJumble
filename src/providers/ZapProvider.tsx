@@ -55,7 +55,7 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
     if (lightningService.provider) {
       const pubkey = client.pubkey
       const history = await lightningService.getTransactionHistory(pubkey)
-      
+
       // Deduplicate before setting state
       const seen = new Set<string>()
       const unique = history.filter((tx) => {
@@ -64,7 +64,7 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
         seen.add(key)
         return true
       })
-      
+
       setTransactionHistory(unique)
     }
   }
@@ -141,7 +141,7 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.warn('Failed to get balance:', e)
       }
-      const history = await lightningService.getTransactionHistory()
+      const history = await lightningService.getTransactionHistory(client.pubkey)
       setTransactionHistory(history)
     })
     const unSubOnDisconnected = () => {

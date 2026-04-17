@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { toRizful } from '@/lib/link'
+import { toRizful, toWalletHistory } from '@/lib/link'
 import { useZap } from '@/providers/ZapProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { disconnect, launchModal } from '@getalby/bitcoin-connect-react'
@@ -221,8 +221,7 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
                     size="sm"
                     className="h-auto p-0 text-xs text-muted-foreground"
                     onClick={() => {
-                      // TODO: Navigate to full history page
-                      toast.info(t('Full history coming soon'))
+                      push(toWalletHistory())
                     }}
                   >
                     {t('View All')}

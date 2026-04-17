@@ -438,7 +438,7 @@ class ClientService extends EventTarget {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
     const _knownIds = new Set<string>()
-    let startedCount = relays.length
+    const startedCount = relays.length
     let eosedCount = 0
     let eosed = false
     let closedCount = 0

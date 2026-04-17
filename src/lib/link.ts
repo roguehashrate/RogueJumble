@@ -68,6 +68,7 @@ export const toRelaySettings = (tag?: 'mailbox' | 'favorite-relays') => {
   return '/settings/relays' + (tag ? '#' + tag : '')
 }
 export const toWallet = () => '/settings/wallet'
+export const toWalletHistory = () => '/settings/wallet/history'
 export const toPostSettings = () => '/settings/posts'
 export const toGeneralSettings = () => '/settings/general'
 export const toAppearanceSettings = () => '/settings/appearance'

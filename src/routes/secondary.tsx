@@ -34,6 +34,7 @@ const LazyUserAggregationDetailPage = lazy(
 )
 const LazyComposePage = lazy(() => import('@/pages/secondary/ComposePage'))
 const LazyGroupChatPage = lazy(() => import('@/pages/secondary/GroupChatPage'))
+const LazyTransactionHistoryPage = lazy(() => import('@/pages/secondary/TransactionHistoryPage'))
 
 // Route configs with lazy component types instead of pre-created elements
 const SECONDARY_ROUTE_CONFIGS = [
@@ -63,28 +64,31 @@ const SECONDARY_ROUTE_CONFIGS = [
   { path: '/follow-packs/:id', Component: LazyFollowPackPage },
   { path: '/user-aggregation/:feedId/:npub', Component: LazyUserAggregationDetailPage },
   { path: '/compose', Component: LazyComposePage },
-  { path: '/groups/:relayDomain/:groupId', Component: LazyGroupChatPage }
+  { path: '/groups/:relayDomain/:groupId', Component: LazyGroupChatPage },
+  { path: '/settings/wallet/history', Component: LazyTransactionHistoryPage }
 ]
 
 // Build routes with matchers; element is a function that creates a lazy-wrapped element
-export const SECONDARY_ROUTES = SECONDARY_ROUTE_CONFIGS.map(
-  ({ path, Component }) => ({
-    path,
-    matcher: match(path),
-    // Returns a lazy-wrapped element; PageManager wraps it in Suspense
-    createLazyElement: (params: Record<string, unknown>, index: number, ref: React.RefObject<TPageRef>) => {
-      const LazyElement = ({ ...props }: Record<string, unknown>) => {
-        const Comp = Component as any
-        return (
-          <Suspense fallback={<PageSkeleton />}>
-            <Comp ref={ref} index={index} {...params} {...props} />
-          </Suspense>
-        )
-      }
-      return LazyElement
+export const SECONDARY_ROUTES = SECONDARY_ROUTE_CONFIGS.map(({ path, Component }) => ({
+  path,
+  matcher: match(path),
+  // Returns a lazy-wrapped element; PageManager wraps it in Suspense
+  createLazyElement: (
+    params: Record<string, unknown>,
+    index: number,
+    ref: React.RefObject<TPageRef>
+  ) => {
+    const LazyElement = ({ ...props }: Record<string, unknown>) => {
+      const Comp = Component as any
+      return (
+        <Suspense fallback={<PageSkeleton />}>
+          <Comp ref={ref} index={index} {...params} {...props} />
+        </Suspense>
+      )
     }
-  })
-)
+    return LazyElement
+  }
+}))
 
 // Helper for PageManager's findAndCloneElement — creates a lazy-wrapped element
 export function createSecondaryLazyElement(
