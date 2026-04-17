@@ -1309,4 +1309,143 @@
   .dark input[type='datetime-local']::-webkit-calendar-picker-indicator {
     filter: invert(1) brightness(1.5);
   }
+
+  /* ============================================================
+     EVERFOREST THEME
+     Warm forest aesthetic — earthy greens, soft browns, natural feel
+     ============================================================ */
+
+  /* Subtle forest background mesh */
+  .everforest .bg-mesh::before {
+    background:
+      radial-gradient(ellipse 400px 350px at 25% 30%, hsl(150 30% 25% / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 300px 280px at 70% 20%, hsl(160 25% 20% / 0.03) 0%, transparent 50%);
+    animation: mesh-drift 60s ease-in-out infinite alternate;
+  }
+
+  /* Natural scrollbar */
+  @media (min-width: 768px) {
+    .everforest html::-webkit-scrollbar-thumb,
+    .everforest body::-webkit-scrollbar-thumb {
+      background: hsl(150 20% 30% / 0.4);
+      border-radius: 6px;
+    }
+  }
+
+  /* ============================================================
+     NORD THEME
+     Arctic north — icy blues, snow whites, aurora accents
+     ============================================================ */
+
+  /* Icy aurora background mesh */
+  .nord .bg-mesh::before {
+    background:
+      radial-gradient(ellipse 500px 400px at 20% 25%, hsl(200 40% 60% / 0.03) 0%, transparent 55%),
+      radial-gradient(ellipse 350px 300px at 75% 15%, hsl(210 35% 55% / 0.02) 0%, transparent 50%);
+    animation: mesh-drift 70s ease-in-out infinite alternate;
+  }
+
+  /* Frosted glass cards */
+  .nord .glass-card {
+    background: hsl(var(--card) / 0.6);
+  }
+
+  /* Frost scrollbar */
+  @media (min-width: 768px) {
+    .nord html::-webkit-scrollbar-thumb,
+    .nord body::-webkit-scrollbar-thumb {
+      background: hsl(210 25% 40% / 0.35);
+      border-radius: 8px;
+    }
+  }
+
+  /* ============================================================
+     GRUVBOX THEME
+     Retro earthy — warm browns, earthy greens, muted oranges
+     Authentic Gruvbox palette colors
+     ============================================================ */
+
+  /* Warm earth background mesh with browns */
+  .gruvbox .bg-mesh::before {
+    background:
+      radial-gradient(ellipse 450px 380px at 25% 28%, hsl(25 30% 20% / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 320px 300px at 70% 18%, hsl(30 25% 18% / 0.03) 0%, transparent 50%);
+    animation: mesh-drift 65s ease-in-out infinite alternate;
+  }
+
+  /* Retro scrollbar - earthy brown */
+  @media (min-width: 768px) {
+    .gruvbox html::-webkit-scrollbar-thumb,
+    .gruvbox body::-webkit-scrollbar-thumb {
+      background: hsl(30 15% 30% / 0.5);
+      border-radius: 2px;
+    }
+  }
+
+  /* Links - just orange, no glow */
+  .gruvbox a {
+    color: hsl(25 65% 55%);
+  }
+
+  /* ============================================================
+     DRACULA THEME
+     Vampire vibes — purple, pink, cyan neon
+     Authentic Dracula palette colors
+     ============================================================ */
+
+  /* Purple-pink-cyan neon background mesh */
+  .dracula .bg-mesh::before {
+    background:
+      radial-gradient(ellipse 500px 420px at 20% 22%, hsl(291 60% 65% / 0.05) 0%, transparent 55%),
+      radial-gradient(ellipse 380px 320px at 75% 15%, hsl(326 60% 65% / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse 300px 300px at 50% 55%, hsl(185 65% 65% / 0.04) 0%, transparent 45%),
+      radial-gradient(ellipse 340px 340px at 35% 75%, hsl(50 85% 65% / 0.03) 0%, transparent 50%);
+    animation: mesh-drift 55s ease-in-out infinite alternate;
+  }
+
+  /* Neon pink glow on primary buttons */
+  .dracula button[class*='bg-primary'],
+  .dracula a[class*='bg-primary'] {
+    box-shadow:
+      0 0 16px hsl(326 85% 65% / 0.3),
+      0 0 32px hsl(291 80% 60% / 0.15);
+  }
+
+  /* Neon cyan/purple focus ring */
+  .dracula input:focus,
+  .dracula textarea:focus {
+    box-shadow:
+      0 0 0 2px hsl(291 81% 65% / 0.35),
+      0 0 12px hsl(291 81% 65% / 0.2),
+      0 0 24px hsl(185 65% 60% / 0.1);
+  }
+
+  /* Neon pink/purple gradient scrollbar */
+  @media (min-width: 768px) {
+    .dracula html::-webkit-scrollbar-thumb,
+    .dracula body::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, hsl(326 70% 65% / 0.4) 0%, hsl(291 65% 60% / 0.35) 100%);
+      border-radius: 4px;
+    }
+  }
+
+  /* Neon links - pink */
+  .dracula a {
+    color: hsl(326 80% 70%);
+    text-decoration: none;
+    border-bottom: 1px solid hsl(326 80% 70% / 0.2);
+    transition:
+      border-color 0.15s ease,
+      text-shadow 0.15s ease;
+  }
+  .dracula a:hover {
+    border-bottom-color: hsl(326 80% 70% / 0.4);
+    text-shadow: 0 0 8px hsl(326 80% 70% / 0.3);
+  }
+
+  /* Primary text glow */
+  .dracula .text-primary,
+  .dracula [class*='text-primary'] {
+    text-shadow: 0 0 8px hsl(291 81% 65% / 0.3);
+  }
 }

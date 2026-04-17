@@ -88,7 +88,19 @@ export type TConfig = {
   theme: TThemeSetting
 }
 
-export type TThemeSetting = 'rogue' | 'emerald' | 'sapphire' | 'amethyst' | 'hackerman' | 'phosphor' | 'smolder' | 'midnight'
+export type TThemeSetting =
+  | 'rogue'
+  | 'emerald'
+  | 'sapphire'
+  | 'amethyst'
+  | 'hackerman'
+  | 'phosphor'
+  | 'smolder'
+  | 'midnight'
+  | 'everforest'
+  | 'nord'
+  | 'gruvbox'
+  | 'dracula'
 export type TTheme = TThemeSetting
 
 export type TDraftEvent = Pick<Event, 'content' | 'created_at' | 'kind' | 'tags'>
