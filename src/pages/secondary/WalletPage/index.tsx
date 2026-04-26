@@ -79,7 +79,7 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
           setSettingsDrawerOpen(false)
         }}
       >
-        {t('Sats')} {balanceDisplayUnit === 'sats' && ' ✓'}
+        丰({t('Sats')}) {balanceDisplayUnit === 'sats' && ' ✓'}
       </div>
       <div
         className="clickable flex items-center px-4 py-3 text-sm"
@@ -88,7 +88,7 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
           setSettingsDrawerOpen(false)
         }}
       >
-        μ {t('Bits')} {balanceDisplayUnit === 'bits' && ' ✓'}
+        μ₿({t('Bits')}) {balanceDisplayUnit === 'bits' && ' ✓'}
       </div>
       <div
         className="clickable flex items-center px-4 py-3 text-sm"
@@ -97,7 +97,7 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
           setSettingsDrawerOpen(false)
         }}
       >
-        ₿ {t('BTC')} {balanceDisplayUnit === 'btc' && ' ✓'}
+        ₿({t('BTC')}) {balanceDisplayUnit === 'btc' && ' ✓'}
       </div>
     </>
   )
@@ -131,13 +131,13 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setBalanceDisplayUnit('sats')}>
-          {t('Sats')} {balanceDisplayUnit === 'sats' && '✓'}
+          丰({t('Sats')}) {balanceDisplayUnit === 'sats' && '✓'}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setBalanceDisplayUnit('bits')}>
-          μ {t('Bits')} {balanceDisplayUnit === 'bits' && '✓'}
+          μ₿({t('Bits')}) {balanceDisplayUnit === 'bits' && '✓'}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setBalanceDisplayUnit('btc')}>
-          ₿ {t('BTC')} {balanceDisplayUnit === 'btc' && '✓'}
+          ₿({t('BTC')}) {balanceDisplayUnit === 'btc' && '✓'}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
