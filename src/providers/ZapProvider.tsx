@@ -92,11 +92,11 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
   const formatBalance = (sats: number): string => {
     switch (balanceDisplayUnit) {
       case 'sats':
-        return `${sats.toLocaleString()} sats`
+        return `丰${sats.toLocaleString()}`
       case 'bits':
-        return `${(sats / 100).toFixed(2)} bits`
+        return `μ₿${(sats / 100).toFixed(2)}`
       case 'btc':
-        return `${(sats / 100000000).toFixed(8)} BTC`
+        return `₿${(sats / 100000000).toFixed(8)}`
     }
   }
 
