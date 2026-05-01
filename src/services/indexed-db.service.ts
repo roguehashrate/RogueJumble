@@ -1015,12 +1015,18 @@ class IndexedDbService {
 
       const putRequest = store.put(data)
       putRequest.onsuccess = () => {
-        transaction.commit()
         resolve()
       }
 
       putRequest.onerror = (event) => {
-        transaction.commit()
+        reject(event)
+      }
+
+      transaction.oncomplete = () => {
+        resolve()
+      }
+
+      transaction.onerror = (event) => {
         reject(event)
       }
     })
@@ -1037,7 +1043,6 @@ class IndexedDbService {
       const request = store.get(key)
 
       request.onsuccess = () => {
-        transaction.commit()
         const result = request.result as
           | { subRequests: TFeedSubRequest[]; addedAt: number }
           | undefined
@@ -1045,9 +1050,13 @@ class IndexedDbService {
           // Clean up sub requests older than 1 hour
           if (result.addedAt < Date.now() - 1000 * 60 * 60) {
             const deleteTransaction = this.db!.transaction(StoreNames.SUB_REQUESTS, 'readwrite')
-            deleteTransaction.objectStore(StoreNames.SUB_REQUESTS).delete(key)
-            deleteTransaction.commit()
-            resolve(null)
+            const deleteRequest = deleteTransaction.objectStore(StoreNames.SUB_REQUESTS).delete(key)
+            deleteRequest.onsuccess = () => {
+              resolve(null)
+            }
+            deleteRequest.onerror = () => {
+              resolve(null)
+            }
           } else {
             resolve(result.subRequests)
           }
@@ -1057,7 +1066,14 @@ class IndexedDbService {
       }
 
       request.onerror = (event) => {
-        transaction.commit()
+        reject(event)
+      }
+
+      transaction.oncomplete = () => {
+        // Transaction completed
+      }
+
+      transaction.onerror = (event) => {
         reject(event)
       }
     })

@@ -1492,9 +1492,14 @@ class ClientService extends EventTarget {
   ) {
     // Try to get cached sub requests first
     if (cacheKey) {
-      const cached = await indexedDb.getSubRequests(cacheKey)
-      if (cached) {
-        return cached
+      try {
+        const cached = await indexedDb.getSubRequests(cacheKey)
+        if (cached) {
+          return cached
+        }
+      } catch (error) {
+        console.warn('[generateSubRequestsForPubkeys] Failed to get cached sub requests:', error)
+        // Continue to fetch from relays
       }
     }
 
@@ -1508,7 +1513,9 @@ class ClientService extends EventTarget {
       }
       const result = [{ urls, filter: { authors: pubkeys } }]
       if (cacheKey) {
-        await indexedDb.putSubRequests(cacheKey, result)
+        indexedDb.putSubRequests(cacheKey, result).catch((error) => {
+          console.warn('[generateSubRequestsForPubkeys] Failed to cache sub requests:', error)
+        })
       }
       return result
     }
@@ -1548,7 +1555,9 @@ class ClientService extends EventTarget {
     }))
 
     if (cacheKey) {
-      await indexedDb.putSubRequests(cacheKey, result)
+      indexedDb.putSubRequests(cacheKey, result).catch((error) => {
+        console.warn('[generateSubRequestsForPubkeys] Failed to cache sub requests:', error)
+      })
     }
 
     return result
