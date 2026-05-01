@@ -1,6 +1,6 @@
 import { ExtendedKind } from '@/constants'
 import { tagNameEquals } from '@/lib/tag'
-import { TRelayInfo } from '@/types'
+import { TFeedSubRequest, TRelayInfo } from '@/types'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds, matchFilter } from 'nostr-tools'
 
@@ -32,7 +32,8 @@ const StoreNames = {
   TIMELINE_REFS: 'timelineRefs',
   GROUP_MESSAGES: 'groupMessages',
   STUFF_STATS: 'stuffStats',
-  THREAD_REPLIES: 'threadReplies'
+  THREAD_REPLIES: 'threadReplies',
+  SUB_REQUESTS: 'subRequests'
 }
 
 class IndexedDbService {
@@ -140,6 +141,9 @@ class IndexedDbService {
           }
           if (db.objectStoreNames.contains(StoreNames.MUTE_DECRYPTED_TAGS)) {
             db.deleteObjectStore(StoreNames.MUTE_DECRYPTED_TAGS)
+          }
+          if (!db.objectStoreNames.contains(StoreNames.SUB_REQUESTS)) {
+            db.createObjectStore(StoreNames.SUB_REQUESTS, { keyPath: 'key' })
           }
           this.db = db
         }
@@ -992,6 +996,71 @@ class IndexedDbService {
       transaction.commit()
       console.error('Failed to clean up old events:', event)
     }
+  }
+
+  async putSubRequests(key: string, subRequests: TFeedSubRequest[]): Promise<void> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.SUB_REQUESTS, 'readwrite')
+      const store = transaction.objectStore(StoreNames.SUB_REQUESTS)
+
+      const data = {
+        key,
+        subRequests,
+        addedAt: Date.now()
+      }
+
+      const putRequest = store.put(data)
+      putRequest.onsuccess = () => {
+        transaction.commit()
+        resolve()
+      }
+
+      putRequest.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
+  }
+
+  async getSubRequests(key: string): Promise<TFeedSubRequest[] | null> {
+    await this.initPromise
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        return reject('database not initialized')
+      }
+      const transaction = this.db.transaction(StoreNames.SUB_REQUESTS, 'readonly')
+      const store = transaction.objectStore(StoreNames.SUB_REQUESTS)
+      const request = store.get(key)
+
+      request.onsuccess = () => {
+        transaction.commit()
+        const result = request.result as
+          | { subRequests: TFeedSubRequest[]; addedAt: number }
+          | undefined
+        if (result?.subRequests) {
+          // Clean up sub requests older than 1 hour
+          if (result.addedAt < Date.now() - 1000 * 60 * 60) {
+            const deleteTransaction = this.db!.transaction(StoreNames.SUB_REQUESTS, 'readwrite')
+            deleteTransaction.objectStore(StoreNames.SUB_REQUESTS).delete(key)
+            deleteTransaction.commit()
+            resolve(null)
+          } else {
+            resolve(result.subRequests)
+          }
+        } else {
+          resolve(null)
+        }
+      }
+
+      request.onerror = (event) => {
+        transaction.commit()
+        reject(event)
+      }
+    })
   }
 }
 

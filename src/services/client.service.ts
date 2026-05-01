@@ -1485,7 +1485,19 @@ class ClientService extends EventTarget {
 
   // ================= Utils =================
 
-  async generateSubRequestsForPubkeys(pubkeys: string[], myPubkey?: string | null) {
+  async generateSubRequestsForPubkeys(
+    pubkeys: string[],
+    myPubkey?: string | null,
+    cacheKey?: string
+  ) {
+    // Try to get cached sub requests first
+    if (cacheKey) {
+      const cached = await indexedDb.getSubRequests(cacheKey)
+      if (cached) {
+        return cached
+      }
+    }
+
     // If many websocket connections are initiated simultaneously, it will be
     // very slow on Safari (for unknown reason)
     if (isSafari()) {
@@ -1494,7 +1506,11 @@ class ClientService extends EventTarget {
         const relayList = await this.fetchRelayList(myPubkey)
         urls = relayList.read.concat(getDefaultRelayUrls()).slice(0, 5)
       }
-      return [{ urls, filter: { authors: pubkeys } }]
+      const result = [{ urls, filter: { authors: pubkeys } }]
+      if (cacheKey) {
+        await indexedDb.putSubRequests(cacheKey, result)
+      }
+      return result
     }
 
     const relayLists = await this.fetchRelayLists(pubkeys)
@@ -1526,10 +1542,16 @@ class ClientService extends EventTarget {
         }
       })
 
-    return Object.entries(group).map(([url, authors]) => ({
+    const result = Object.entries(group).map(([url, authors]) => ({
       urls: [url],
       filter: { authors: Array.from(authors) }
     }))
+
+    if (cacheKey) {
+      await indexedDb.putSubRequests(cacheKey, result)
+    }
+
+    return result
   }
 }
 

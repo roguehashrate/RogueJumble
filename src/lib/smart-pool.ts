@@ -4,7 +4,7 @@ import { AbstractRelay } from 'nostr-tools/abstract-relay'
 import { isInsecureUrl, isOnionUrl } from './url'
 import { isTorBrowser } from './utils'
 
-const DEFAULT_CONNECTION_TIMEOUT = 10 * 1000 // 10 seconds
+const DEFAULT_CONNECTION_TIMEOUT = 5 * 1000 // 5 seconds for faster initial load
 const CLEANUP_THRESHOLD = 15 // number of relays to trigger cleanup
 const CLEANUP_INTERVAL = 30 * 1000 // 30 seconds
 const IDLE_TIMEOUT = 10 * 1000 // 10 seconds
