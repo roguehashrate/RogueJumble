@@ -10,6 +10,14 @@ const FONT_URLS = {
   SpaceGrotesk: {
     400: 'https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUsj.ttf',
     700: 'https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf'
+  },
+  Caveat: {
+    400: 'https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7ZjYY.woff2',
+    700: 'https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7ZjYY.woff2'
+  },
+  Orbitron: {
+    400: 'https://fonts.gstatic.com/s/orbitron/v35/yMJRMIlzdpvBhQQL_Qq7dy0.woff2',
+    700: 'https://fonts.gstatic.com/s/orbitron/v35/yMJRMIlzdpvBhQQL_Qq7dy0.woff2'
   }
 }
 
@@ -17,10 +25,13 @@ let styleEl: HTMLStyleElement | null = null
 
 function applyFont(fontName: string) {
   const families: Record<string, string> = {
-    default: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    default:
+      'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     monospace: '"JetBrains Mono", monospace',
     dyslexic: '"Comic Neue", sans-serif',
-    sourcesans: '"Space Grotesk", sans-serif'
+    sourcesans: '"Space Grotesk", sans-serif',
+    caveat: '"Caveat", cursive',
+    orbitron: '"Orbitron", sans-serif'
   }
 
   const family = families[fontName] || families.default
@@ -57,7 +68,11 @@ export async function initFonts() {
     loadFontFromURL('JetBrains Mono', '400', FONT_URLS.JetBrainsMono[400]),
     loadFontFromURL('JetBrains Mono', '700', FONT_URLS.JetBrainsMono[700]),
     loadFontFromURL('Space Grotesk', '400', FONT_URLS.SpaceGrotesk[400]),
-    loadFontFromURL('Space Grotesk', '700', FONT_URLS.SpaceGrotesk[700])
+    loadFontFromURL('Space Grotesk', '700', FONT_URLS.SpaceGrotesk[700]),
+    loadFontFromURL('Caveat', '400', FONT_URLS.Caveat[400]),
+    loadFontFromURL('Caveat', '700', FONT_URLS.Caveat[700]),
+    loadFontFromURL('Orbitron', '400', FONT_URLS.Orbitron[400]),
+    loadFontFromURL('Orbitron', '700', FONT_URLS.Orbitron[700])
   ])
 }
 

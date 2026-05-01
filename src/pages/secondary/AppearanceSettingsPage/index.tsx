@@ -14,7 +14,7 @@ const NOTIFICATION_STYLES = [
 ] as const
 
 const FONTS = [
-  { key: FONT.DEFAULT, label: 'Default', preview: <Type className="size-5" /> },
+  { key: FONT.DEFAULT, label: 'System', preview: <Type className="size-5" /> },
   {
     key: FONT.MONOSPACE,
     label: 'JetBrains Mono',
@@ -22,13 +22,23 @@ const FONTS = [
   },
   {
     key: FONT.DYSLEXIC,
-    label: 'Dyslexic',
+    label: 'Comic Neue',
     preview: <span className="size-5 font-['Comic_Neue']">Aa</span>
   },
   {
     key: FONT.SOURCESANS,
     label: 'Space Grotesk',
     preview: <span className="size-5 font-['Space_Grotesk']">Aa</span>
+  },
+  {
+    key: FONT.CAVEAT,
+    label: 'Caveat',
+    preview: <span className="size-5 font-['Caveat']">Aa</span>
+  },
+  {
+    key: FONT.ORBITRON,
+    label: 'Orbitron',
+    preview: <span className="size-5 font-['Orbitron']">Aa</span>
   }
 ] as const
 

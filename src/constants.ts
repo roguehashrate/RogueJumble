@@ -234,7 +234,9 @@ export const FONT = {
   DEFAULT: 'default',
   MONOSPACE: 'monospace',
   DYSLEXIC: 'dyslexic',
-  SOURCESANS: 'sourcesans'
+  SOURCESANS: 'sourcesans',
+  CAVEAT: 'caveat',
+  ORBITRON: 'orbitron'
 } as const
 export type TFont = (typeof FONT)[keyof typeof FONT]
 
@@ -522,8 +524,8 @@ export const PRIMARY_COLORS = {
 export type TPrimaryColor = keyof typeof PRIMARY_COLORS
 
 export const THEME_COLORS = {
-  rogue: {
-    name: 'Rogue',
+  ember: {
+    name: 'Ember',
     colors: {
       background: '0 0% 0%',
       foreground: '0 0% 98%',
@@ -764,46 +766,6 @@ export const THEME_COLORS = {
       cardBorderWidth: '1px'
     }
   },
-  smolder: {
-    name: 'Smolder',
-    colors: {
-      background: '0 0% 0%',
-      foreground: '15 80% 85%',
-      card: '15 10% 3%',
-      cardForeground: '15 80% 85%',
-      popover: '15 10% 4%',
-      popoverForeground: '15 80% 85%',
-      primary: '15 90% 55%',
-      primaryHover: '15 90% 65%',
-      primaryForeground: '0 0% 0%',
-      secondary: '15 10% 10%',
-      secondaryForeground: '15 80% 85%',
-      muted: '15 10% 8%',
-      mutedForeground: '15 15% 45%',
-      accent: '15 90% 55%',
-      accentForeground: '0 0% 0%',
-      destructive: '0 70% 40%',
-      destructiveForeground: '15 80% 85%',
-      border: '15 20% 15%',
-      input: '15 10% 8%',
-      ring: '15 90% 55%',
-      surfaceBackground: '0 0% 0%',
-      zap: '45 93% 47%',
-      repost: '30 80% 40%',
-      bookmark: '350 90% 55%',
-      comment: '15 70% 50%',
-      noteHover: '15 5% 2%'
-    },
-    style: {
-      radius: '0.5rem',
-      scanlineOpacity: '0',
-      bgGradient: 'none',
-      textShadow: '0 0 5px hsl(var(--primary) / 0.4), 0 0 12px hsl(var(--primary) / 0.2)',
-      fontFamily: '',
-      meshOpacity: '0.35',
-      cardBorderWidth: '1px'
-    }
-  },
   midnight: {
     name: 'Midnight',
     colors: {
@@ -844,46 +806,6 @@ export const THEME_COLORS = {
       cardBorderWidth: '0px'
     }
   },
-  everforest: {
-    name: 'Everforest',
-    colors: {
-      background: '160 10% 14%',
-      foreground: '60 10% 90%',
-      card: '160 10% 18%',
-      cardForeground: '60 10% 90%',
-      popover: '160 10% 20%',
-      popoverForeground: '60 10% 90%',
-      primary: '150 50% 55%',
-      primaryHover: '150 50% 62%',
-      primaryForeground: '160 10% 14%',
-      secondary: '160 8% 22%',
-      secondaryForeground: '60 10% 90%',
-      muted: '160 8% 18%',
-      mutedForeground: '60 5% 55%',
-      accent: '150 50% 55%',
-      accentForeground: '160 10% 14%',
-      destructive: '0 55% 55%',
-      destructiveForeground: '60 10% 90%',
-      border: '160 8% 24%',
-      input: '160 8% 20%',
-      ring: '150 50% 55%',
-      surfaceBackground: '160 10% 10%',
-      zap: '40 70% 50%',
-      repost: '140 50% 45%',
-      bookmark: '340 60% 55%',
-      comment: '190 50% 55%',
-      noteHover: '160 8% 16%'
-    },
-    style: {
-      radius: '0.5rem',
-      scanlineOpacity: '0',
-      bgGradient: 'none',
-      textShadow: 'none',
-      fontFamily: '',
-      meshOpacity: '0.5',
-      cardBorderWidth: '0px'
-    }
-  },
   nord: {
     name: 'Nord',
     colors: {
@@ -921,86 +843,6 @@ export const THEME_COLORS = {
       textShadow: 'none',
       fontFamily: '',
       meshOpacity: '0.6',
-      cardBorderWidth: '0px'
-    }
-  },
-  gruvbox: {
-    name: 'Gruvbox',
-    colors: {
-      background: '30 17% 12%',
-      foreground: '40 45% 87%',
-      card: '30 14% 15%',
-      cardForeground: '40 45% 87%',
-      popover: '30 14% 17%',
-      popoverForeground: '40 45% 87%',
-      primary: '25 65% 55%',
-      primaryHover: '25 65% 62%',
-      primaryForeground: '30 17% 12%',
-      secondary: '30 10% 18%',
-      secondaryForeground: '40 45% 87%',
-      muted: '30 10% 14%',
-      mutedForeground: '40 10% 55%',
-      accent: '25 65% 55%',
-      accentForeground: '30 17% 12%',
-      destructive: '0 65% 45%',
-      destructiveForeground: '40 45% 87%',
-      border: '30 10% 20%',
-      input: '30 10% 16%',
-      ring: '25 65% 55%',
-      surfaceBackground: '30 17% 8%',
-      zap: '50 65% 55%',
-      repost: '84 50% 35%',
-      bookmark: '333 55% 55%',
-      comment: '50 30% 50%',
-      noteHover: '30 10% 13%'
-    },
-    style: {
-      radius: '0.25rem',
-      scanlineOpacity: '0',
-      bgGradient: 'none',
-      textShadow: 'none',
-      fontFamily: '',
-      meshOpacity: '0.3',
-      cardBorderWidth: '0px'
-    }
-  },
-  dracula: {
-    name: 'Dracula',
-    colors: {
-      background: '248 18% 14%',
-      foreground: '60 90% 96%',
-      card: '232 15% 20%',
-      cardForeground: '60 90% 96%',
-      popover: '232 15% 22%',
-      popoverForeground: '60 90% 96%',
-      primary: '291 81% 72%',
-      primaryHover: '291 81% 78%',
-      primaryForeground: '232 15% 14%',
-      secondary: '232 12% 24%',
-      secondaryForeground: '60 90% 96%',
-      muted: '232 12% 20%',
-      mutedForeground: '60 8% 60%',
-      accent: '326 85% 71%',
-      accentForeground: '232 15% 14%',
-      destructive: '0 70% 60%',
-      destructiveForeground: '60 90% 96%',
-      border: '232 12% 28%',
-      input: '232 12% 24%',
-      ring: '291 81% 72%',
-      surfaceBackground: '248 18% 11%',
-      zap: '50 90% 65%',
-      repost: '145 55% 55%',
-      bookmark: '330 65% 65%',
-      comment: '175 65% 65%',
-      noteHover: '232 12% 18%'
-    },
-    style: {
-      radius: '0.25rem',
-      scanlineOpacity: '0',
-      bgGradient: 'none',
-      textShadow: '0 0 6px hsl(291 81% 65% / 0.25)',
-      fontFamily: '',
-      meshOpacity: '0.4',
       cardBorderWidth: '0px'
     }
   }

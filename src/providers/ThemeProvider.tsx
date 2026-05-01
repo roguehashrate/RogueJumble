@@ -53,13 +53,23 @@ const applyTheme = (themeName: TThemeName) => {
   root.style.setProperty('--theme-mesh-opacity', style.meshOpacity)
   root.style.setProperty('--theme-card-border-width', style.cardBorderWidth)
 
-  root.classList.remove('light', 'dark', 'rogue', 'emerald', 'sapphire', 'amethyst', 'hackerman', 'phosphor', 'smolder', 'midnight')
+  root.classList.remove(
+    'light',
+    'dark',
+    'ember',
+    'emerald',
+    'sapphire',
+    'amethyst',
+    'hackerman',
+    'phosphor',
+    'midnight'
+  )
   root.classList.add(themeName)
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [themeSetting, setThemeSettingState] = useState<TThemeName>(
-    (localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'rogue'
+    (localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'sapphire'
   )
   const [theme, setTheme] = useState<TTheme>(themeSetting)
 

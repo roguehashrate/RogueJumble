@@ -64,7 +64,7 @@ class LocalStorageService {
   static instance: LocalStorageService
 
   private relaySets: TRelaySet[] = []
-  private themeSetting: TThemeName = 'rogue'
+  private themeSetting: TThemeName = 'sapphire'
   private accounts: TAccount[] = []
   private currentAccount: TAccount | null = null
   private noteListMode: TNoteListMode = 'posts'
@@ -116,7 +116,7 @@ class LocalStorageService {
 
   init() {
     this.themeSetting =
-      (window.localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'rogue'
+      (window.localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'sapphire'
     const accountsStr = window.localStorage.getItem(StorageKey.ACCOUNTS)
     this.accounts = accountsStr ? JSON.parse(accountsStr) : []
     const currentAccountStr = window.localStorage.getItem(StorageKey.CURRENT_ACCOUNT)
