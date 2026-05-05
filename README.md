@@ -33,7 +33,7 @@ If you like this project, consider supporting:
 
 ### RogueHashrate
 - **Lightning:** ⚡️ roguehashrate@rizful.com ⚡️
-- **Bitcoin:** bc1q0qfwehdvvux5r7duyaxjaxcdpdauxz7nkp8nzz
+- **Bitcoin:** bc1pvqywu0axgeqt6yjn773y4n9rs475jrxwj893jchpd23pl7fgkfjqnsw6sz
 
 ### Original Creator — CodyTseng
 You can support the original Jumble project as well by supporting CodyTseng:
