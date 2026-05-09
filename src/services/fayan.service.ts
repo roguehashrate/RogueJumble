@@ -54,7 +54,6 @@ class FayanService {
     const cache = this.searchResultCache.get(query)
     if (cache) {
       if (offset + limit <= cache.length) {
-        console.log('FayanService searchUsers returning from cache')
         return cache.slice(offset, offset + limit)
       }
     }

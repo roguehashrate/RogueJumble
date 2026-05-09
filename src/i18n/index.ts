@@ -64,7 +64,6 @@ i18n
     },
     detection: {
       convertDetectedLanguage: (lng) => {
-        console.log('Detected language:', lng)
         if (lng.startsWith('zh')) {
           return ['zh', 'zh-CN', 'zh-SG'].includes(lng) ? 'zh' : 'zh-TW'
         }

@@ -55,7 +55,6 @@ export class SmartPool extends SimplePool {
     })
 
     if (idleRelays.length > 0) {
-      console.log('[SmartPool] Closing idle relays:', idleRelays)
       this.close(idleRelays)
     }
   }

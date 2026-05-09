@@ -767,6 +767,14 @@ export default {
     'Balance Display Unit': 'Balance Display Unit',
     'Enable Tor mode': 'Enable Tor mode',
     'Enable Tor mode description':
-      'Enhanced privacy mode. When using Tor Browser, all relays work normally. In other browsers, only .onion relays are allowed to prevent IP leakage.'
+      'Enhanced privacy mode. When using Tor Browser, all relays work normally. In other browsers, only .onion relays are allowed to prevent IP leakage.',
+    Content: 'Content',
+    Interaction: 'Interaction',
+    Network: 'Network',
+    Account: 'Account',
+    Info: 'Info',
+    'Copy anyway': 'Copy anyway',
+    'Are you sure you want to copy your private key to the clipboard? Anyone with access to this key can control your account.':
+      'Are you sure you want to copy your private key to the clipboard? Anyone with access to this key can control your account.'
   }
 }

@@ -51,6 +51,7 @@ const GeneralSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   return (
     <SecondaryPageLayout ref={ref} index={index} title={t('General')}>
       <div className="mt-3 space-y-4">
+        <SectionHeader>{t('Language')}</SectionHeader>
         <SettingItem>
           <Label htmlFor="languages" className="text-base font-normal">
             {t('Languages')}
@@ -61,13 +62,15 @@ const GeneralSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
             </SelectTrigger>
             <SelectContent>
               {Object.entries(LocalizedLanguageNames).map(([key, value]) => (
-                <SelectItem key={key} value={key}>
+                <SelectItem key={key} value={value}>
                   {value}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </SettingItem>
+
+        <SectionHeader>{t('Media')}</SectionHeader>
         <SettingItem>
           <Label htmlFor="media-auto-load-policy" className="text-base font-normal">
             {t('Auto-load media')}
@@ -132,6 +135,8 @@ const GeneralSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
           </Label>
           <Switch id="video-loop" checked={videoLoop} onCheckedChange={setVideoLoop} />
         </SettingItem>
+
+        <SectionHeader>{t('Content')}</SectionHeader>
         <SettingItem>
           <Label htmlFor="hide-content-mentioning-muted-users" className="text-base font-normal">
             {t('Hide content mentioning muted users')}
@@ -163,6 +168,8 @@ const GeneralSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
           </Select>
         </SettingItem>
         <DefaultTrustScoreFilter />
+
+        <SectionHeader>{t('Interaction')}</SectionHeader>
         <SettingItem>
           <Label htmlFor="quick-reaction" className="text-base font-normal">
             <div>{t('Quick reaction')}</div>
@@ -209,4 +216,13 @@ const GeneralSettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
   )
 })
 GeneralSettingsPage.displayName = 'GeneralSettingsPage'
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {children}
+    </div>
+  )
+}
+
 export default GeneralSettingsPage

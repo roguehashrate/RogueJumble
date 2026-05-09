@@ -1,31 +1,29 @@
 import AboutInfoDialog from '@/components/AboutInfoDialog'
 import Donation from '@/components/Donation'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
+import { Separator } from '@/components/ui/separator'
+import {
   toAppearanceSettings,
   toEmojiPackSettings,
   toGeneralSettings,
   toPostSettings,
   toRelaySettings,
-  toSystemSettings,
-  toWallet
+  toSystemSettings
 } from '@/lib/link'
 import { cn } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
-import {
-  Check,
-  ChevronRight,
-  Cog,
-  Copy,
-  Info,
-  KeyRound,
-  Palette,
-  PencilLine,
-  Server,
-  Settings2,
-  Smile,
-  Wallet
-} from 'lucide-react'
+import { Check, ChevronRight, Cog, Copy, Info, KeyRound, Palette, PencilLine, Server, Settings2, Smile } from 'lucide-react'
 import { forwardRef, HTMLProps, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -38,6 +36,7 @@ export default function Settings() {
 
   return (
     <div>
+      <SectionHeader>{t('Content')}</SectionHeader>
       <SettingItem className="clickable" onClick={() => push(toGeneralSettings())}>
         <div className="flex items-center gap-4">
           <Settings2 />
@@ -52,22 +51,6 @@ export default function Settings() {
         </div>
         <ChevronRight />
       </SettingItem>
-      <SettingItem className="clickable" onClick={() => push(toRelaySettings())}>
-        <div className="flex items-center gap-4">
-          <Server />
-          <div>{t('Relays')}</div>
-        </div>
-        <ChevronRight />
-      </SettingItem>
-      {!!pubkey && (
-        <SettingItem className="clickable" onClick={() => push(toWallet())}>
-          <div className="flex items-center gap-4">
-            <Wallet />
-            <div>{t('Wallet')}</div>
-          </div>
-          <ChevronRight />
-        </SettingItem>
-      )}
       {!!pubkey && (
         <SettingItem className="clickable" onClick={() => push(toPostSettings())}>
           <div className="flex items-center gap-4">
@@ -76,6 +59,24 @@ export default function Settings() {
           </div>
           <ChevronRight />
         </SettingItem>
+      )}
+
+      <Separator className="my-2" />
+
+      <SectionHeader>{t('Network')}</SectionHeader>
+      <SettingItem className="clickable" onClick={() => push(toRelaySettings())}>
+        <div className="flex items-center gap-4">
+          <Server />
+          <div>{t('Relays')}</div>
+        </div>
+        <ChevronRight />
+      </SettingItem>
+
+      {(!!pubkey || !!nsec || !!ncryptsec) && (
+        <>
+          <Separator className="my-2" />
+          <SectionHeader>{t('Account')}</SectionHeader>
+        </>
       )}
       {!!pubkey && (
         <SettingItem className="clickable" onClick={() => push(toEmojiPackSettings())}>
@@ -87,37 +88,31 @@ export default function Settings() {
         </SettingItem>
       )}
       {!!nsec && (
-        <SettingItem
-          className="clickable"
-          onClick={() => {
-            navigator.clipboard.writeText(nsec)
+        <CopyPrivateKeyItem
+          label={`${t('Copy private key')} (nsec)`}
+          value={nsec}
+          copied={copiedNsec}
+          onCopy={() => {
             setCopiedNsec(true)
             setTimeout(() => setCopiedNsec(false), 2000)
           }}
-        >
-          <div className="flex items-center gap-4">
-            <KeyRound />
-            <div>{t('Copy private key')} (nsec)</div>
-          </div>
-          {copiedNsec ? <Check /> : <Copy />}
-        </SettingItem>
+        />
       )}
       {!!ncryptsec && (
-        <SettingItem
-          className="clickable"
-          onClick={() => {
-            navigator.clipboard.writeText(ncryptsec)
+        <CopyPrivateKeyItem
+          label={`${t('Copy private key')} (ncryptsec)`}
+          value={ncryptsec}
+          copied={copiedNcryptsec}
+          onCopy={() => {
             setCopiedNcryptsec(true)
             setTimeout(() => setCopiedNcryptsec(false), 2000)
           }}
-        >
-          <div className="flex items-center gap-4">
-            <KeyRound />
-            <div>{t('Copy private key')} (ncryptsec)</div>
-          </div>
-          {copiedNcryptsec ? <Check /> : <Copy />}
-        </SettingItem>
+        />
       )}
+
+      <Separator className="my-2" />
+
+      <SectionHeader>{t('Advanced')}</SectionHeader>
       <SettingItem className="clickable" onClick={() => push(toSystemSettings())}>
         <div className="flex items-center gap-4">
           <Cog />
@@ -125,6 +120,10 @@ export default function Settings() {
         </div>
         <ChevronRight />
       </SettingItem>
+
+      <Separator className="my-2" />
+
+      <SectionHeader>{t('Info')}</SectionHeader>
       <AboutInfoDialog>
         <SettingItem className="clickable">
           <div className="flex items-center gap-4">
@@ -139,9 +138,67 @@ export default function Settings() {
           </div>
         </SettingItem>
       </AboutInfoDialog>
-      <div className="p-4">
+      <div className="px-4 py-2">
         <Donation />
       </div>
+    </div>
+  )
+}
+
+function CopyPrivateKeyItem({
+  label,
+  value,
+  copied,
+  onCopy
+}: {
+  label: string
+  value: string
+  copied: boolean
+  onCopy: () => void
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <SettingItem className="clickable text-destructive hover:bg-destructive/10">
+          <div className="flex items-center gap-4">
+            <KeyRound />
+            <div>{label}</div>
+          </div>
+          {copied ? <Check className="text-destructive" /> : <Copy className="text-destructive" />}
+        </SettingItem>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('Copy private key')}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t(
+              'Are you sure you want to copy your private key to the clipboard? Anyone with access to this key can control your account.'
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('Cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={async () => {
+              await navigator.clipboard.writeText(value)
+              onCopy()
+            }}
+          >
+            {t('Copy anyway')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-4 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {children}
     </div>
   )
 }

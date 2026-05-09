@@ -461,7 +461,6 @@ const GroupChatPage = forwardRef(
 
         // Step 2: Fetch fresh messages from relay
         try {
-          console.log('[GroupChat] Fetching messages from', relayUrls.length, 'relays')
           const messageEvents = await client.fetchEvents(relayUrls, {
             kinds: [NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE, 10],
             '#h': [groupId],
@@ -469,7 +468,6 @@ const GroupChatPage = forwardRef(
           })
 
           if (isMounted) {
-            console.log('[GroupChat] Got', messageEvents.length, 'messages from relay')
             const sortedMessages = processMessages(
               messageEvents.map((event) => ({ event, relays: relayUrls })),
               false
@@ -507,8 +505,6 @@ const GroupChatPage = forwardRef(
           {
             onevent: async (event: Event) => {
               if (!isMounted) return
-
-              console.log('[GroupChat] Live message received')
 
               const eTags = event.tags.filter((t: string[]) => t[0] === 'e')
               const pTag = event.tags.find((t: string[]) => t[0] === 'p')
@@ -691,14 +687,6 @@ const GroupChatPage = forwardRef(
       const msgIds = messagesRef.current.map((m) => m.event.id)
       if (msgIds.length === 0) return
 
-      console.log(
-        '[GroupChat] Fetching zap receipts for',
-        msgIds.length,
-        'messages on',
-        relayUrls.length,
-        'relays'
-      )
-
       // Fetch existing zap receipts filtered by message event IDs (e tag)
       client
         .fetchEvents(
@@ -718,13 +706,6 @@ const GroupChatPage = forwardRef(
 
               const messageId = eTag[1]
               if (!msgIds.includes(messageId)) return
-
-              console.log(
-                '[GroupChat] Found zap receipt for message',
-                messageId.slice(0, 8),
-                'amount:',
-                zapInfo.amount
-              )
 
               setZaps((prev) => {
                 const newMap = new Map(prev)
@@ -761,13 +742,6 @@ const GroupChatPage = forwardRef(
             if (!eTag) return
 
             const messageId = eTag[1]
-
-            console.log(
-              '[GroupChat] New zap received for message',
-              messageId.slice(0, 8),
-              'amount:',
-              zapInfo.amount
-            )
 
             setZaps((prev) => {
               const newMap = new Map(prev)

@@ -62,14 +62,12 @@ export default function GroupsFeed() {
           if (relayList.write.length > 0) {
             fetchRelays = [...new Set([...relayList.write.slice(0, 3), ...getDefaultRelayUrls()])]
           }
-        } catch (e) {
-          console.log('[GroupsFeed] Failed to fetch relay list, using defaults')
+        } catch {
+          // ignore
         }
         if (fetchRelays.length === 0) {
           fetchRelays = getDefaultRelayUrls()
         }
-
-        console.log('[GroupsFeed] Fetching group list from', fetchRelays.length, 'relays:', fetchRelays)
 
         const events = await client.fetchEvents(
           fetchRelays,
@@ -82,25 +80,18 @@ export default function GroupsFeed() {
 
         if (cancelled) return
         if (events.length === 0) {
-          console.log('[GroupsFeed] No kind 10009 group list event found')
           setGroups([])
           setLoading(false)
           return
         }
 
-        console.log('[GroupsFeed] Found group list event with', events[0].tags.length, 'total tags')
-        const groupTags = events[0].tags.filter((t: string[]) => t[0] === 'group')
-        console.log('[GroupsFeed] Found', groupTags.length, 'group tags:', groupTags.map((t: string[]) => `${t[1]}@${t[2]}`))
-
         const groupInfos = parseGroupTags(events[0])
-        console.log('[GroupsFeed] Parsed', groupInfos.length, 'groups from tags')
 
         // Fetch metadata (kind 39000) for each group
         await enrichWithMetadata(groupInfos)
 
         if (cancelled) return
         const deduped = deduplicateGroups(groupInfos)
-        console.log('[GroupsFeed] After dedup:', deduped.length, 'groups')
         setGroups(deduped)
       } catch (error) {
         console.error('[GroupsFeed] Failed to load groups:', error)
@@ -117,7 +108,7 @@ export default function GroupsFeed() {
         if (relayList.write.length > 0) {
           subRelays = [...new Set([...relayList.write.slice(0, 3), ...getDefaultRelayUrls()])]
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
       if (subRelays.length === 0) {
@@ -129,13 +120,9 @@ export default function GroupsFeed() {
         { kinds: [10009], authors: [pubkey] },
         {
           onevent: async (event) => {
-            console.log('[GroupsFeed] Received group list update with', event.tags.length, 'tags')
-            const groupTags = event.tags.filter((t: string[]) => t[0] === 'group')
-            console.log('[GroupsFeed] Found', groupTags.length, 'group tags in update:', groupTags.map((t: string[]) => `${t[1]}@${t[2]}`))
             const newGroups = parseGroupTags(event)
             await enrichWithMetadata(newGroups)
             const deduped = deduplicateGroups(newGroups)
-            console.log('[GroupsFeed] After dedup:', deduped.length, 'groups')
             setGroups(deduped)
           }
         }

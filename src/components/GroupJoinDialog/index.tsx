@@ -90,7 +90,7 @@ export default function GroupJoinDialog({
       }
 
       setSearchError(t('Group not found on any known group relays. Please check the group ID.'))
-    } catch (error) {
+    } catch {
       setSearchError(t('Failed to search for group'))
     } finally {
       setSearching(false)
@@ -128,9 +128,6 @@ export default function GroupJoinDialog({
         existingTags = groupListEvents[0].tags.filter(
           (tag) => tag[0] === 'group' || tag[0] === 'r'
         )
-        console.log('[GroupJoin] Found existing list with', existingTags.filter(t => t[0] === 'group').length, 'group tags')
-      } else {
-        console.log('[GroupJoin] No existing group list found, creating new one')
       }
 
       // Check if already in list

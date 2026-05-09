@@ -54,12 +54,10 @@ export function PinnedUsersProvider({ children }: { children: React.ReactNode })
   const migrateToNip44 = useCallback(
     async (event: Event, privateTags: string[][]) => {
       if (!accountPubkey) return
-      console.log('[PinnedUsers] Migrating from NIP-04 to NIP-44, privateTags count:', privateTags.length)
       try {
         const cipherText = await nip44Encrypt(accountPubkey, JSON.stringify(privateTags))
         const draftEvent = createPinnedUsersListDraftEvent(event.tags, cipherText)
         const newEvent = await publish(draftEvent)
-        console.log('[PinnedUsers] Migration successful, new event id:', newEvent.id)
         await updatePinnedUsersEvent(newEvent, privateTags)
       } catch (error) {
         console.error('[PinnedUsers] Failed to migrate to NIP-44', error)
@@ -98,10 +96,8 @@ export function PinnedUsersProvider({ children }: { children: React.ReactNode })
 
         let plainText: string
         if (storedPlainText) {
-          console.log('[PinnedUsers] Using cached decrypted content for event', event.id)
           plainText = storedPlainText
         } else {
-          console.log('[PinnedUsers] Decrypting content with', wasNip04 ? 'NIP-04' : 'NIP-44', 'for event', event.id)
           plainText = wasNip04
             ? await nip04Decrypt(event.pubkey, event.content)
             : await nip44Decrypt(event.pubkey, event.content)
@@ -109,7 +105,6 @@ export function PinnedUsersProvider({ children }: { children: React.ReactNode })
         }
 
         const privateTags = z.array(z.array(z.string())).parse(JSON.parse(plainText))
-        console.log('[PinnedUsers] Decrypted privateTags count:', privateTags.length, 'wasNip04:', wasNip04)
         return { privateTags, wasNip04 }
       } catch (error) {
         console.error('Failed to decrypt pinned users content', error)

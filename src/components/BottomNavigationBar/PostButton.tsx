@@ -102,12 +102,6 @@ export default function PostButton() {
 
   const handleSend = async () => {
     const hasContent = message.trim() || uploads.some((u) => u.url)
-    console.log('[PostButton] handleSend called', {
-      hasContent,
-      groupId,
-      relayUrl,
-      messageLength: message.length
-    })
     if (!hasContent) {
       toast.error(t('Message cannot be empty'))
       return
@@ -157,7 +151,6 @@ export default function PostButton() {
         created_at: Math.floor(Date.now() / 1000)
       }
 
-      console.log('[PostButton] Publishing with relayUrl:', relayUrl)
       // For group messages, publish to the group relay AND default relays for redundancy
       if (relayUrl) {
         const publishRelays = [relayUrl, ...getDefaultRelayUrls().slice(0, 4)]
@@ -165,7 +158,6 @@ export default function PostButton() {
       } else {
         await publish(draftEvent)
       }
-      console.log('[PostButton] Message published successfully')
       setMessage('')
       setUploads([])
       setReplyingTo(null)

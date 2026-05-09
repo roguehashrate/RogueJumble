@@ -13,7 +13,7 @@ export default function AboutInfoDialog({ children }: { children: React.ReactNod
     <>
       <div className="text-xl font-semibold">RogueJumble</div>
       <div className="text-muted-foreground">
-        A user-friendly Nostr client for exploring relay feeds
+        An opinionated Nostr client with a mobile first UI and some customizaton.
       </div>
       <div>
         Made by <Username userId={ROGUE_HASHRATE_PUBKEY} className="inline-block text-primary" showAt />
