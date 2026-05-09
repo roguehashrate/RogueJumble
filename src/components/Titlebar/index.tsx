@@ -27,15 +27,15 @@ export function Titlebar({
   const shouldHide = autoHide && deepBrowsing && lastScrollTop > hideThreshold
 
   return (
-    <div
-      className={cn(
-        'sticky top-0 z-40 h-12 w-full select-none bg-background/80 backdrop-blur-xl px-2 sm:px-4 [&_svg]:size-5 [&_svg]:shrink-0',
-        !hideBottomBorder && 'border-b border-border/10',
-        'transition-transform duration-300',
-        shouldHide && '-translate-y-full',
-        className
-      )}
-    >
+      <div
+        className={cn(
+          'sticky top-0 z-40 h-12 w-full select-none bg-background/80 backdrop-blur-xl px-2 sm:px-4 [&_svg]:size-5 [&_svg]:shrink-0',
+          !hideBottomBorder && 'border-b border-border/10',
+          'transition-transform duration-300',
+          shouldHide && '-translate-y-full',
+          className
+        )}
+      >
       {children}
       {!hideBottomBorder && (
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
