@@ -643,7 +643,7 @@ class LightningService {
 
         const sentZaps = await client.fetchEvents(relayUrls.slice(0, 4), {
           ...zapFilter,
-          authors: [pubkey]
+          '#P': [pubkey]
         })
 
         for (const zapEvent of sentZaps) {

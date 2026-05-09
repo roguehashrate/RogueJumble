@@ -295,7 +295,10 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                   <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
                 </div>
               ))}
-              <BottomNavigationBar />
+              {secondaryStack.length > 0 &&
+              secondaryStack[secondaryStack.length - 1]?.url?.includes('/settings/wallet/history') ? null : (
+                <BottomNavigationBar />
+              )}
               <TooManyRelaysAlertDialog />
             </NotificationProvider>
           </CurrentRelaysProvider>
