@@ -49,6 +49,7 @@ const PrimaryPageLayout = forwardRef(
           <div
             ref={scrollAreaRef}
             style={{
+              paddingTop: 'env(safe-area-inset-top, 0px)',
               paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
             }}
           >

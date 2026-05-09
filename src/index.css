@@ -36,6 +36,18 @@
     min-height: 100vh;
   }
 
+  #root::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    background: #000;
+    z-index: 9999;
+    pointer-events: none;
+  }
+
   input,
   textarea,
   button {

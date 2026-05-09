@@ -52,6 +52,7 @@ const SecondaryPageLayout = forwardRef(
         <DeepBrowsingProvider active={currentIndex === index}>
           <div
             style={{
+              paddingTop: 'env(safe-area-inset-top, 0px)',
               paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
             }}
           >
