@@ -9,7 +9,7 @@ import client from '@/services/client.service'
 import customEmojiService from '@/services/custom-emoji.service'
 import dmService from '@/services/dm.service'
 import { TEmoji, TProfile } from '@/types'
-import { ArrowUp, ImageUp, Smile, X } from 'lucide-react'
+import { ArrowUp, Paperclip, Smile, X } from 'lucide-react'
 import { nip19 } from 'nostr-tools'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -533,12 +533,12 @@ export default function DmInput({
             <Smile className="h-5 w-5" />
           </button>
         </EmojiPickerDialog>
-        <Uploader onUploadSuccess={handleUploadSuccess}>
+        <Uploader onUploadSuccess={handleUploadSuccess} accept="image/*,video/*">
           <button
             onMouseDown={(e) => e.preventDefault()}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary"
           >
-            <ImageUp className="h-5 w-5" />
+            <Paperclip className="h-5 w-5" />
           </button>
         </Uploader>
         <div
@@ -552,7 +552,7 @@ export default function DmInput({
           onBlur={() => setIsFocused(false)}
           data-placeholder={t('Type a message...')}
           className={cn(
-            'max-h-40 min-h-[36px] flex-1 select-text overflow-y-auto wrap-break-word bg-transparent py-2 text-base focus:outline-hidden',
+            'max-h-40 min-h-[36px] flex-1 select-text overflow-y-auto break-words bg-transparent py-2 text-base focus:outline-hidden',
             disabled && 'cursor-not-allowed opacity-50',
             'empty:before:pointer-events-none empty:before:text-muted-foreground empty:before:content-[attr(data-placeholder)]'
           )}

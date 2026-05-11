@@ -105,8 +105,8 @@ export default function EncryptedFileMessage({
   }, [blobUrl, ext, decryptFile])
 
   const bubbleClass = cn(
-    'overflow-hidden wrap-break-word rounded-lg px-3 py-1.5',
-    'w-fit min-w-9 max-w-full',
+    'overflow-hidden break-words [word-break:break-word] rounded-xl px-4 py-2',
+    'w-fit min-w-[3rem] max-w-full',
     isOwn ? 'bg-primary text-primary-foreground' : 'bg-secondary'
   )
 
@@ -134,7 +134,7 @@ export default function EncryptedFileMessage({
 
   if (isImage && blobUrl) {
     return (
-      <div className={cn(bubbleClass, 'p-0')}>
+      <div className={cn(bubbleClass, 'group relative p-0 overflow-hidden')}>
         <img
           src={blobUrl}
           alt="Encrypted image"
@@ -144,13 +144,20 @@ export default function EncryptedFileMessage({
           )}
           style={{ maxHeight: '300px', objectFit: 'contain' }}
         />
+        <button
+          onClick={handleDownload}
+          className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100"
+          title={t('Download')}
+        >
+          <Download className="h-4 w-4" />
+        </button>
       </div>
     )
   }
 
   if (isVideo && blobUrl) {
     return (
-      <div className={cn(bubbleClass, 'p-0')}>
+      <div className={cn(bubbleClass, 'group relative p-0 overflow-hidden')}>
         <video
           src={blobUrl}
           controls
@@ -160,6 +167,13 @@ export default function EncryptedFileMessage({
           )}
           style={{ maxHeight: '300px' }}
         />
+        <button
+          onClick={handleDownload}
+          className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100"
+          title={t('Download')}
+        >
+          <Download className="h-4 w-4" />
+        </button>
       </div>
     )
   }

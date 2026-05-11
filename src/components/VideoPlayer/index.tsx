@@ -3,6 +3,7 @@ import { cn, isInViewport } from '@/lib/utils'
 import { useContentPolicy } from '@/providers/ContentPolicyProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import mediaManager from '@/services/media-manager.service'
+import { Download } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import ExternalLink from '../ExternalLink'
 
@@ -75,7 +76,7 @@ export default function VideoPlayer({ src, className }: { src: string; className
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="group relative">
       <video
         ref={videoRef}
         controls
@@ -90,6 +91,22 @@ export default function VideoPlayer({ src, className }: { src: string; className
         muted={muteMedia}
         onError={() => setError(true)}
       />
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          const a = document.createElement('a')
+          a.href = src
+          a.target = '_blank'
+          a.download = src.split('/').pop() || 'video'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        }}
+        className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100"
+        title="Download"
+      >
+        <Download className="h-4 w-4" />
+      </button>
     </div>
   )
 }

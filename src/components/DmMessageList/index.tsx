@@ -419,7 +419,7 @@ export default function DmMessageList({
                     )}
                     <div
                       className={cn(
-                        'flex min-w-0 flex-1 flex-col sm:max-w-[80%]',
+                        'flex min-w-0 flex-1 flex-col max-w-[75%]',
                         group.isOwn ? 'items-end' : 'items-start'
                       )}
                     >
@@ -429,7 +429,6 @@ export default function DmMessageList({
                           message={message}
                           isOwn={group.isOwn}
                           isFirstInGroup={mi === 0}
-                          isLastInGroup={mi === group.items.length - 1}
                           sendingStatus={dmService.getSendingStatus(message.id)}
                           onReply={onReply}
                           onReact={handleReact}
@@ -474,7 +473,6 @@ function MessageBubble({
   message,
   isOwn,
   isFirstInGroup,
-  isLastInGroup,
   sendingStatus,
   onReply,
   onReact,
@@ -488,7 +486,6 @@ function MessageBubble({
   message: TDmMessage
   isOwn: boolean
   isFirstInGroup?: boolean
-  isLastInGroup?: boolean
   sendingStatus?: 'sending' | 'sent' | 'failed' | null
   onReply?: (message: TDmMessage) => void
   onReact?: (messageId: string, emoji: string | TEmoji) => void
@@ -635,8 +632,8 @@ function MessageBubble({
   const hasReactions = groupedReactions.length > 0
 
   const bubbleClass = cn(
-    'overflow-hidden wrap-break-word rounded-lg px-3 py-1.5',
-    'w-fit min-w-9 max-w-full',
+    'overflow-hidden break-words [word-break:break-word] rounded-xl px-4 py-2',
+    'w-fit min-w-[3rem] max-w-full',
     isOwn
       ? 'bg-primary text-primary-foreground'
       : 'bg-secondary'
@@ -652,8 +649,7 @@ function MessageBubble({
         'group/msg flex w-full max-w-full select-none flex-col',
         isOwn ? 'items-end' : 'items-start',
         isFirstInGroup ? 'mt-2' : 'mt-0.5',
-        isElevated && 'relative z-10',
-        hasReactions && !isLastInGroup && 'mb-7'
+        isElevated && 'relative z-10'
       )}
     >
       {message.replyTo && (
@@ -780,7 +776,7 @@ function MessageBubble({
             )}
           </DrawerContent>
         </Drawer>
-        <div className={cn('relative min-w-0 max-w-full', hasBlocks && !isFileMessage && 'flex-1')}>
+        <div className={cn('relative flex flex-col min-w-0 max-w-full', isOwn ? 'items-end' : 'items-start', hasBlocks && !isFileMessage && 'flex-1')}>
           {isFileMessage ? (
             <EncryptedFileMessage message={message} isOwn={isOwn} isHighlighted={isHighlighted} />
           ) : (
@@ -812,8 +808,8 @@ function MessageBubble({
           {hasReactions && (
             <div
               className={cn(
-                'absolute top-full z-1 mt-0.5 flex flex-wrap gap-1',
-                isOwn ? 'left-0' : 'right-0'
+                'z-1 mt-1 flex flex-wrap gap-1',
+                isOwn ? 'justify-end' : 'justify-start'
               )}
             >
               {groupedReactions.map((r) => (
@@ -1039,7 +1035,7 @@ function DmContent({
             <div
               dir="auto"
               className={cn(
-                'whitespace-pre-wrap text-wrap wrap-break-word text-base',
+                'whitespace-pre-wrap break-words [word-break:break-word] text-base leading-relaxed',
                 isOwn &&
                   '[&>div]:text-foreground [&_.text-primary]:text-primary-foreground [&_.text-primary]:underline [&_.text-primary]:decoration-primary-foreground/50',
                 '[&_.bg-card:hover]:bg-accent'

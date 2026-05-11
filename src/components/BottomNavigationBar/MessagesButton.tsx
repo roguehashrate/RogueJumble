@@ -9,7 +9,7 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 export default function MessagesButton() {
   const { checkLogin } = useNostr()
   const { navigate, current, display } = usePrimaryPage()
-  const { pop } = useSecondaryPage()
+  const { pop, currentIndex } = useSecondaryPage()
   const { conversations } = useDm()
   const isActive = current === 'dms' && display
 
@@ -24,7 +24,7 @@ export default function MessagesButton() {
         haptic('click')
         checkLogin(() => {
           if (!display) {
-            pop()
+            pop(-(currentIndex + 1))
           }
           navigate('dms')
         })

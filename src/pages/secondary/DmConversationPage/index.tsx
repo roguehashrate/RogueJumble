@@ -3,7 +3,7 @@ import DmMessageList from '@/components/DmMessageList'
 import UserAvatar from '@/components/UserAvatar'
 import { SimpleUsername } from '@/components/Username'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
-import { usePrimaryPage } from '@/PageManager'
+import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
 import { useDmContext } from '@/providers/DmContextProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import encryptionKeyService from '@/services/encryption-key.service'
@@ -18,6 +18,7 @@ const DmConversationPage = forwardRef(
     const { t } = useTranslation()
     const { pubkey: accountPubkey } = useNostr()
     const { navigate: navigatePrimary } = usePrimaryPage()
+    const { pop } = useSecondaryPage()
     const { registerConversation, unregisterConversation } = useDmContext()
     const [replyTo, setReplyTo] = useState<{
       id: string
@@ -80,7 +81,7 @@ const DmConversationPage = forwardRef(
         index={index}
         titlebar={
           <div className="flex h-full items-center gap-3">
-            <button onClick={() => window.history.back()} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted/60">
+            <button onClick={() => pop()} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted/60">
               <ChevronLeft className="h-5 w-5" />
             </button>
             <UserAvatar userId={pubkey} size="small" />

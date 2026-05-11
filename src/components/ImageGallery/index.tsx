@@ -8,6 +8,8 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import DownloadPlugin from 'yet-another-react-lightbox/plugins/download'
+import { Download } from 'lucide-react'
 import Image from '../Image'
 import ImageWithLightbox from '../ImageWithLightbox'
 
@@ -81,6 +83,18 @@ export default function ImageGallery({
     loadImages()
   }, [images])
 
+  const handleDownload = (event: React.MouseEvent, url: string) => {
+    event.stopPropagation()
+    event.preventDefault()
+    const a = document.createElement('a')
+    a.href = url
+    a.target = '_blank'
+    a.download = url.split('/').pop() || 'image'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
+
   const handlePhotoClick = (event: React.MouseEvent, current: number) => {
     event.stopPropagation()
     event.preventDefault()
@@ -105,16 +119,25 @@ export default function ImageGallery({
   let imageContent: ReactNode | null = null
   if (displayImages.length === 1) {
     imageContent = (
-      <Image
-        key={0}
-        className="max-h-[80vh] object-contain sm:max-h-[50vh]"
-        classNames={{
-          errorPlaceholder: 'aspect-square h-[30vh]',
-          wrapper: 'cursor-zoom-in border'
-        }}
-        image={displayImages[0]}
-        onClick={(e) => handlePhotoClick(e, 0)}
-      />
+      <div className="group relative w-fit max-w-full">
+        <Image
+          key={0}
+          className="max-h-[80vh] object-contain sm:max-h-[50vh]"
+          classNames={{
+            errorPlaceholder: 'aspect-square h-[30vh]',
+            wrapper: 'cursor-zoom-in border'
+          }}
+          image={displayImages[0]}
+          onClick={(e) => handlePhotoClick(e, 0)}
+        />
+        <button
+          onClick={(e) => handleDownload(e, displayImages[0].url)}
+          className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100"
+          title="Download"
+        >
+          <Download className="h-4 w-4" />
+        </button>
+      </div>
     )
   } else if (displayImages.length === 2 || displayImages.length === 4) {
     imageContent = (
@@ -155,7 +178,7 @@ export default function ImageGallery({
             <Lightbox
               index={index}
               slides={slides}
-              plugins={[Zoom]}
+              plugins={[Zoom, DownloadPlugin]}
               open={index >= 0}
               close={() => setIndex(-1)}
               controller={{

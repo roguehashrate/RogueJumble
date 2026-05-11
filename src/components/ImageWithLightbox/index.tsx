@@ -8,6 +8,8 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import Lightbox from 'yet-another-react-lightbox'
 import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import DownloadPlugin from 'yet-another-react-lightbox/plugins/download'
+import { Download } from 'lucide-react'
 import Image from '../Image'
 
 export default function ImageWithLightbox({
@@ -62,7 +64,7 @@ export default function ImageWithLightbox({
   }
 
   return (
-    <div>
+    <div className="group relative w-fit max-w-full">
       <Image
         key={0}
         className={className}
@@ -75,13 +77,29 @@ export default function ImageWithLightbox({
         onClick={(e) => handlePhotoClick(e)}
         errorPlaceholder={errorPlaceholder}
       />
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          const a = document.createElement('a')
+          a.href = image.url
+          a.target = '_blank'
+          a.download = image.url.split('/').pop() || 'image'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        }}
+        className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100"
+        title="Download"
+      >
+        <Download className="h-4 w-4" />
+      </button>
       {index >= 0 &&
         createPortal(
           <div onClick={(e) => e.stopPropagation()}>
             <Lightbox
               index={index}
               slides={[{ src: image.url }]}
-              plugins={[Zoom]}
+              plugins={[Zoom, DownloadPlugin]}
               open={index >= 0}
               close={() => setIndex(-1)}
               controller={{

@@ -27,7 +27,7 @@ type TPrimaryPageContext = {
 
 type TSecondaryPageContext = {
   push: (url: string) => void
-  pop: () => void
+  pop: (delta?: number) => void
   currentIndex: number
 }
 
