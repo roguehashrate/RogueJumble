@@ -53,7 +53,7 @@ const SecondaryPageLayout = forwardRef(
           <div
             style={{
               paddingTop: 'env(safe-area-inset-top, 0px)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 3rem)'
+              paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)'
             }}
           >
             <SecondaryPageTitlebar

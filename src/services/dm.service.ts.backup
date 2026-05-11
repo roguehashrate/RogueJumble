@@ -1,0 +1,643 @@
+import { Event, kinds, nip04 } from 'nostr-tools'
+import { v2 as nip44 } from 'nostr-tools/nip44'
+
+import client from './client.service'
+import encryptionKeyService from './encryption-key.service'
+import nip17GiftWrapService from './nip17-gift-wrap.service'
+import IndexedDbService from './indexed-db.service'
+import LocalStorageService from './local-storage.service'
+import { ExtendedKind, DM_TIME_RANDOMIZATION_SECONDS } from '../constants'
+import indexedDb from './indexed-db.service'
+import localStorage from './local-storage.service'
+
+export type TDmMessage = {
+  id: string
+  participantsKey: string
+  senderPubkey: string
+  content: string
+  createdAt: number
+  originalEvent: Event
+  decryptedRumor: Event
+  replyTo?: {
+    id: string
+    content: string
+    senderPubkey: string
+    tags?: string[][]
+  }
+}
+
+export type TDmConversation = {
+  key: string
+  pubkey: string
+  lastMessageAt: number
+  lastMessageRumor?: Event
+  unreadCount: number
+  hasReplied: boolean
+  encryptionPubkey?: string
+  deleted?: boolean
+  deletedAt?: number
+}
+
+export type TDmSendingStatus = 'sending' | 'sent' | 'failed'
+
+export type TEncryptionKeypair = {
+  privkey: Uint8Array
+  pubkey: string
+}
+
+class DmService {
+  private currentAccountPubkey?: string
+  private currentEncryptionKeypair?: TEncryptionKeypair
+  private conversations = new Map<string, TDmConversation>()
+  private messages = new Map<string, TDmMessage>()
+  private sendingStatuses = new Map<string, TDmSendingStatus>()
+  private pendingPublishData = new Map<string, {
+    giftWrap: Event
+    selfGiftWrap: Event
+    recipientDmRelays: string[]
+  }>()
+  private relaySubscription?: any
+  private activeConversationKey?: string
+  private nip44ConversationKeyCache = new Map<string, Uint8Array>()
+  private dataChangedListeners = new Set<() => void>()
+  private loadingChangedListeners = new Set<(loading: boolean) => void>()
+  private syncRequestListeners = new Set<(event: Event) => void>()
+  private encryptionKeyChangedListeners = new Set<(newPubkey: string) => void>()
+  private newMessageListeners = new Set<(message: TDmMessage) => void>()
+  private newReactionListeners = new Set<(reaction: TDmMessage) => void>()
+  private sendingStatusListeners = new Set<() => void>()
+
+  constructor(
+    private indexedDb: IndexedDbService,
+    private localStorage: LocalStorageService
+  ) {}
+
+  private getSignerForAccount(): any {
+    // Use current encryption keypair for signing
+    return {
+      signEvent: async (draftEvent: any) => {
+        // Use nostr-tools finalizeEvent with keypair
+        const { finalizeEvent } = await import('nostr-tools')
+        if (!this.currentEncryptionKeypair?.privkey) throw new Error('No encryption keypair available')
+        return finalizeEvent(draftEvent, this.currentEncryptionKeypair.privkey)
+      },
+      nip44Encrypt: async (pubkey: string, plainText: string) => {
+        const { v2: nip44 } = await import('nostr-tools/nip44')
+        if (!this.currentEncryptionKeypair) throw new Error('No encryption keypair available')
+        
+        // Check cache first for conversation key (ECDH is expensive)
+        let conversationKey = this.nip44ConversationKeyCache.get(pubkey)
+        if (!conversationKey) {
+          conversationKey = nip44.utils.getConversationKey(this.currentEncryptionKeypair.privkey, pubkey)
+          this.nip44ConversationKeyCache.set(pubkey, conversationKey)
+        }
+        
+        return nip44.encrypt(plainText, conversationKey)
+      },
+      nip44Decrypt: async (pubkey: string, cipherText: string) => {
+        const { v2: nip44 } = await import('nostr-tools/nip44')
+        if (!this.currentEncryptionKeypair) throw new Error('No encryption keypair available')
+        
+        // Check cache first for conversation key (ECDH is expensive)
+        let conversationKey = this.nip44ConversationKeyCache.get(pubkey)
+        if (!conversationKey) {
+          conversationKey = nip44.utils.getConversationKey(this.currentEncryptionKeypair.privkey, pubkey)
+          this.nip44ConversationKeyCache.set(pubkey, conversationKey)
+        }
+        
+        return nip44.decrypt(cipherText, conversationKey)
+      },
+      nip04Encrypt: async (pubkey: string, plainText: string) => {
+        const { nip04 } = await import('nostr-tools')
+        if (!this.currentEncryptionKeypair) throw new Error('No encryption keypair available')
+        return nip04.encrypt(this.currentEncryptionKeypair.privkey, pubkey, plainText)
+      },
+      nip04Decrypt: async (pubkey: string, cipherText: string) => {
+        const { nip04 } = await import('nostr-tools')
+        if (!this.currentEncryptionKeypair) throw new Error('No encryption keypair available')
+        return nip04.decrypt(this.currentEncryptionKeypair.privkey, pubkey, cipherText)
+      }
+    }
+  }
+
+  async initialize(accountPubkey: string) {
+    this.currentAccountPubkey = accountPubkey
+    this.currentEncryptionKeypair = encryptionKeyService.getEncryptionKeypair(accountPubkey)
+    
+    if (!this.currentEncryptionKeypair) {
+      throw new Error('No encryption keypair found for account')
+    }
+
+    this.emitLoadingChanged(true)
+    try {
+      await this.loadConversations(accountPubkey)
+      await this.subscribeToDmEvents(accountPubkey)
+    } finally {
+      this.emitLoadingChanged(false)
+    }
+  }
+
+  private async loadConversations(accountPubkey: string) {
+    const conversations = await this.indexedDb.getConversations(accountPubkey)
+    this.conversations.clear()
+    conversations.forEach((conv: any) => this.conversations.set(conv.key, conv))
+
+    const messages = await this.indexedDb.getMessages(accountPubkey)
+    this.messages.clear()
+    messages.forEach((msg: any) => this.messages.set(msg.id, msg))
+  }
+
+  private async subscribeToDmEvents(accountPubkey: string) {
+    const myDmRelays = await client.fetchDmRelays(accountPubkey)
+    
+    // Subscribe to NIP-17 gift wraps
+    this.relaySubscription = client.subscribe(
+      myDmRelays,
+      [
+        { kinds: [ExtendedKind.GIFT_WRAP], authors: [accountPubkey] },
+        { kinds: [ExtendedKind.GIFT_WRAP], '#p': [accountPubkey] }
+      ],
+      {
+        onevent: (event) => this.processGiftWrap(event, accountPubkey)
+      }
+    )
+
+    // Also subscribe to NIP-4e and NIP-04 for backward compatibility
+    client.subscribe(
+      myDmRelays,
+      [
+        { kinds: [kinds.EncryptedDirectMessage], authors: [accountPubkey] },
+        { kinds: [kinds.EncryptedDirectMessage], '#p': [accountPubkey] }
+      ],
+      {
+        onevent: (event) => this.processLegacyDm(event, accountPubkey)
+      }
+    )
+  }
+
+  private async processGiftWrap(giftWrap: Event, accountPubkey: string) {
+    try {
+      const signer = this.getSignerForAccount()
+      const unwrapped = await nip17GiftWrapService.unwrapGiftWrap(giftWrap, signer)
+      
+      if (!unwrapped) return
+
+      const { rumor, senderEncryptionPubkey } = unwrapped
+      
+      // Only process DMs (rumors)
+      if (rumor.kind !== ExtendedKind.RUMOR_CHAT) return
+
+      const isFromMe = rumor.pubkey === accountPubkey
+      const otherPubkey = isFromMe ? this.extractRecipientPubkey(rumor) : rumor.pubkey
+      
+      if (!otherPubkey) return
+
+      const message = this.createMessageFromUnwrapped(rumor, accountPubkey, otherPubkey, senderEncryptionPubkey)
+      await this.saveMessage(message)
+      
+      // Update encryption pubkey mapping
+      if (!isFromMe && senderEncryptionPubkey) {
+        await this.updateEncryptionPubkeyMapping(accountPubkey, otherPubkey, senderEncryptionPubkey)
+      }
+      
+      this.emitNewMessage(message)
+    } catch (error) {
+      console.warn('[DM] Failed to process gift wrap:', error)
+    }
+  }
+
+  private async processLegacyDm(event: Event, accountPubkey: string) {
+    try {
+      const isFromMe = event.pubkey === accountPubkey
+      const otherPubkey = isFromMe ? this.extractRecipientPubkey(event) : event.pubkey
+      
+      if (!otherPubkey) return
+
+      let content: string
+      const signer = this.getSignerForAccount()
+
+      // Try NIP-44 first, then NIP-04
+      try {
+        content = await signer.nip44Decrypt(otherPubkey, event.content)
+      } catch {
+        try {
+          content = await signer.nip04Decrypt(otherPubkey, event.content)
+        } catch {
+          return // Skip if can't decrypt
+        }
+      }
+
+      const message: TDmMessage = {
+        id: event.id,
+        participantsKey: this.getParticipantsKey(accountPubkey, otherPubkey),
+        senderPubkey: event.pubkey,
+        content,
+        createdAt: event.created_at,
+        originalEvent: event,
+        decryptedRumor: event
+      }
+
+      await this.saveMessage(message)
+      this.emitNewMessage(message)
+    } catch (error) {
+      console.warn('[DM] Failed to process legacy DM:', error)
+    }
+  }
+
+  private createMessageFromUnwrapped(
+    rumor: Event, 
+    accountPubkey: string, 
+    otherPubkey: string, 
+    senderEncryptionPubkey?: string
+  ): TDmMessage {
+    const replyTo = this.resolveReplyTo(rumor)
+    
+    return {
+      id: rumor.id,
+      participantsKey: this.getParticipantsKey(accountPubkey, otherPubkey),
+      senderPubkey: rumor.pubkey,
+      content: rumor.content,
+      createdAt: rumor.created_at,
+      originalEvent: rumor,
+      decryptedRumor: rumor,
+      replyTo
+    }
+  }
+
+  private resolveReplyTo(rumor: Event): { id: string; content: string; senderPubkey: string } | undefined {
+    const replyTag = rumor.tags.find(tag => tag[0] === 'e')
+    if (!replyTag) return undefined
+    
+    const replyId = replyTag[1]
+    const replyMessage = this.messages.get(replyId)
+    if (!replyMessage) return undefined
+    
+    return {
+      id: replyId,
+      content: replyMessage.content,
+      senderPubkey: replyMessage.senderPubkey
+    }
+  }
+
+  private extractRecipientPubkey(event: Event): string | undefined {
+    const pTag = event.tags.find(tag => tag[0] === 'p')
+    return pTag?.[1]
+  }
+
+  private getParticipantsKey(pubkey1: string, pubkey2: string): string {
+    return [pubkey1, pubkey2].sort().join(':')
+  }
+
+  private async saveMessage(message: TDmMessage) {
+    await this.indexedDb.saveMessage(message)
+    this.messages.set(message.id, message)
+    this.emitDataChanged()
+  }
+
+  private async updateConversation(accountPubkey: string, otherPubkey: string, message: TDmMessage) {
+    const participantsKey = this.getParticipantsKey(accountPubkey, otherPubkey)
+    const existing = this.conversations.get(participantsKey)
+    
+    const isFromMe = message.senderPubkey === accountPubkey
+    const lastMessageAt = Math.max(existing?.lastMessageAt || 0, message.createdAt)
+    const unreadCount = isFromMe ? existing?.unreadCount || 0 : (existing?.unreadCount || 0) + 1
+    
+    const conversation: TDmConversation = {
+      key: participantsKey,
+      pubkey: otherPubkey,
+      lastMessageAt,
+      lastMessageRumor: message.decryptedRumor,
+      unreadCount,
+      hasReplied: existing?.hasReplied || !isFromMe
+    }
+
+    await this.indexedDb.saveConversation(conversation)
+    this.conversations.set(participantsKey, conversation)
+    this.emitDataChanged()
+  }
+
+  private async updateEncryptionPubkeyMapping(
+    accountPubkey: string, 
+    otherPubkey: string, 
+    encryptionPubkey: string
+  ) {
+    // Store encryption pubkey mapping for future use
+    await this.indexedDb.saveEncryptionPubkey(otherPubkey, encryptionPubkey)
+  }
+
+  private emitNewMessage(message: TDmMessage) {
+    // Emit event for UI updates
+    const event = new CustomEvent('dm:new-message', { detail: message })
+    window.dispatchEvent(event)
+  }
+
+  private emitSendingStatusChanged() {
+    const event = new CustomEvent('dm:sending-status-changed')
+    window.dispatchEvent(event)
+  }
+
+  async sendMessage(
+    accountPubkey: string,
+    recipientPubkey: string,
+    content: string,
+    replyTo?: { id: string; content: string; senderPubkey: string },
+    additionalTags?: string[][],
+    preferNip4e = false // Default to NIP-17 for maximum privacy
+  ): Promise<TDmMessage | null> {
+    const keypair = this.currentEncryptionKeypair ?? encryptionKeyService.getEncryptionKeypair(accountPubkey)
+    if (!keypair) throw new Error('Encryption keypair not available')
+
+    const recipientEncryptionPubkey = await this.getRecipientEncryptionPubkey(recipientPubkey)
+    const recipientDmRelays = await client.fetchDmRelays(recipientPubkey)
+    const myDmRelays = await client.fetchDmRelays(accountPubkey)
+
+    const replyRelayHint = recipientDmRelays[0] ?? ''
+    const replyTags = replyTo ? [['e', replyTo.id, replyRelayHint]] : []
+    const extraTags = [...replyTags, ...(additionalTags ?? [])]
+
+    let message: TDmMessage | null = null
+    let recipientEvent: Event | null = null
+    let selfEvent: Event | null = null
+
+    // Default to NIP-17 for maximum privacy, use NIP-4e if explicitly requested
+    if (preferNip4e && recipientEncryptionPubkey) {
+      try {
+        message = await this.sendNip4eMessage(accountPubkey, recipientPubkey, content, replyTo, extraTags, keypair)
+        if (message) {
+          recipientEvent = message.originalEvent
+          selfEvent = message.originalEvent
+        }
+      } catch (error) {
+        console.warn('[DM] NIP-4e failed, falling back to NIP-17:', error)
+        message = null
+      }
+    }
+
+    // NIP-17 implementation (default or fallback)
+    if (!message) {
+      // Add timestamp randomization for privacy
+      const randomizedTimestamp = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * DM_TIME_RANDOMIZATION_SECONDS)
+      
+      const { giftWrap, rumor } = nip17GiftWrapService.createGiftWrappedMessage(
+        content, accountPubkey, keypair.privkey,
+        recipientPubkey, recipientEncryptionPubkey || recipientPubkey,
+        extraTags,
+        ExtendedKind.RUMOR_CHAT
+      )
+
+      const selfGiftWrap = nip17GiftWrapService.createGiftWrapForSelf(
+        rumor, keypair.privkey, keypair.pubkey, accountPubkey
+      )
+
+      message = {
+        id: rumor.id,
+        participantsKey: this.getParticipantsKey(accountPubkey, recipientPubkey),
+        senderPubkey: accountPubkey,
+        content: rumor.content,
+        createdAt: randomizedTimestamp, // Use randomized timestamp for privacy
+        originalEvent: selfGiftWrap,
+        decryptedRumor: rumor as Event,
+        ...(replyTo ? { replyTo } : {})
+      }
+
+      recipientEvent = giftWrap
+      selfEvent = selfGiftWrap
+    }
+
+    if (!message) return null
+
+    await this.saveMessage(message)
+    await this.updateConversation(accountPubkey, recipientPubkey, message)
+    this.emitNewMessage(message) // Emit new message event
+    
+    this.pendingPublishData.set(message.id, { 
+      giftWrap: recipientEvent, 
+      selfGiftWrap: selfEvent, 
+      recipientDmRelays 
+    })
+    this.sendingStatuses.set(message.id, 'sending')
+    this.emitNewMessage(message)
+
+    try {
+      const [recipientResult, selfResult] = await Promise.allSettled([
+        client.publishEvent(recipientDmRelays, recipientEvent),
+        client.publishEvent(myDmRelays, selfEvent)
+      ])
+      
+      if (selfResult.status === 'rejected') {
+        console.warn('[DM] selfGiftWrap publish failed:', selfResult.reason)
+      }
+      if (recipientResult.status === 'rejected') {
+        throw recipientResult.reason
+      }
+
+      this.sendingStatuses.set(message.id, 'sent')
+      this.pendingPublishData.delete(message.id)
+      this.emitSendingStatusChanged()
+
+      setTimeout(() => { this.sendingStatuses.delete(message.id); this.emitSendingStatusChanged() }, 3000)
+    } catch (error) {
+      this.sendingStatuses.set(message.id, 'failed')
+      this.emitSendingStatusChanged()
+      throw error
+    }
+
+    return message
+  }
+
+  private async sendNip4eMessage(
+    accountPubkey: string,
+    recipientPubkey: string,
+    content: string,
+    replyTo?: { id: string; content: string; senderPubkey: string },
+    extraTags: string[][],
+    keypair: TEncryptionKeypair
+  ): Promise<TDmMessage | null> {
+    try {
+      const signer = this.getSignerForAccount()
+      if (!signer || !('nip44Encrypt' in signer)) {
+        throw new Error('NIP-44 encryption not available')
+      }
+
+      const encryptedContent = await (signer as any).nip44Encrypt(recipientPubkey, content)
+      
+      const nip4eEvent = {
+        kind: kinds.EncryptedDirectMessage,
+        pubkey: accountPubkey,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [['p', recipientPubkey], ...extraTags],
+        content: encryptedContent,
+        id: ''
+      }
+
+      const signedEvent = await signer.signEvent(nip4eEvent)
+      
+      const message: TDmMessage = {
+        id: signedEvent.id,
+        participantsKey: this.getParticipantsKey(accountPubkey, recipientPubkey),
+        senderPubkey: accountPubkey,
+        content: encryptedContent,
+        createdAt: signedEvent.created_at,
+        originalEvent: signedEvent,
+        decryptedRumor: signedEvent,
+        ...(replyTo ? { replyTo } : {})
+      }
+
+      console.log('[DM] Sent NIP-4e message')
+      this.emitNewMessage(message) // Emit new message event for NIP-4e
+      return message
+    } catch (error) {
+      console.warn('[DM] NIP-4e sending failed:', error)
+      throw error
+    }
+  }
+
+  private async getRecipientEncryptionPubkey(recipientPubkey: string): Promise<string | undefined> {
+    try {
+      return await this.indexedDb.getEncryptionPubkey(recipientPubkey)
+    } catch {
+      return undefined
+    }
+  }
+
+  // Public methods for UI
+  getConversations(pubkey?: string): TDmConversation[] {
+    return Array.from(this.conversations.values())
+      .filter(conv => !conv.deleted)
+      .sort((a, b) => b.lastMessageAt - a.lastMessageAt)
+  }
+
+  getMessages(accountPubkey: string, otherPubkey: string, options?: { limit?: number; before?: number }): TDmMessage[] {
+    if (!accountPubkey) return []
+    
+    const participantsKey = this.getParticipantsKey(accountPubkey, otherPubkey)
+    let messages = Array.from(this.messages.values())
+      .filter(msg => msg.participantsKey === participantsKey)
+      .sort((a, b) => a.createdAt - b.createdAt)
+
+    if (options?.before !== undefined) {
+      messages = messages.filter(msg => msg.createdAt < options.before)
+    }
+    if (options?.limit) {
+      messages = messages.slice(-options.limit)
+    }
+
+    return messages
+  }
+
+  getSendingStatus(messageId: string): TDmSendingStatus | undefined {
+    return this.sendingStatuses.get(messageId)
+  }
+
+  async setActiveConversation(pubkey: string) {
+    if (!this.currentAccountPubkey) return
+    
+    this.activeConversationKey = this.getParticipantsKey(this.currentAccountPubkey, pubkey)
+    const conversation = this.conversations.get(this.activeConversationKey)
+    if (conversation) {
+      conversation.unreadCount = 0
+      await this.indexedDb.saveConversation(conversation)
+      this.conversations.set(this.activeConversationKey, conversation)
+    }
+  }
+
+  clearActiveConversation() {
+    this.activeConversationKey = undefined
+  }
+
+  async markConversationAsRead(accountPubkey: string, otherPubkey: string) {
+    const participantsKey = this.getParticipantsKey(accountPubkey, otherPubkey)
+    const conversation = this.conversations.get(participantsKey)
+    if (conversation) {
+      conversation.unreadCount = 0
+      await this.indexedDb.saveConversation(conversation)
+      this.conversations.set(participantsKey, conversation)
+      this.emitDataChanged()
+    }
+  }
+
+  async deleteConversation(accountPubkey: string, otherPubkey: string) {
+    const participantsKey = this.getParticipantsKey(accountPubkey, otherPubkey)
+    const conversation = this.conversations.get(participantsKey)
+    if (conversation) {
+      conversation.deleted = true
+      conversation.deletedAt = Date.now()
+      await this.indexedDb.saveConversation(conversation)
+      this.conversations.delete(participantsKey)
+      this.emitDataChanged()
+    }
+  }
+
+  isActiveConversation(pubkey: string): boolean {
+    if (!this.activeConversationKey || !this.currentAccountPubkey) return false
+    return this.activeConversationKey === this.getParticipantsKey(this.currentAccountPubkey, pubkey)
+  }
+
+  async cleanup() {
+    if (this.relaySubscription) {
+      this.relaySubscription.close()
+    }
+    this.conversations.clear()
+    this.messages.clear()
+    this.sendingStatuses.clear()
+    this.pendingPublishData.clear()
+    this.nip44ConversationKeyCache.clear()
+  }
+
+  // Event listener methods for DmProvider
+  onDataChanged(callback: () => void) {
+    this.dataChangedListeners.add(callback)
+    return () => this.dataChangedListeners.delete(callback)
+  }
+
+  onLoadingChanged(callback: (loading: boolean) => void) {
+    this.loadingChangedListeners.add(callback)
+    return () => this.loadingChangedListeners.delete(callback)
+  }
+
+  onSyncRequest(callback: (event: Event) => void) {
+    this.syncRequestListeners.add(callback)
+    return () => this.syncRequestListeners.delete(callback)
+  }
+
+  onEncryptionKeyChanged(callback: (newPubkey: string) => void) {
+    this.encryptionKeyChangedListeners.add(callback)
+    return () => this.encryptionKeyChangedListeners.delete(callback)
+  }
+
+  onNewMessage(callback: (message: TDmMessage) => void) {
+    this.newMessageListeners.add(callback)
+    return () => this.newMessageListeners.delete(callback)
+  }
+
+  onNewReaction(callback: (reaction: TDmMessage) => void) {
+    this.newReactionListeners.add(callback)
+    return () => this.newReactionListeners.delete(callback)
+  }
+
+  onSendingStatusChanged(callback: () => void) {
+    this.sendingStatusListeners.add(callback)
+    return () => this.sendingStatusListeners.delete(callback)
+  }
+
+  private emitDataChanged() {
+    this.dataChangedListeners.forEach(listener => listener())
+  }
+
+  private emitLoadingChanged(loading: boolean) {
+    this.loadingChangedListeners.forEach(listener => listener(loading))
+  }
+
+  // Alias for cleanup() for backward compatibility
+  async destroy() {
+    return this.cleanup()
+  }
+}
+
+// Create and export singleton instance
+const dmService = new DmService(
+  indexedDb, // These need to be imported or available globally
+  localStorage
+)
+
+export default dmService

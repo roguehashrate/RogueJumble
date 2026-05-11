@@ -865,6 +865,147 @@ class LocalStorageService {
   clearWalletTransactions() {
     window.localStorage.removeItem(StorageKey.WALLET_TRANSACTIONS)
   }
+
+  // --- DM and encryption key helpers ---
+  getEncryptionKeyPrivkey(accountPubkey: string): string | null {
+    try {
+      const str = window.localStorage.getItem('encryptionKeyPrivkeyMap') ?? '{}'
+      const map = JSON.parse(str)
+      return map[accountPubkey] ?? null
+    } catch {
+      return null
+    }
+  }
+
+  setEncryptionKeyPrivkey(accountPubkey: string, privkeyHex: string) {
+    try {
+      const str = window.localStorage.getItem('encryptionKeyPrivkeyMap') ?? '{}'
+      const map = JSON.parse(str)
+      map[accountPubkey] = privkeyHex
+      window.localStorage.setItem('encryptionKeyPrivkeyMap', JSON.stringify(map))
+    } catch {}
+  }
+
+  removeEncryptionKeyPrivkey(accountPubkey: string) {
+    try {
+      const str = window.localStorage.getItem('encryptionKeyPrivkeyMap') ?? '{}'
+      const map = JSON.parse(str)
+      delete map[accountPubkey]
+      window.localStorage.setItem('encryptionKeyPrivkeyMap', JSON.stringify(map))
+    } catch {}
+  }
+
+  getClientKeyPrivkey(accountPubkey: string): string | null {
+    try {
+      const str = window.localStorage.getItem('clientKeyPrivkeyMap') ?? '{}'
+      const map = JSON.parse(str)
+      return map[accountPubkey] ?? null
+    } catch {
+      return null
+    }
+  }
+
+  setClientKeyPrivkey(accountPubkey: string, privkeyHex: string) {
+    try {
+      const str = window.localStorage.getItem('clientKeyPrivkeyMap') ?? '{}'
+      const map = JSON.parse(str)
+      map[accountPubkey] = privkeyHex
+      window.localStorage.setItem('clientKeyPrivkeyMap', JSON.stringify(map))
+    } catch {}
+  }
+
+  // DM sync tracking
+  getDmLastSyncedAt(accountPubkey: string): number | null {
+    try {
+      const str = window.localStorage.getItem('dmLastSyncedAtMap') ?? '{}'
+      const map = JSON.parse(str)
+      return map[accountPubkey] ?? null
+    } catch {
+      return null
+    }
+  }
+
+  setDmLastSyncedAt(accountPubkey: string, ts: number) {
+    try {
+      const str = window.localStorage.getItem('dmLastSyncedAtMap') ?? '{}'
+      const map = JSON.parse(str)
+      map[accountPubkey] = ts
+      window.localStorage.setItem('dmLastSyncedAtMap', JSON.stringify(map))
+    } catch {}
+  }
+
+  clearDmSyncState(accountPubkey: string) {
+    try {
+      const str = window.localStorage.getItem('dmLastSyncedAtMap') ?? '{}'
+      const map = JSON.parse(str)
+      delete map[accountPubkey]
+      window.localStorage.setItem('dmLastSyncedAtMap', JSON.stringify(map))
+
+      const bstr = window.localStorage.getItem('dmBackwardCursorMap') ?? '{}'
+      const bmap = JSON.parse(bstr)
+      delete bmap[accountPubkey]
+      window.localStorage.setItem('dmBackwardCursorMap', JSON.stringify(bmap))
+    } catch {}
+  }
+
+  addProcessedSyncRequestId(id: string) {
+    try {
+      const str = window.localStorage.getItem('processedSyncRequestIds') ?? '[]'
+      const arr = JSON.parse(str)
+      if (!arr.includes(id)) {
+        arr.push(id)
+        window.localStorage.setItem('processedSyncRequestIds', JSON.stringify(arr))
+      }
+    } catch {}
+  }
+
+  getProcessedSyncRequestIds(): string[] {
+    try {
+      const str = window.localStorage.getItem('processedSyncRequestIds') ?? '[]'
+      return JSON.parse(str)
+    } catch {
+      return []
+    }
+  }
+
+  getDmBackwardCursor(accountPubkey: string): number | null {
+    try {
+      const str = window.localStorage.getItem('dmBackwardCursorMap') ?? '{}'
+      const map = JSON.parse(str)
+      return map[accountPubkey] ?? null
+    } catch {
+      return null
+    }
+  }
+
+  setDmBackwardCursor(accountPubkey: string, cursor: number) {
+    try {
+      const str = window.localStorage.getItem('dmBackwardCursorMap') ?? '{}'
+      const map = JSON.parse(str)
+      map[accountPubkey] = cursor
+      window.localStorage.setItem('dmBackwardCursorMap', JSON.stringify(map))
+    } catch {}
+  }
+
+  setLastReadDmTime(accountPubkey: string, otherPubkey: string, time: number) {
+    try {
+      const str = window.localStorage.getItem('lastReadDmTimeMap') ?? '{}'
+      const map = JSON.parse(str)
+      map[accountPubkey] = map[accountPubkey] || {}
+      map[accountPubkey][otherPubkey] = time
+      window.localStorage.setItem('lastReadDmTimeMap', JSON.stringify(map))
+    } catch {}
+  }
+
+  getLastReadDmTime(accountPubkey: string, otherPubkey: string): number | null {
+    try {
+      const str = window.localStorage.getItem('lastReadDmTimeMap') ?? '{}'
+      const map = JSON.parse(str)
+      return (map[accountPubkey] && map[accountPubkey][otherPubkey]) ?? null
+    } catch {
+      return null
+    }
+  }
 }
 
 const instance = new LocalStorageService()

@@ -260,3 +260,36 @@ export type TNsfwDisplayPolicy = (typeof NSFW_DISPLAY_POLICY)[keyof typeof NSFW_
 export type TFont = (typeof FONT)[keyof typeof FONT]
 
 export type TFontSize = (typeof FONT_SIZE)[keyof typeof FONT_SIZE]
+
+export type TDmMessage = {
+  id: string
+  participantsKey: string
+  senderPubkey: string
+  content: string
+  createdAt: number
+  originalEvent: Event
+  decryptedRumor: Event
+  replyTo?: {
+    id: string
+    content?: string
+    senderPubkey?: string
+    tags?: string[][]
+  }
+}
+
+export type TDmConversation = {
+  key: string
+  pubkey: string
+  lastMessageAt: number
+  lastMessageRumor?: Event
+  unreadCount: number
+  hasReplied: boolean
+  encryptionPubkey?: string
+  deleted?: boolean
+  deletedAt?: number
+}
+
+export type TEncryptionKeypair = {
+  privkey: Uint8Array
+  pubkey: string
+}

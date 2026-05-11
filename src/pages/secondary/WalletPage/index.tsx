@@ -20,10 +20,11 @@ import {
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { toRizful, toWalletHistory } from '@/lib/link'
+import { useNostr } from '@/providers/NostrProvider'
 import { useZap } from '@/providers/ZapProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { disconnect, launchModal } from '@getalby/bitcoin-connect-react'
-import { ArrowDownCircle, ArrowUpCircle, History, RefreshCw, Settings } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Check, Copy, History, RefreshCw, Settings } from 'lucide-react'
 import { forwardRef, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import SendDrawer from './SendDrawer'
@@ -45,10 +46,12 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
     transactionHistory,
     refreshTransactionHistory
   } = useZap()
+  const { profile } = useNostr()
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
   const [sendDrawerOpen, setSendDrawerOpen] = useState(false)
   const [receiveDrawerOpen, setReceiveDrawerOpen] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [copiedLightningAddress, setCopiedLightningAddress] = useState(false)
 
   useEffect(() => {
     if (isWalletConnected) {
@@ -189,6 +192,29 @@ const WalletPage = forwardRef(({ index }: { index?: number }, ref) => {
                 </AlertDialog>
               </div>
             </div>
+
+            {profile?.lightningAddress && (
+              <div className="rounded-xl border bg-card p-4">
+                <div className="mb-1 text-xs text-muted-foreground">{t('Lightning Address')}</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium truncate mr-2">{profile.lightningAddress}</span>
+                  <button
+                    className="clickable shrink-0 rounded-lg p-2 hover:bg-accent/80"
+                    onClick={() => {
+                      navigator.clipboard.writeText(profile.lightningAddress!)
+                      setCopiedLightningAddress(true)
+                      setTimeout(() => setCopiedLightningAddress(false), 2000)
+                    }}
+                  >
+                    {copiedLightningAddress ? (
+                      <Check className="size-4 text-green-500" />
+                    ) : (
+                      <Copy className="size-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <Button

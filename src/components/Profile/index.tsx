@@ -9,12 +9,12 @@ import PubkeyCopy from '@/components/PubkeyCopy'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useFetchFollowings, useFetchProfile } from '@/hooks'
-import { toMuteList, toProfileEditor } from '@/lib/link'
+import { toDmConversation, toMuteList, toProfileEditor } from '@/lib/link'
 import { SecondaryPageLink, useSecondaryPage } from '@/PageManager'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
-import { Link, Zap, Bitcoin, Check, Copy } from 'lucide-react'
+import { Link, MessageCircle, Zap, Bitcoin, Check, Copy } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFound from '../NotFound'
@@ -135,6 +135,14 @@ export default function Profile({ id }: { id?: string }) {
               </Button>
             ) : (
               <>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={() => push(toDmConversation(pubkey))}
+                >
+                  <MessageCircle className="text-primary" />
+                </Button>
                 {!!lightningAddress && <ProfileZapButton pubkey={pubkey} />}
                 <FollowButton pubkey={pubkey} />
               </>

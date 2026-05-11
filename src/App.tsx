@@ -22,6 +22,8 @@ import { TranslationServiceProvider } from '@/providers/TranslationServiceProvid
 import { UserPreferencesProvider } from '@/providers/UserPreferencesProvider'
 import { UserTrustProvider } from '@/providers/UserTrustProvider'
 import { ZapProvider } from '@/providers/ZapProvider'
+import { DmProvider } from '@/providers/DmProvider'
+import { DmContextProvider } from '@/providers/DmContextProvider'
 import { PageManager } from './PageManager'
 
 export default function App(): JSX.Element {
@@ -45,9 +47,13 @@ export default function App(): JSX.Element {
                                     <FeedProvider>
                                       <MediaUploadServiceProvider>
                                         <KindFilterProvider>
-                                          <PageManager />
-                                          <InstallPrompt />
-                                          <Toaster />
+                                          <DmProvider>
+                                            <DmContextProvider>
+                                              <PageManager />
+                                              <InstallPrompt />
+                                              <Toaster />
+                                            </DmContextProvider>
+                                          </DmProvider>
                                         </KindFilterProvider>
                                       </MediaUploadServiceProvider>
                                     </FeedProvider>

@@ -3,6 +3,7 @@ import { createRef, lazy, Suspense } from 'react'
 
 export type TPrimaryPageName =
   | 'home'
+  | 'dms'
   | 'explore'
   | 'following'
   | 'notifications'
@@ -27,9 +28,11 @@ const LazyRelayPage = lazy(() => import('@/pages/primary/RelayPage'))
 const LazySearchPage = lazy(() => import('@/pages/primary/SearchPage'))
 const LazyBookmarkPage = lazy(() => import('@/pages/primary/BookmarkPage'))
 const LazySettingsPage = lazy(() => import('@/pages/primary/SettingsPage'))
+const LazyDmPage = lazy(() => import('@/pages/primary/DmPage'))
 
 export const PRIMARY_PAGE_REF_MAP: Record<TPrimaryPageName, React.RefObject<TPageRef>> = {
   home: createRef<TPageRef>(),
+  dms: createRef<TPageRef>(),
   explore: createRef<TPageRef>(),
   following: createRef<TPageRef>(),
   notifications: createRef<TPageRef>(),
@@ -47,6 +50,7 @@ export const PRIMARY_PAGE_MAP: Record<
   React.ComponentType<{ ref?: React.Ref<TPageRef> } & Record<string, unknown>>
 > = {
   home: LazyNoteListPage,
+  dms: LazyDmPage,
   explore: LazyExplorePage,
   following: LazyFollowingPage,
   notifications: LazyNotificationListPage,

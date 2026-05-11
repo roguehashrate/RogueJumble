@@ -7,6 +7,7 @@ import { useUserPreferences } from '@/providers/UserPreferencesProvider'
 import { ChevronsLeft, ChevronsRight } from 'lucide-react'
 import AccountButton from './AccountButton'
 import BookmarkButton from './BookmarkButton'
+import DmButton from './DmButton'
 import RelaysButton from './ExploreButton'
 import FollowingButton from './FollowingButton'
 import HomeButton from './HomeButton'
@@ -66,6 +67,7 @@ export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: bo
           <SidebarLogo size={iconRail ? 'small' : 'normal'} />
         </button>
         <HomeButton collapse={collapse} iconRail={iconRail} />
+        {pubkey && <DmButton collapse={collapse} iconRail={iconRail} />}
         {!IS_COMMUNITY_MODE && <RelaysButton collapse={collapse} iconRail={iconRail} />}
         {IS_COMMUNITY_MODE && <FollowingButton collapse={collapse} iconRail={iconRail} />}
         <NotificationsButton collapse={collapse} iconRail={iconRail} />

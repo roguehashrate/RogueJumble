@@ -1,14 +1,10 @@
-import { useFeed } from '@/providers/FeedProvider'
+import client from '@/services/client.service'
 import fayan from '@/services/fayan.service'
 import { TProfile } from '@/types'
 import { useEffect, useState } from 'react'
-import { useFetchRelayInfos } from './useFetchRelayInfos'
 
 export function useSearchProfiles(search: string, limit: number) {
-  const { relayUrls } = useFeed()
-  const { searchableRelayUrls } = useFetchRelayInfos(relayUrls)
   const [isFetching, setIsFetching] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
   const [profiles, setProfiles] = useState<TProfile[]>([])
 
   useEffect(() => {
@@ -20,29 +16,43 @@ export function useSearchProfiles(search: string, limit: number) {
 
       setIsFetching(true)
       setProfiles([])
+      const existingPubkeys = new Set<string>()
+      const results: TProfile[] = []
+
       try {
-        const existingPubkeys = new Set<string>()
-        const profiles: TProfile[] = []
+        // Try fayan service first (external search API)
         const fetchedProfiles = await fayan.searchUsers(search, limit)
-        if (fetchedProfiles.length) {
-          fetchedProfiles.forEach((profile) => {
-            if (existingPubkeys.has(profile.pubkey)) {
-              return
-            }
+        for (const profile of fetchedProfiles) {
+          if (!existingPubkeys.has(profile.pubkey)) {
             existingPubkeys.add(profile.pubkey)
-            profiles.push(profile)
-          })
-          setProfiles([...profiles])
+            results.push(profile)
+          }
         }
-      } catch (err) {
-        setError(err as Error)
-      } finally {
-        setIsFetching(false)
+      } catch {
+        // fayan failed, fall through to local search
       }
+
+      // Fall back to local search if fayan returned nothing
+      if (results.length < limit) {
+        try {
+          const localProfiles = await client.searchProfilesFromLocal(search, limit)
+          for (const profile of localProfiles) {
+            if (!existingPubkeys.has(profile.pubkey)) {
+              existingPubkeys.add(profile.pubkey)
+              results.push(profile)
+            }
+          }
+        } catch {
+          // local search failed too
+        }
+      }
+
+      setProfiles(results.slice(0, limit))
+      setIsFetching(false)
     }
 
     fetchProfiles()
-  }, [searchableRelayUrls, search, limit])
+  }, [search, limit])
 
-  return { isFetching, error, profiles }
+  return { isFetching, profiles }
 }

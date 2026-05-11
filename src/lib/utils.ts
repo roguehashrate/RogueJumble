@@ -160,3 +160,10 @@ export function parseEmojiPickerUnified(unified: string): string | TEmoji | unde
     return parseNativeEmoji(unified)
   }
 }
+
+export function getClientDescription() {
+  if (typeof navigator !== 'undefined' && navigator.userAgent) {
+    return navigator.userAgent
+  }
+  return 'RogueJumble'
+}

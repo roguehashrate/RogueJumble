@@ -2,7 +2,7 @@ import Profile from '@/components/Profile'
 import PrimaryPageLayout from '@/layouts/PrimaryPageLayout'
 import { useNostr } from '@/providers/NostrProvider'
 import { TPageRef } from '@/types'
-import { UserRound } from 'lucide-react'
+import { Loader2, UserRound } from 'lucide-react'
 import { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -16,7 +16,13 @@ const ProfilePage = forwardRef<TPageRef>((_, ref) => {
       displayScrollToTopButton
       ref={ref}
     >
-      <Profile id={pubkey ?? undefined} />
+      {pubkey ? (
+        <Profile id={pubkey} />
+      ) : (
+        <div className="flex items-center justify-center p-8 pt-[30vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
     </PrimaryPageLayout>
   )
 })

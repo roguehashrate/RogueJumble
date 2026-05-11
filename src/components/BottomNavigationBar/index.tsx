@@ -1,8 +1,8 @@
 import BackgroundAudio from '../BackgroundAudio'
 import HomeButton from './HomeButton'
+import MessagesButton from './MessagesButton'
 import NotificationsButton from './NotificationsButton'
 import PostButton from './PostButton'
-import SettingsButton from './SettingsButton'
 import WalletButton from './WalletButton'
 
 export default function BottomNavigationBar() {
@@ -35,7 +35,7 @@ export default function BottomNavigationBar() {
           <HomeButton />
           <WalletButton />
           <PostButton />
-          <SettingsButton />
+          <MessagesButton />
           <NotificationsButton />
         </div>
       </div>

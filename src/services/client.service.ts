@@ -1,4 +1,4 @@
-import { ExtendedKind } from '@/constants'
+import { DEFAULT_DM_RELAYS, ExtendedKind } from '@/constants'
 import {
   compareEvents,
   getReplaceableCoordinate,
@@ -211,6 +211,12 @@ class ClientService extends EventTarget {
 
         if (successCount >= successThreshold) {
           this.emitNewEvent(event, uniqueRelayUrls)
+          if (
+            event.kind === ExtendedKind.DM_RELAYS ||
+            event.kind === ExtendedKind.ENCRYPTION_KEY_ANNOUNCEMENT
+          ) {
+            this.updateReplaceableEventCache(event)
+          }
           resolve()
         }
         if (finishedCount >= uniqueRelayUrls.length) {
@@ -220,7 +226,8 @@ class ClientService extends EventTarget {
                 errors.map(
                   ({ url, error }) =>
                     new Error(`${url}: ${error instanceof Error ? error.message : String(error)}`)
-                )
+                ),
+                'Failed to publish to relays'
               )
             )
           }
@@ -1390,7 +1397,8 @@ class ClientService extends EventTarget {
     pubkey: string,
     kind: number,
     d?: string,
-    updateCache = true
+    updateCache = true,
+    _skipCache = false
   ) {
     const storedEvent = await indexedDb.getReplaceableEvent(pubkey, kind, d)
     if (storedEvent !== undefined) {
@@ -1458,6 +1466,49 @@ class ClientService extends EventTarget {
 
   async fetchPinnedUsersList(pubkey: string) {
     return this.fetchReplaceableEvent(pubkey, ExtendedKind.PINNED_USERS)
+  }
+
+  async fetchDmRelaysEvent(pubkey: string, updateCache = true, skipCache = false) {
+    return await this.fetchReplaceableEvent(
+      pubkey,
+      ExtendedKind.DM_RELAYS,
+      undefined,
+      updateCache,
+      skipCache
+    )
+  }
+
+  async fetchDmRelays(pubkey: string, updateCache = true) {
+    const dmRelayListEvent = await this.fetchDmRelaysEvent(pubkey, updateCache)
+    const relays = dmRelayListEvent
+      ? Array.from(
+          new Set(
+            dmRelayListEvent.tags
+              .filter((tag) => tag[0] === 'relay' && tag[1])
+              .map((tag) => normalizeUrl(tag[1]))
+              .filter(Boolean)
+          )
+        )
+      : []
+
+    if (relays.length === 0) {
+      return DEFAULT_DM_RELAYS
+    }
+    return relays
+  }
+
+  async fetchEncryptionKeyAnnouncementEvent(pubkey: string, updateCache = true, skipCache = false) {
+    return await this.fetchReplaceableEvent(
+      pubkey,
+      ExtendedKind.ENCRYPTION_KEY_ANNOUNCEMENT,
+      undefined,
+      updateCache,
+      skipCache
+    )
+  }
+
+  async updateEncryptionKeyAnnouncementCache(evt: NEvent) {
+    await this.updateReplaceableEventCache(evt)
   }
 
   async updateBlossomServerListEventCache(evt: NEvent) {

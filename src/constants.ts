@@ -113,16 +113,24 @@ export const NIP29_GROUP_KINDS = {
 
 export const ExtendedKind = {
   EXTERNAL_CONTENT_REACTION: 17,
+  SEAL: 13,
+  RUMOR_CHAT: 14,
+  RUMOR_FILE: 15,
   PICTURE: 20,
   VIDEO: 21,
   SHORT_VIDEO: 22,
+  GIFT_WRAP: 1059,
   POLL: 1068,
   POLL_RESPONSE: 1018,
   COMMENT: 1111,
   VOICE: 1222,
   VOICE_COMMENT: 1244,
+  CLIENT_KEY_ANNOUNCEMENT: 4454,
+  KEY_TRANSFER: 4455,
   PINNED_USERS: 10010,
   FAVORITE_RELAYS: 10012,
+  ENCRYPTION_KEY_ANNOUNCEMENT: 10044,
+  DM_RELAYS: 10050,
   BLOSSOM_SERVER_LIST: 10063,
   FOLLOW_PACK: 39089,
   RELAY_REVIEW: 31987,
@@ -199,6 +207,17 @@ export const DEFAULT_NOSTRCONNECT_RELAY = [
   'wss://relay.primal.net/',
   'wss://relay.damus.io/'
 ]
+
+export const DEFAULT_DM_RELAYS = [
+  'wss://auth.nostr1.com',
+  'wss://relay.0xchat.com',
+  'wss://nip17.com',
+  'wss://chat.wisp.talk',
+  'wss://relay.damus.io',
+  'wss://nos.lol'
+]
+
+export const DM_TIME_RANDOMIZATION_SECONDS = 2 * 24 * 60 * 60 // 2 days in seconds
 
 export const DEFAULT_FAVICON_URL_TEMPLATE = 'https://{hostname}/favicon.ico'
 
@@ -860,7 +879,8 @@ export const SPECIAL_TRUST_SCORE_FILTER_ID = {
   SEARCH: 'search',
   HASHTAG: 'hashtag',
   NAK: 'nak',
-  TRENDING: 'trending'
+  TRENDING: 'trending',
+  DM: 'dm'
 }
 
 export const COMMUNITY_RELAY_SETS = import.meta.env.VITE_COMMUNITY_RELAY_SETS as TRelaySet[]
