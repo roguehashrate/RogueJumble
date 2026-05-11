@@ -34,7 +34,8 @@ export default function ZapDialog({
   pubkey,
   event,
   defaultAmount,
-  defaultComment
+  defaultComment,
+  onSuccess
 }: {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
@@ -42,6 +43,7 @@ export default function ZapDialog({
   event?: NostrEvent
   defaultAmount?: number
   defaultComment?: string
+  onSuccess?: () => void
 }) {
   const { t } = useTranslation()
   const { isSmallScreen } = useScreenSize()
@@ -91,6 +93,7 @@ export default function ZapDialog({
             event={event}
             defaultAmount={defaultAmount}
             defaultComment={defaultComment}
+            onSuccess={onSuccess}
           />
           </div>
         </DrawerContent>
@@ -115,6 +118,7 @@ export default function ZapDialog({
           event={event}
           defaultAmount={defaultAmount}
           defaultComment={defaultComment}
+          onSuccess={onSuccess}
         />
       </DialogContent>
     </Dialog>
@@ -126,7 +130,8 @@ function ZapDialogContent({
   recipient,
   event,
   defaultAmount,
-  defaultComment
+  defaultComment,
+  onSuccess
 }: {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
@@ -134,6 +139,7 @@ function ZapDialogContent({
   event?: NostrEvent
   defaultAmount?: number
   defaultComment?: string
+  onSuccess?: () => void
 }) {
   const { t, i18n } = useTranslation()
   const { pubkey } = useNostr()
@@ -214,6 +220,7 @@ function ZapDialogContent({
       if (event) {
         stuffStatsService.addZap(pubkey, event.id, zapResult.invoice, satsAmount, comment)
       }
+      onSuccess?.()
     } catch (error) {
       toast.error(`${t('Zap failed')}: ${(error as Error).message}`)
     } finally {

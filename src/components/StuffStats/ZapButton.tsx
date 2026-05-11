@@ -25,6 +25,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
   const [openZapDialog, setOpenZapDialog] = useState(false)
   const [zapping, setZapping] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   const { zapAmount, hasZapped } = useMemo(() => {
     return {
       zapAmount: noteStats?.zaps?.reduce((acc, zap) => acc + zap.amount, 0),
@@ -34,6 +35,11 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
   const [disable, setDisable] = useState(true)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLongPressRef = useRef(false)
+
+  const triggerAnimation = () => {
+    setIsAnimating(true)
+    setTimeout(() => setIsAnimating(false), 700)
+  }
 
   useEffect(() => {
     if (!event) {
@@ -69,6 +75,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
         defaultZapComment
       )
       haptic('success')
+      triggerAnimation()
     } catch (error) {
       toast.error(`${t('Zap failed')}: ${(error as Error).message}`)
     } finally {
@@ -137,8 +144,9 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
     <>
       <button
         className={cn(
-          'flex h-full cursor-pointer select-none items-center gap-1 px-3 enabled:hover:text-zap disabled:cursor-default disabled:text-muted-foreground/40',
-          hasZapped ? 'text-zap' : 'text-muted-foreground'
+          'relative flex h-full cursor-pointer select-none items-center gap-1 px-3 enabled:hover:text-zap disabled:cursor-default disabled:text-muted-foreground/40',
+          hasZapped ? 'text-zap' : 'text-muted-foreground',
+          isAnimating && 'animate-zap-pulse'
         )}
         title={t('Zap')}
         disabled={disable || zapping}
@@ -148,6 +156,17 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
         onTouchStart={handleClickStart}
         onTouchEnd={handleClickEnd}
       >
+        {isAnimating && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 animate-spark-out bg-zap [--tw-translate-x:20px] [--tw-translate-y:-20px] rotate-[45deg]" />
+            <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 animate-spark-out bg-zap [--tw-translate-x:-20px] [--tw-translate-y:-20px] rotate-[-45deg] [animation-delay:0.1s]" />
+            <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 animate-spark-out bg-zap [--tw-translate-x:25px] [--tw-translate-y:0px] rotate-[90deg] [animation-delay:0.05s]" />
+            <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 animate-spark-out bg-zap [--tw-translate-x:-25px] [--tw-translate-y:0px] rotate-[-90deg] [animation-delay:0.15s]" />
+            <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 animate-spark-out bg-zap [--tw-translate-x:15px] [--tw-translate-y:25px] rotate-[135deg] [animation-delay:0.08s]" />
+            <div className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 animate-spark-out bg-zap [--tw-translate-x:-15px] [--tw-translate-y:25px] rotate-[-135deg] [animation-delay:0.12s]" />
+            <div className="absolute left-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 animate-ripple rounded-full bg-zap/20" />
+          </div>
+        )}
         {zapping ? (
           <Loader className="animate-spin" />
         ) : (
@@ -164,6 +183,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
           }}
           pubkey={event.pubkey}
           event={event}
+          onSuccess={triggerAnimation}
         />
       )}
     </>

@@ -83,9 +83,15 @@ export default {
         'slide-in-right': 'slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'slide-in-left': 'slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'stagger-fade': 'staggerFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'icon-bounce': 'iconBounce 0.3s ease-out'
+        'icon-bounce': 'iconBounce 0.3s ease-out',
+        'zap-pulse': 'zap-pulse 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both',
+        'spark-out': 'spark-out 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
       },
       keyframes: {
+        'spark-out': {
+          '0%': { transform: 'scale(0) translate(0, 0)', opacity: '1' },
+          '100%': { transform: 'scale(1.5) translate(var(--tw-translate-x), var(--tw-translate-y))', opacity: '0' }
+        },
         shimmer: {
           '0%': { backgroundPosition: '400% 0' },
           '100%': { backgroundPosition: '0% 0' }
@@ -181,6 +187,36 @@ export default {
           '60%': { transform: 'scale(1.05)' },
           '80%': { transform: 'scale(0.97)' },
           '100%': { transform: 'scale(1)' }
+        },
+        'zap-pulse': {
+          '0%': {
+            transform: 'scale(1)',
+            filter: 'drop-shadow(0 0 0px hsl(var(--zap) / 0)) brightness(1)',
+          },
+          '10%': {
+            transform: 'scale(1.5) translate(-2px, -2px)',
+            filter: 'drop-shadow(0 0 20px hsl(var(--zap))) brightness(2)',
+          },
+          '15%': {
+            transform: 'scale(1.3) translate(2px, 1px)',
+            filter: 'drop-shadow(0 0 10px #fff) brightness(1.5)',
+          },
+          '20%': {
+            transform: 'scale(1.6) translate(-1px, 2px)',
+            filter: 'drop-shadow(0 0 25px hsl(var(--zap))) brightness(2.5)',
+          },
+          '25%': {
+            transform: 'scale(1.2) translate(1px, -1px)',
+            filter: 'drop-shadow(0 0 5px #fff) brightness(1.2)',
+          },
+          '30%': {
+            transform: 'scale(1.4) translate(-2px, 0px)',
+            filter: 'drop-shadow(0 0 15px hsl(var(--zap))) brightness(2)',
+          },
+          '100%': {
+            transform: 'scale(1) translate(0, 0)',
+            filter: 'drop-shadow(0 0 0px hsl(var(--zap) / 0)) brightness(1)',
+          }
         }
       },
       backdropBlur: {
