@@ -31,6 +31,13 @@ export function DeepBrowsingProvider({
   const [lastScrollTop, setLastScrollTop] = useState(lastScrollTopRef.current)
 
   useEffect(() => {
+    if (active) {
+      setDeepBrowsing(false)
+      const scrollTop = (!scrollAreaRef ? window.scrollY : scrollAreaRef.current?.scrollTop) || 0
+      lastScrollTopRef.current = scrollTop
+      setLastScrollTop(scrollTop)
+    }
+
     if (!active) return
 
     const handleScroll = () => {
