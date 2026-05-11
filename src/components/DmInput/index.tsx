@@ -1,4 +1,5 @@
 import ContentPreviewContent from '@/components/ContentPreview/Content'
+import Emoji from '@/components/Emoji'
 import EmojiPickerDialog from '@/components/EmojiPickerDialog'
 import Uploader from '@/components/PostEditor/Uploader'
 import { SimpleUserAvatar } from '@/components/UserAvatar'
@@ -42,6 +43,7 @@ export default function DmInput({
   const [emojiIndex, setEmojiIndex] = useState(0)
   const [isFocused, setIsFocused] = useState(false)
   const emojisRef = useRef<Map<string, string>>(new Map())
+  const savedRangeRef = useRef<Range | null>(null)
 
   const serializeContent = useCallback(() => {
     const div = editableRef.current
@@ -75,6 +77,9 @@ export default function DmInput({
 
   const detectAutocomplete = useCallback(() => {
     const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0 && editableRef.current?.contains(sel.anchorNode)) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange()
+    }
     if (!sel || !sel.rangeCount || !sel.isCollapsed) {
       setMentionQuery(null)
       setEmojiQuery(null)
@@ -311,7 +316,11 @@ export default function DmInput({
 
   const handleInput = useCallback(() => {
     setContent(serializeContent())
-    requestAnimationFrame(detectAutocomplete)
+    detectAutocomplete()
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange()
+    }
   }, [serializeContent, detectAutocomplete])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -370,12 +379,15 @@ export default function DmInput({
   const handlePickerEmoji = useCallback(
     (emoji: string | TEmoji | undefined) => {
       if (!emoji) return
+      const sel = window.getSelection()
       const div = editableRef.current
       if (!div) return
-      div.focus()
 
-      const sel = window.getSelection()
-      if (!sel || !sel.rangeCount) {
+      if (savedRangeRef.current && div.contains(savedRangeRef.current.commonAncestorContainer)) {
+        sel?.removeAllRanges()
+        sel?.addRange(savedRangeRef.current)
+      } else if (!sel || sel.rangeCount === 0 || !div.contains(sel.anchorNode)) {
+        div.focus()
         const range = document.createRange()
         range.selectNodeContents(div)
         range.collapse(false)
@@ -495,6 +507,7 @@ export default function DmInput({
               }}
               onMouseEnter={() => setEmojiIndex(index)}
             >
+              <Emoji emoji={emoji} classNames={{ img: 'size-6' }} />
               <span className="truncate">:{emoji.shortcode}:</span>
             </button>
           ))}
@@ -548,6 +561,7 @@ export default function DmInput({
           onKeyDown={handleKeyDown}
           onClick={detectAutocomplete}
           onKeyUp={detectAutocomplete}
+          onMouseUp={detectAutocomplete}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           data-placeholder={t('Type a message...')}
