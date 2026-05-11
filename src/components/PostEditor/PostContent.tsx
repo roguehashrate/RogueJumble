@@ -513,8 +513,8 @@ export default function PostContent({
             onProgress={handleUploadProgress}
             accept="image/*,video/*,audio/*"
           >
-            <Button variant="ghost" size="icon">
-              <ImageUp />
+            <Button variant="ghost" size="icon" type="button">
+              <ImageUp className="size-5" />
             </Button>
           </Uploader>
           {/* I'm not sure why, but after triggering the virtual keyboard,
@@ -527,8 +527,8 @@ export default function PostContent({
                 textareaRef.current?.insertEmoji(emoji)
               }}
             >
-              <Button variant="ghost" size="icon">
-                <Smile />
+              <Button variant="ghost" size="icon" type="button">
+                <Smile className="size-5" />
               </Button>
             </EmojiPickerDialog>
           )}
@@ -540,66 +540,36 @@ export default function PostContent({
               className={cn('text-muted-foreground', isPoll && 'text-primary')}
               onClick={handlePollToggle}
             >
-              <ListTodo />
+              <ListTodo className="size-5" />
             </Button>
           )}
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             title={t('Client Tag')}
-            className={addClientTag ? 'text-primary' : 'text-white'}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              width: '16px',
-              height: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              margin: '0 2px'
-            }}
+            className={addClientTag ? 'text-primary' : 'text-muted-foreground'}
             onClick={() => setAddClientTag(!addClientTag)}
           >
-            <Tag />
-          </button>
-          <button
-            type="button"
+            <Tag className="size-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             title={t('Proof of Work')}
-            className={minPow > 0 ? 'text-primary' : 'text-white'}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              width: '16px',
-              height: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              margin: '0 2px'
-            }}
+            className={minPow > 0 ? 'text-primary' : 'text-muted-foreground'}
             onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
           >
-            <Pickaxe />
-          </button>
-          <button
-            type="button"
+            <Pickaxe className="size-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             title={t('NSFW')}
-            className={isNsfw ? 'text-primary' : 'text-white'}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              width: '16px',
-              height: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              margin: '0 2px'
-            }}
+            className={isNsfw ? 'text-primary' : 'text-muted-foreground'}
             onClick={() => setIsNsfw(!isNsfw)}
           >
-            <Ban />
-          </button>
+            <Ban className="size-5" />
+          </Button>
         </div>
         <div className="flex items-center gap-2">
           <Mentions
