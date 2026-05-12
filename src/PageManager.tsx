@@ -29,6 +29,7 @@ type TSecondaryPageContext = {
   push: (url: string) => void
   pop: (delta?: number) => void
   currentIndex: number
+  currentUrl: string | null
 }
 
 type TStackItem = {
@@ -266,7 +267,10 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
           pop: popSecondaryPage,
           currentIndex: secondaryStack.length
             ? secondaryStack[secondaryStack.length - 1].index
-            : 0
+            : 0,
+          currentUrl: secondaryStack.length
+            ? secondaryStack[secondaryStack.length - 1].url
+            : null
         }}
       >
         <GroupChatContextProvider>

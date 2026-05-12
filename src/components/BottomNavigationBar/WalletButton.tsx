@@ -1,22 +1,12 @@
 import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
 import { haptic } from '@/lib/haptic'
 import { Wallet } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import BottomNavigationBarItem from './BottomNavigationBarItem'
 
 export default function WalletButton() {
   const { display } = usePrimaryPage()
-  const { push } = useSecondaryPage()
-  const [isActive, setIsActive] = useState(false)
-
-  useEffect(() => {
-    const checkActive = () => {
-      setIsActive(window.location.pathname === '/settings/wallet')
-    }
-    checkActive()
-    window.addEventListener('popstate', checkActive)
-    return () => window.removeEventListener('popstate', checkActive)
-  }, [])
+  const { push, currentUrl } = useSecondaryPage()
+  const isActive = currentUrl === '/settings/wallet'
 
   return (
     <BottomNavigationBarItem
