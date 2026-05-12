@@ -1,4 +1,3 @@
-import { IS_COMMUNITY_MODE } from '@/constants'
 import { cn } from '@/lib/utils'
 import { usePrimaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
@@ -9,7 +8,6 @@ import AccountButton from './AccountButton'
 import BookmarkButton from './BookmarkButton'
 import DmButton from './DmButton'
 import RelaysButton from './ExploreButton'
-import FollowingButton from './FollowingButton'
 import HomeButton from './HomeButton'
 import NotificationsButton from './NotificationButton'
 import PostButton from './PostButton'
@@ -68,8 +66,7 @@ export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: bo
         </button>
         <HomeButton collapse={collapse} iconRail={iconRail} />
         {pubkey && <DmButton collapse={collapse} iconRail={iconRail} />}
-        {!IS_COMMUNITY_MODE && <RelaysButton collapse={collapse} iconRail={iconRail} />}
-        {IS_COMMUNITY_MODE && <FollowingButton collapse={collapse} iconRail={iconRail} />}
+        <RelaysButton collapse={collapse} iconRail={iconRail} />
         <NotificationsButton collapse={collapse} iconRail={iconRail} />
         <SearchButton collapse={collapse} iconRail={iconRail} />
         <ProfileButton collapse={collapse} iconRail={iconRail} />

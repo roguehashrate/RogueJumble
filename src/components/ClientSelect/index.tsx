@@ -115,8 +115,6 @@ export default function ClientSelect({
       case kinds.Date:
       case kinds.Time:
         return ['coracle', 'njump']
-      case kinds.CommunityDefinition:
-        return ['coracle', 'snort', 'njump']
       default:
         return ['njump']
     }

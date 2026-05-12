@@ -1,4 +1,4 @@
-import { ChevronDown, FileText, ImageUp, ListChecks, PencilLine, Tv, Video, Users } from 'lucide-react'
+import { ChevronDown, FileText, ImageUp, ListChecks, PencilLine, Tv, Video } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,7 @@ import {
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { cn, isTouchDevice } from '@/lib/utils'
 
-type TPostKind = 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
+type TPostKind = 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'longForm'
 
 const KIND_OPTIONS: { key: TPostKind; icon: React.ComponentType<{ className?: string }>; label: string; shortLabel: string }[] = [
   { key: 'text', icon: PencilLine, label: 'Text Post', shortLabel: 'Text' },
@@ -18,8 +18,7 @@ const KIND_OPTIONS: { key: TPostKind; icon: React.ComponentType<{ className?: st
   { key: 'video', icon: Tv, label: 'Video Post', shortLabel: 'Video' },
   { key: 'shortVideo', icon: Video, label: 'Short Video Post', shortLabel: 'Short Video' },
   { key: 'poll', icon: ListChecks, label: 'Poll', shortLabel: 'Poll' },
-  { key: 'longForm', icon: FileText, label: 'Long Form Article', shortLabel: 'Long Form' },
-  { key: 'communityPost', icon: Users, label: 'Community Post', shortLabel: 'Community' }
+  { key: 'longForm', icon: FileText, label: 'Long Form Article', shortLabel: 'Long Form' }
 ]
 
 export default function PostKindSelector({

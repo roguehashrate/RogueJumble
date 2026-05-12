@@ -1,4 +1,4 @@
-import { IS_COMMUNITY_MODE } from '@/constants'
+
 import { toRelay } from '@/lib/link'
 import { useSecondaryPage } from '@/PageManager'
 import { useSortable } from '@dnd-kit/sortable'
@@ -39,7 +39,7 @@ export default function RelayItem({ relay }: { relay: string }) {
           <div className="w-0 flex-1 truncate font-semibold">{relay}</div>
         </div>
       </div>
-      {!IS_COMMUNITY_MODE && <SaveRelayDropdownMenu urls={[relay]} />}
+      <SaveRelayDropdownMenu urls={[relay]} />
     </div>
   )
 }

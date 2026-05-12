@@ -6,7 +6,6 @@ import { useMuteList } from '@/providers/MuteListProvider'
 import { Event, kinds } from 'nostr-tools'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import CommunityDefinitionPreview from './CommunityDefinitionPreview'
 import EmojiPackPreview from './EmojiPackPreview'
 import FollowPackPreview from './FollowPackPreview'
 import GroupMetadataPreview from './GroupMetadataPreview'
@@ -99,10 +98,6 @@ export default function ContentPreview({
 
   if (event.kind === ExtendedKind.GROUP_METADATA) {
     return <GroupMetadataPreview event={event} className={className} />
-  }
-
-  if (event.kind === kinds.CommunityDefinition) {
-    return <CommunityDefinitionPreview event={event} className={className} />
   }
 
   if (event.kind === kinds.LiveEvent) {

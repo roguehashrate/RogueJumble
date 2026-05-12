@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 export default function FollowingFeed({
   feedVariant = 'following'
 }: {
-  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed' | 'communityFeed'
+  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed'
 }) {
   const { t } = useTranslation()
   const { pubkey } = useNostr()

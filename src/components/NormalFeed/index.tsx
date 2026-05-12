@@ -13,11 +13,6 @@ import { useMemo, useRef, useState } from 'react'
 import { kinds } from 'nostr-tools'
 import KindFilter from '../KindFilter'
 import { RefreshButton } from '../RefreshButton'
-import CommunityDiscovery from './CommunityDiscovery'
-import MyCommunities from './MyCommunities'
-import YourCircle from './YourCircle'
-
-type TCommunityTab = 'discover' | 'yourCircle' | 'myCommunities'
 
 export default function NormalFeed({
   trustScoreFilterId,
@@ -37,7 +32,7 @@ export default function NormalFeed({
   showRelayCloseReason?: boolean
   disable24hMode?: boolean
   onRefresh?: () => void
-  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed' | 'communityFeed'
+  feedVariant?: 'following' | 'mediaFeed' | 'textFeed' | 'articleFeed'
   hideFollowingBadge?: boolean
 }) {
   const { showKinds } = useKindFilter()
@@ -45,7 +40,6 @@ export default function NormalFeed({
   const [temporaryShowKinds, setTemporaryShowKinds] = useState(showKinds)
   const [listMode, setListMode] = useState<TNoteListMode>(() => storage.getNoteListMode())
   const [scope, setScope] = useState<'following' | 'global'>('following')
-  const [communityTab, setCommunityTab] = useState<TCommunityTab>('discover')
   const supportTouch = useMemo(() => isTouchDevice(), [])
   const noteListRef = useRef<TNoteListRef>(null)
   const userAggregationListRef = useRef<TUserAggregationListRef>(null)
@@ -78,7 +72,6 @@ export default function NormalFeed({
   const isTextFeed = feedVariant === 'textFeed'
   const isArticleFeed = feedVariant === 'articleFeed'
   const isMediaFeed = feedVariant === 'mediaFeed'
-  const isCommunityFeed = feedVariant === 'communityFeed'
   const isScopedFeed = isArticleFeed || isMediaFeed || isTextFeed
 
   // Global subRequests for broader feed
@@ -117,21 +110,11 @@ export default function NormalFeed({
     if (feedVariant === 'articleFeed') {
       return [kinds.LongFormArticle]
     }
-    if (feedVariant === 'communityFeed') {
-      return [kinds.CommunityDefinition, 34551]
-    }
     return temporaryShowKinds
   }, [feedVariant, temporaryShowKinds])
 
   // Build tabs based on feed variant
   const tabs = useMemo(() => {
-    if (isCommunityFeed) {
-      return [
-        { value: 'discover', label: 'Discover' },
-        { value: 'yourCircle', label: 'Your Circle' },
-        { value: 'myCommunities', label: 'My Communities' }
-      ]
-    }
     if (isScopedFeed) {
       return [
         { value: 'following', label: 'Following' },
@@ -143,20 +126,16 @@ export default function NormalFeed({
       { value: 'postsAndReplies', label: 'Replies' },
       ...(!disable24hMode ? [{ value: '24h', label: '24h' }] : [])
     ]
-  }, [isCommunityFeed, isScopedFeed, disable24hMode])
+  }, [isScopedFeed, disable24hMode])
 
-  const activeTab = isCommunityFeed
-    ? communityTab
-    : isScopedFeed
-      ? scope
-      : listMode === '24h' && disable24hMode
-        ? 'posts'
-        : listMode
+  const activeTab = isScopedFeed
+    ? scope
+    : listMode === '24h' && disable24hMode
+      ? 'posts'
+      : listMode
 
   const handleTabChange = (value: string) => {
-    if (isCommunityFeed) {
-      setCommunityTab(value as TCommunityTab)
-    } else if (isScopedFeed) {
+    if (isScopedFeed) {
       setScope(value as 'following' | 'global')
     } else {
       handleListModeChange(value as TNoteListMode)
@@ -169,7 +148,7 @@ export default function NormalFeed({
       onRefresh()
       return
     }
-    if (!isScopedFeed && !isCommunityFeed && listMode === '24h') {
+    if (!isScopedFeed && listMode === '24h') {
       userAggregationListRef.current?.refresh()
     } else {
       noteListRef.current?.refresh()
@@ -184,7 +163,7 @@ export default function NormalFeed({
         onTabChange={handleTabChange}
         options={
           <>
-            {!supportTouch && !isScopedFeed && !isCommunityFeed && (
+            {!supportTouch && !isScopedFeed && (
               <RefreshButton onClick={handleRefresh} />
             )}
             {trustScoreFilterId && (
@@ -205,11 +184,6 @@ export default function NormalFeed({
       />
       <div ref={topRef} className="scroll-mt-[calc(6rem+1px)]" />
 
-      {/* Community feed content */}
-      {isCommunityFeed && communityTab === 'discover' && <CommunityDiscovery />}
-      {isCommunityFeed && communityTab === 'yourCircle' && <YourCircle />}
-      {isCommunityFeed && communityTab === 'myCommunities' && <MyCommunities />}
-
       {/* Scoped feed content (Articles/Media/Text) */}
       {isScopedFeed && (
         <NoteList
@@ -226,7 +200,7 @@ export default function NormalFeed({
       )}
 
       {/* Following feed content */}
-      {!isCommunityFeed && !isScopedFeed && (
+      {!isScopedFeed && (
         <>
           {listMode === '24h' && !disable24hMode ? (
             <UserAggregationList

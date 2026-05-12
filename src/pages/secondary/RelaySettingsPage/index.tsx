@@ -5,7 +5,7 @@ import SearchRelaysSetting from '@/components/SearchRelaysSetting'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { IS_COMMUNITY_MODE } from '@/constants'
+
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { forwardRef, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -28,33 +28,6 @@ const RelaySettingsPage = forwardRef(({ index }: { index?: number }, ref) => {
         break
     }
   }, [])
-
-  if (IS_COMMUNITY_MODE) {
-    return (
-      <SecondaryPageLayout ref={ref} index={index} title={t('Relay settings')}>
-        <div className="space-y-4 px-4 py-3">
-          <MailboxSetting />
-          <Separator className="my-4" />
-          <SectionHeader>{t('Relay filtering')}</SectionHeader>
-          <div className="flex min-h-9 items-center justify-between">
-            <label className="text-base font-normal">{t('Filter out onion relays')}</label>
-            <Switch
-              checked={filterOutOnionRelays}
-              onCheckedChange={(checked) => {
-                storage.setFilterOutOnionRelays(checked)
-                setFilterOutOnionRelays(checked)
-              }}
-            />
-          </div>
-          <Separator className="my-4" />
-          <DefaultRelaysSetting />
-          <div className="pt-4">
-            <SearchRelaysSetting />
-          </div>
-        </div>
-      </SecondaryPageLayout>
-    )
-  }
 
   return (
     <SecondaryPageLayout ref={ref} index={index} title={t('Relay settings')}>

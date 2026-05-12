@@ -145,7 +145,6 @@ export type TFeedType =
   | 'mediaFeed'
   | 'textFeed'
   | 'articleFeed'
-  | 'communityFeed'
   | 'groups'
 export type TFeedInfo = { feedType: TFeedType; id?: string; name?: string } | null
 
@@ -169,7 +168,6 @@ export type TNoteListMode =
   | 'posts'
   | 'postsAndReplies'
   | '24h'
-  | 'community'
   | 'imageMode'
   | 'textOnlyMode'
   | 'gallery'

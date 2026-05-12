@@ -30,7 +30,9 @@ import { useNostr } from '@/providers/NostrProvider'
 import { usePageActive } from '@/providers/PageActiveProvider'
 import dmService from '@/services/dm.service'
 import { TDmMessage, TEmoji, TImetaInfo } from '@/types'
+import lightning from '@/services/lightning.service'
 import dayjs from 'dayjs'
+import { toast } from 'sonner'
 import {
   AlertCircle,
   ArrowDown,
@@ -39,7 +41,8 @@ import {
   Copy,
   Loader2,
   Reply,
-  SmilePlus
+  SmilePlus,
+  Zap
 } from 'lucide-react'
 import { kinds } from 'nostr-tools'
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -82,6 +85,7 @@ export default function DmMessageList({
   const pendingMessagesRef = useRef<TDmMessage[]>([])
   const [pendingCount, setPendingCount] = useState(0)
   const [reactionsMap, setReactionsMap] = useState<Map<string, TDmMessage[]>>(new Map())
+  const [zapsMap, setZapsMap] = useState<Map<string, { amount: number; senderPubkey: string }[]>>(new Map())
   const loadMoreScrollRestoreRef = useRef(0)
   const hasScrolledToBottomRef = useRef(false)
 
@@ -345,6 +349,52 @@ export default function DmMessageList({
     [pubkey, otherPubkey]
   )
 
+  const zapsStorageKey = useMemo(() => {
+    if (!pubkey) return null
+    return `dm_zaps_${dmService.getParticipantsKey(pubkey, otherPubkey)}`
+  }, [pubkey, otherPubkey])
+
+  useEffect(() => {
+    if (!zapsStorageKey) return
+    try {
+      const stored = localStorage.getItem(zapsStorageKey)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        setZapsMap(new Map(Object.entries(parsed)))
+      }
+    } catch {}
+  }, [zapsStorageKey])
+
+  useEffect(() => {
+    if (!zapsStorageKey) return
+    const obj: Record<string, { amount: number; senderPubkey: string }[]> = {}
+    zapsMap.forEach((v, k) => { obj[k] = v })
+    localStorage.setItem(zapsStorageKey, JSON.stringify(obj))
+  }, [zapsMap, zapsStorageKey])
+
+  const handleZap = useCallback(async (messageId: string, amount: number): Promise<boolean> => {
+    if (!pubkey) return false
+    const message = messages.find((m) => m.id === messageId)
+    if (!message) return false
+
+      try {
+      const recipientPubkey = message.senderPubkey === pubkey ? pubkey : message.senderPubkey
+      const result = await lightning.zap(pubkey, recipientPubkey, amount, '')
+      if (!result) return false
+      setZapsMap((prev) => {
+        const updated = new Map(prev)
+        const existing = updated.get(messageId) ?? []
+        updated.set(messageId, [...existing, { amount, senderPubkey: pubkey }])
+        return updated
+      })
+      toast.success(t('Zap sent!'))
+      return true
+    } catch (error) {
+      toast.error(`${t('Zap failed')}: ${(error as Error).message}`)
+      return false
+    }
+  }, [pubkey, messages, t])
+
   if (isLoading) {
     return (
       <div className="flex flex-1 min-h-0 items-center justify-center p-8">
@@ -432,7 +482,9 @@ export default function DmMessageList({
                           sendingStatus={dmService.getSendingStatus(message.id)}
                           onReply={onReply}
                           onReact={handleReact}
+                          onZap={handleZap}
                           reactions={reactionsMap.get(message.id)}
+                          zaps={zapsMap.get(message.id)}
                           currentUserPubkey={pubkey ?? undefined}
                           onScrollToMessage={scrollToMessage}
                           isHighlighted={highlightedId === message.id}
@@ -476,7 +528,9 @@ function MessageBubble({
   sendingStatus,
   onReply,
   onReact,
+  onZap,
   reactions,
+  zaps,
   currentUserPubkey,
   onScrollToMessage,
   isHighlighted,
@@ -489,7 +543,9 @@ function MessageBubble({
   sendingStatus?: 'sending' | 'sent' | 'failed' | null
   onReply?: (message: TDmMessage) => void
   onReact?: (messageId: string, emoji: string | TEmoji) => void
+  onZap?: (messageId: string, amount: number) => Promise<boolean>
   reactions?: TDmMessage[]
+  zaps?: { amount: number; senderPubkey: string }[]
   currentUserPubkey?: string
   onScrollToMessage?: (id: string) => void
   isHighlighted?: boolean
@@ -519,7 +575,9 @@ function MessageBubble({
   const longPressTriggeredRef = useRef(false)
   const actionDrawerOpenTimeRef = useRef(0)
   const [isActionDrawerOpen, setIsActionDrawerOpen] = useState(false)
-  const [drawerMode, setDrawerMode] = useState<'actions' | 'emoji'>('actions')
+  const [drawerMode, setDrawerMode] = useState<'actions' | 'emoji' | 'zap'>('actions')
+  const [zapAmount, setZapAmount] = useState('21')
+  const [zapping, setZapping] = useState(false)
 
   const handleTouchStart = useCallback(() => {
     longPressTriggeredRef.current = false
@@ -549,6 +607,19 @@ function MessageBubble({
     },
     [message.id, onReact]
   )
+
+  const handleZapSend = useCallback(async () => {
+    const amount = parseInt(zapAmount)
+    if (!amount || amount <= 0 || !onZap) return
+    setZapping(true)
+    const success = await onZap(message.id, amount)
+    setZapping(false)
+    if (success) {
+      setIsActionDrawerOpen(false)
+      setDrawerMode('actions')
+      setZapAmount('21')
+    }
+  }, [zapAmount, onZap, message.id])
 
   const chipLongPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [chipLongPressing, setChipLongPressing] = useState<string | null>(null)
@@ -753,6 +824,19 @@ function MessageBubble({
                     {t('React')}
                   </button>
                 )}
+                {onZap && (
+                  <button
+                    onClick={() => {
+                      if (Date.now() - actionDrawerOpenTimeRef.current < 400) return
+                      setDrawerMode('zap')
+                      setZapAmount('21')
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 text-base active:bg-secondary"
+                  >
+                    <Zap className="h-5 w-5 text-muted-foreground" />
+                    {t('Zap')}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     if (Date.now() - actionDrawerOpenTimeRef.current < 400) return
@@ -764,6 +848,58 @@ function MessageBubble({
                   <Copy className="h-5 w-5 text-muted-foreground" />
                   {t('Copy')}
                 </button>
+              </div>
+            ) : drawerMode === 'zap' ? (
+              <div className="flex flex-col gap-4 px-4 py-6 pb-8">
+                <div className="flex items-center justify-center gap-2 text-lg font-semibold">
+                  <Zap className="h-5 w-5 text-zap" />
+                  {t('Zap')}
+                </div>
+                <div className="flex flex-col items-center">
+                  <input
+                    value={zapAmount}
+                    onChange={(e) => setZapAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                    className="w-full bg-transparent p-0 text-center text-5xl font-bold focus:outline-hidden"
+                    autoFocus
+                  />
+                  <span className="text-sm text-muted-foreground">Sats</span>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {[21, 42, 210, 420, 1000].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setZapAmount(n.toString())}
+                      className="rounded-md bg-secondary py-1.5 text-sm font-medium transition-colors hover:bg-secondary/80"
+                    >
+                      {n >= 1000 ? `${n / 1000}k` : n}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setIsActionDrawerOpen(false)
+                      setDrawerMode('actions')
+                    }}
+                    className="flex-1 rounded-md bg-secondary py-3 font-medium transition-colors hover:bg-secondary/80"
+                  >
+                    {t('Cancel')}
+                  </button>
+                  <button
+                    onClick={handleZapSend}
+                    disabled={zapping || !zapAmount || parseInt(zapAmount) <= 0}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary py-3 font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {zapping ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4" />
+                        {t('Zap')}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             ) : (
               <EmojiPicker
@@ -872,6 +1008,19 @@ function MessageBubble({
                       <span className="text-xs text-muted-foreground">{r.count}</span>
                     )}
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {zaps && zaps.length > 0 && (
+            <div className={cn('z-1 mt-1 flex flex-wrap gap-1', isOwn ? 'justify-end' : 'justify-start')}>
+              {zaps.map((zapInfo, i) => (
+                <div
+                  key={i}
+                  className="flex h-6 cursor-default items-center gap-1 rounded-full border border-zap/50 bg-zap/10 px-1.5 text-sm shadow-xs"
+                >
+                  <span className="text-xs">⚡</span>
+                  <span className="text-xs font-medium text-zap">{zapInfo.amount >= 1000 ? `${(zapInfo.amount / 1000).toFixed(1)}k` : zapInfo.amount}</span>
                 </div>
               ))}
             </div>

@@ -1,4 +1,3 @@
-import { IS_COMMUNITY_MODE, COMMUNITY_RELAY_SETS, COMMUNITY_RELAYS } from '@/constants'
 import { getRelaySetFromEvent } from '@/lib/event-metadata'
 import { isWebsocketUrl, normalizeUrl } from '@/lib/url'
 import indexedDb from '@/services/indexed-db.service'
@@ -49,22 +48,9 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         if (storedFeedInfo) {
           feedInfo = storedFeedInfo
         } else {
-          if (!IS_COMMUNITY_MODE) {
-            feedInfo = { feedType: 'following' }
-          }
+              feedInfo = { feedType: 'following' }
         }
       }
-      if (!feedInfo && IS_COMMUNITY_MODE) {
-        feedInfo =
-          COMMUNITY_RELAY_SETS.length > 0
-            ? {
-                feedType: 'relays',
-                id: COMMUNITY_RELAY_SETS[0].id,
-                name: COMMUNITY_RELAY_SETS[0].name
-              }
-            : { feedType: 'relay', id: COMMUNITY_RELAYS[0] }
-      }
-
       if (feedInfo?.feedType === 'relays') {
         return await switchFeed('relays', { activeRelaySetId: feedInfo.id })
       }
@@ -83,8 +69,8 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         return await switchFeed('pinned', { pubkey })
       }
 
-      // update media/text/article/community feeds if pubkey changes
-      if ((feedInfo?.feedType === 'mediaFeed' || feedInfo?.feedType === 'textFeed' || feedInfo?.feedType === 'articleFeed' || feedInfo?.feedType === 'communityFeed') && pubkey) {
+      // update media/text/article feeds if pubkey changes
+      if ((feedInfo?.feedType === 'mediaFeed' || feedInfo?.feedType === 'textFeed' || feedInfo?.feedType === 'articleFeed') && pubkey) {
         return await switchFeed(feedInfo.feedType, { pubkey })
       }
 
@@ -133,29 +119,23 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     if (feedType === 'relays') {
       const relaySetId = options.activeRelaySetId ?? (relaySets.length > 0 ? relaySets[0].id : null)
       let relaySet: TRelaySet | null = null
-      if (IS_COMMUNITY_MODE) {
-        relaySet =
-          COMMUNITY_RELAY_SETS.find((set) => set.id === relaySetId) ??
-          (COMMUNITY_RELAY_SETS.length > 0 ? COMMUNITY_RELAY_SETS[0] : null)
-      } else {
-        if (!relaySetId || !pubkey) {
-          setIsReady(true)
-          return
-        }
+      if (!relaySetId || !pubkey) {
+        setIsReady(true)
+        return
+      }
 
-        relaySet =
-          relaySets.find((set) => set.id === relaySetId) ??
-          (relaySets.length > 0 ? relaySets[0] : null)
+      relaySet =
+        relaySets.find((set) => set.id === relaySetId) ??
+        (relaySets.length > 0 ? relaySets[0] : null)
 
-        if (!relaySet) {
-          const storedRelaySetEvent = await indexedDb.getReplaceableEvent(
-            pubkey,
-            kinds.Relaysets,
-            relaySetId
-          )
-          if (storedRelaySetEvent) {
-            relaySet = getRelaySetFromEvent(storedRelaySetEvent)
-          }
+      if (!relaySet) {
+        const storedRelaySetEvent = await indexedDb.getReplaceableEvent(
+          pubkey,
+          kinds.Relaysets,
+          relaySetId
+        )
+        if (storedRelaySetEvent) {
+          relaySet = getRelaySetFromEvent(storedRelaySetEvent)
         }
       }
 
@@ -198,7 +178,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       setIsReady(true)
       return
     }
-    if (feedType === 'mediaFeed' || feedType === 'textFeed' || feedType === 'articleFeed' || feedType === 'communityFeed') {
+    if (feedType === 'mediaFeed' || feedType === 'textFeed' || feedType === 'articleFeed') {
       if (!options.pubkey) {
         setIsReady(true)
         return

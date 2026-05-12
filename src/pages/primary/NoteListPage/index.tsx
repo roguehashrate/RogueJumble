@@ -69,9 +69,6 @@ const NoteListPage = forwardRef<TPageRef>((_, ref) => {
   } else if (feedInfo.feedType === 'articleFeed' && !pubkey) {
     switchFeed(null)
     return null
-  } else if (feedInfo.feedType === 'communityFeed' && !pubkey) {
-    switchFeed(null)
-    return null
   } else if (feedInfo.feedType === 'groups' && !pubkey) {
     switchFeed(null)
     return null
@@ -83,8 +80,6 @@ const NoteListPage = forwardRef<TPageRef>((_, ref) => {
     content = <FollowingFeed feedVariant="textFeed" />
   } else if (feedInfo.feedType === 'articleFeed') {
     content = <FollowingFeed feedVariant="articleFeed" />
-  } else if (feedInfo.feedType === 'communityFeed') {
-    content = <FollowingFeed feedVariant="communityFeed" />
   } else if (feedInfo.feedType === 'groups') {
     content = <GroupsFeed />
   } else {

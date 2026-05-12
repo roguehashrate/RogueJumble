@@ -4,7 +4,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { StorageKey } from '@/constants'
 import {
   createCommentDraftEvent,
-  createCommunityPostDraftEvent,
   createHighlightDraftEvent,
   createLongFormArticleDraftEvent,
   createPollDraftEvent,
@@ -37,7 +36,6 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Switch } from '@/components/ui/switch'
 import EmojiPickerDialog from '../EmojiPickerDialog'
-import CommunityPicker from '../CommunityPicker'
 import Mentions from './Mentions'
 import PollEditor from './PollEditor'
 import PostKindSelector from './PostKindSelector'
@@ -89,11 +87,10 @@ export default function PostContent({
     const storedDifficulty = window.localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
     return storedDifficulty ? parseInt(storedDifficulty, 10) : 16
   })
-  const [postKind, setPostKind] = useState<'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'>('text')
+  const [postKind, setPostKind] = useState<'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'longForm'>('text')
   const [articleTitle, setArticleTitle] = useState('')
   const [articleContent, setArticleContent] = useState('')
   const [articleTags, setArticleTags] = useState('')
-  const [communityCoordinate, setCommunityCoordinate] = useState('')
   const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([])
   const userDismissedProtected = useRef(false)
   const handleProtectedSuggestionChange = useCallback((suggested: boolean) => {
@@ -117,7 +114,6 @@ export default function PostContent({
       !posting &&
       !uploadProgresses.length &&
       (!(postKind === 'poll' || isPoll) || pollCreateData.options.filter((option) => !!option.trim()).length >= 2) &&
-      (postKind !== 'communityPost' || !!communityCoordinate) &&
       (!isProtectedEvent || additionalRelayUrls.length > 0)
     )
   }, [
@@ -133,7 +129,7 @@ export default function PostContent({
     postKind,
     articleTitle,
     articleContent,
-    communityCoordinate
+    articleTags
   ])
 
   useEffect(() => {
@@ -197,8 +193,7 @@ export default function PostContent({
           postKind,
           articleTitle,
           articleContent,
-          articleTags,
-          communityCoordinate
+          articleTags
         })
 
         const _additionalRelayUrls = [...additionalRelayUrls]
@@ -427,12 +422,6 @@ export default function PostContent({
           )}
 
           {/* Kind-specific fields for non-longForm kinds */}
-      {postKind === 'communityPost' && (
-        <CommunityPicker
-          value={communityCoordinate}
-          onChange={(coord) => setCommunityCoordinate(coord)}
-        />
-      )}
       {(postKind === 'poll' || isPoll) && (
         <PollEditor
           pollCreateData={pollCreateData}
@@ -629,8 +618,7 @@ async function createDraftEvent({
   postKind = 'text',
   articleTitle,
   articleContent,
-  articleTags,
-  communityCoordinate
+  articleTags
 }: {
   parentStuff: Event | string | undefined
   text: string
@@ -642,11 +630,10 @@ async function createDraftEvent({
   isProtectedEvent: boolean
   isNsfw: boolean
   highlightedText?: string
-  postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
+  postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'longForm'
   articleTitle?: string
   articleContent?: string
   articleTags?: string
-  communityCoordinate?: string
 }) {
   const { parentEvent, externalContent } =
     typeof parentStuff === 'string'
@@ -678,14 +665,6 @@ async function createDraftEvent({
 
   if (postKind === 'longForm') {
     return await createLongFormArticleDraftEvent(articleContent ?? '', articleTitle ?? '', articleTags ?? '', mentions, {
-      addClientTag,
-      protectedEvent: isProtectedEvent,
-      isNsfw
-    })
-  }
-
-  if (postKind === 'communityPost') {
-    return await createCommunityPostDraftEvent(text, communityCoordinate ?? '', mentions, {
       addClientTag,
       protectedEvent: isProtectedEvent,
       isNsfw

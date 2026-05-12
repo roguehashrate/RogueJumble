@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { IS_COMMUNITY_MODE } from '@/constants'
+
 import { useFetchRelayInfo } from '@/hooks'
 import { createFakeEvent } from '@/lib/event'
 import { checkNip43Support } from '@/lib/relay'
@@ -162,7 +162,7 @@ function RelayControls({ url }: { url: string }) {
       <Button variant="ghost" size="titlebar-icon" onClick={handleCopyUrl}>
         {copiedUrl ? <Check /> : <Copy />}
       </Button>
-      {!IS_COMMUNITY_MODE && <SaveRelayDropdownMenu urls={[url]} bigButton />}
+      <SaveRelayDropdownMenu urls={[url]} bigButton />
     </div>
   )
 }

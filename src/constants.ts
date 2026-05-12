@@ -1,5 +1,4 @@
 import { kinds } from 'nostr-tools'
-import { TRelaySet } from './types'
 
 export const ROGUEJUMBLE_API_BASE_URL = 'https://api.jumble.social'
 
@@ -95,20 +94,18 @@ export const SEARCHABLE_RELAY_URLS = [
 
 export const TRENDING_NOTES_RELAY_URLS = ['wss://trending.relays.land/']
 
-export const GROUP_METADATA_EVENT_KIND = 39000
-
 // NIP-29 Group Chat Event Kinds
 export const NIP29_GROUP_KINDS = {
-  GROUP_LIST: 10009, // NIP-51: User's group list
-  GROUP_CHAT_MESSAGE: 9, // Simple group chat messages (client-side groups)
-  GROUP_METADATA: 39000, // NIP-29: Group metadata (relay-enforced)
-  GROUP_CREATE: 9007, // NIP-29: Create group
-  GROUP_ADD_USER: 9000, // NIP-29: Add user
-  GROUP_REMOVE_USER: 9001, // NIP-29: Remove user
-  GROUP_EDIT_METADATA: 9002, // NIP-29: Edit metadata
-  GROUP_DELETE_EVENT: 9003, // NIP-29: Delete event
-  GROUP_JOIN_REQUEST: 9021, // NIP-29: Join request
-  GROUP_LEAVE_REQUEST: 9022 // NIP-29: Leave request
+  GROUP_LIST: 10009,
+  GROUP_CHAT_MESSAGE: 9,
+  GROUP_METADATA: 39000,
+  GROUP_CREATE: 9007,
+  GROUP_ADD_USER: 9000,
+  GROUP_REMOVE_USER: 9001,
+  GROUP_EDIT_METADATA: 9002,
+  GROUP_DELETE_EVENT: 9003,
+  GROUP_JOIN_REQUEST: 9021,
+  GROUP_LEAVE_REQUEST: 9022
 } as const
 
 export const ExtendedKind = {
@@ -136,9 +133,7 @@ export const ExtendedKind = {
   RELAY_REVIEW: 31987,
   GROUP_METADATA: 39000,
   ADDRESSABLE_NORMAL_VIDEO: 34235,
-  ADDRESSABLE_SHORT_VIDEO: 34236,
-  COMMUNITY_POST: 34551,
-  COMMUNITY_APPROVAL: 4550
+  ADDRESSABLE_SHORT_VIDEO: 34236
 }
 
 export const ALLOWED_FILTER_KINDS = [
@@ -165,8 +160,7 @@ export const SUPPORTED_KINDS = [
   kinds.Emojisets,
   ExtendedKind.FOLLOW_PACK,
   kinds.Reaction,
-  ExtendedKind.EXTERNAL_CONTENT_REACTION,
-  ExtendedKind.COMMUNITY_POST
+  ExtendedKind.EXTERNAL_CONTENT_REACTION
 ]
 
 export const URL_REGEX =
@@ -883,7 +877,6 @@ export const SPECIAL_TRUST_SCORE_FILTER_ID = {
   DM: 'dm'
 }
 
-export const COMMUNITY_RELAY_SETS = import.meta.env.VITE_COMMUNITY_RELAY_SETS as TRelaySet[]
-export const COMMUNITY_RELAYS = import.meta.env.VITE_COMMUNITY_RELAYS as string[]
 
-export const IS_COMMUNITY_MODE = COMMUNITY_RELAY_SETS.length > 0 || COMMUNITY_RELAYS.length > 0
+
+

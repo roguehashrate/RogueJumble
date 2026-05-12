@@ -22,7 +22,6 @@ import ParentNotePreview from '../ParentNotePreview'
 import TrustScoreBadge from '../TrustScoreBadge'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import CommunityDefinition from './CommunityDefinition'
 import EmojiPack from './EmojiPack'
 import FollowPack from './FollowPack'
 import GroupMetadata from './GroupMetadata'
@@ -86,7 +85,6 @@ export default function Note({
   if (
     ![
       ...SUPPORTED_KINDS,
-      kinds.CommunityDefinition,
       kinds.LiveEvent,
       ExtendedKind.GROUP_METADATA
     ].includes(event.kind)
@@ -108,8 +106,6 @@ export default function Note({
     content = <LiveEvent className="mt-2" event={event} />
   } else if (event.kind === ExtendedKind.GROUP_METADATA) {
     content = <GroupMetadata className="mt-2" event={event} originalNoteId={originalNoteId} />
-  } else if (event.kind === kinds.CommunityDefinition) {
-    content = <CommunityDefinition className="mt-2" event={event} />
   } else if (event.kind === ExtendedKind.POLL) {
     content = (
       <>

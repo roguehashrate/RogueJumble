@@ -42,7 +42,7 @@ const PostTextarea = forwardRef<
     onUploadProgress?: (file: File, progress: number) => void
     onUploadEnd?: (file: File) => void
     placeholder?: string
-    postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'communityPost' | 'longForm'
+    postKind?: 'text' | 'picture' | 'video' | 'shortVideo' | 'poll' | 'longForm'
   }
 >(
   (
@@ -75,8 +75,6 @@ const PostTextarea = forwardRef<
           return t('Ask a question...')
         case 'longForm':
           return t('Write your article...')
-        case 'communityPost':
-          return t('Post to community...')
         default:
           return t('Write something...') + ' (' + t('Paste or drop media files to upload') + ')'
       }

@@ -280,28 +280,6 @@ export function getGroupMetadataFromEvent(event: Event) {
   return { d, name, about, picture, tags: Array.from(tags) }
 }
 
-export function getCommunityDefinitionFromEvent(event: Event) {
-  let name: string | undefined
-  let description: string | undefined
-  let image: string | undefined
-
-  event.tags.forEach(([tagName, tagValue]) => {
-    if (tagName === 'name') {
-      name = tagValue
-    } else if (tagName === 'description') {
-      description = tagValue
-    } else if (tagName === 'image') {
-      image = tagValue
-    }
-  })
-
-  if (!name) {
-    name = event.tags.find(tagNameEquals('d'))?.[1] ?? 'no name'
-  }
-
-  return { name, description, image }
-}
-
 export function getPollMetadataFromEvent(event: Event) {
   const options: { id: string; label: string }[] = []
   const relayUrls: string[] = []

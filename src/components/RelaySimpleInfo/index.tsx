@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
-import { IS_COMMUNITY_MODE } from '@/constants'
+
 import { createFakeEvent } from '@/lib/event'
 import { cn } from '@/lib/utils'
 import { TRelayInfo } from '@/types'
@@ -33,7 +33,7 @@ export default function RelaySimpleInfo({
             )}
           </div>
         </div>
-        {relayInfo && !IS_COMMUNITY_MODE && <SaveRelayDropdownMenu urls={[relayInfo.url]} />}
+        {relayInfo && <SaveRelayDropdownMenu urls={[relayInfo.url]} />}
       </div>
       {!!relayInfo?.description && (
         <div className="line-clamp-3 overflow-hidden whitespace-pre-wrap [overflow-wrap:anywhere]">
