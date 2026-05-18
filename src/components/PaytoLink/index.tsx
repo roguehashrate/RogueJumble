@@ -5,7 +5,6 @@ import {
   parsePaytoUri,
   buildPaytoUri,
   getCanonicalPaytoType,
-  getPaytoTypeInfo,
   getPaytoIconChar,
   isKnownPaytoType,
   isLightningPaytoType
@@ -49,7 +48,6 @@ export default function PaytoLink({
   }
 
   const { type, authority, raw } = parsed
-  const info = getPaytoTypeInfo(type)
   const known = isKnownPaytoType(type)
   const isLightning = isLightningPaytoType(type)
   const canZap = isLightning && !!pubkey && !!onOpenZap

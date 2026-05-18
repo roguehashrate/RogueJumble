@@ -1538,13 +1538,8 @@ class ClientService extends EventTarget {
     return this.fetchReplaceableEvent(pubkey, ExtendedKind.PAYMENT_INFO)
   }
 
-  async publishPaymentInfoEvent(event: NEvent) {
-    const published = await this.publish(event)
-    const succeededUrls = published.filter((pub) => pub.success).map((pub) => pub.url)
-    if (succeededUrls.length > 0) {
-      await this.updateReplaceableEventCache(event)
-    }
-    return published
+  async updatePaymentInfoEventCache(event: NEvent) {
+    await this.updateReplaceableEventCache(event)
   }
 
   // ================= Utils =================

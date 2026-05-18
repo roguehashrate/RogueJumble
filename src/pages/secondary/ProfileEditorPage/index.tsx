@@ -55,8 +55,8 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       setAbout(profile.about ?? '')
       setWebsite(profile.website ?? '')
       setNip05(profile.nip05 ?? '')
-      const targets: TPaymentMethod[] = [...(profile.payto || [])]
-      if (!targets.some((t) => t.type === 'lightning') && profile.lightningAddress) {
+      const targets: TPaymentMethod[] = []
+      if (profile.lightningAddress) {
         targets.push({ type: 'lightning', authority: profile.lightningAddress })
       }
       if (!targets.some((t) => t.type === 'bitcoin') && profile.sp) {
@@ -190,9 +190,9 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       const newProfileEvent = await publish(profileDraftEvent)
       await updateProfileEvent(newProfileEvent)
 
-      const paymentInfoDraftEvent = createPaymentInfoDraftEvent(profile, paymentTargets)
+      const paymentInfoDraftEvent = createPaymentInfoDraftEvent(paymentTargets)
       const paymentInfoEvent = await publish(paymentInfoDraftEvent)
-      await client.publishPaymentInfoEvent(paymentInfoEvent)
+      await client.updatePaymentInfoEventCache(paymentInfoEvent)
 
       let statusExpiration: number | undefined
       if (expireEnabled) {

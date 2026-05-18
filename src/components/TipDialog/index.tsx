@@ -20,6 +20,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
+  buildPaytoUri,
   getPaytoActionUri,
   getPaytoIconChar,
   getPaytoTypeInfo,

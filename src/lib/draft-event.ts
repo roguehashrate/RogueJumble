@@ -8,7 +8,6 @@ import {
   TMailboxRelay,
   TMailboxRelayScope,
   TPaymentMethod,
-  TProfile,
   TPollCreateData,
   TRelaySet
 } from '@/types'
@@ -760,7 +759,7 @@ export function createLeaveDraftEvent(): TDraftEvent {
   }
 }
 
-export function createPaymentInfoDraftEvent(profile: TProfile, methods: TPaymentMethod[]): TDraftEvent {
+export function createPaymentInfoDraftEvent(methods: TPaymentMethod[]): TDraftEvent {
   const tags: string[][] = []
   const contentObj: Record<string, unknown> = {
     methods: methods.map((m) => ({
