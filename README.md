@@ -33,7 +33,8 @@ If you like this project, consider supporting:
 
 ### RogueHashrate
 - **Lightning:** ⚡️ roguehashrate@rizful.com ⚡️
-- **Bitcoin:** bc1pvqywu0axgeqt6yjn773y4n9rs475jrxwj893jchpd23pl7fgkfjqnsw6sz
+- **Bitcoin Silent Payment:** sp1qqvn5pjn0ja3wepkc6wcwwpnkqja4gzu86e25tjm56kde5nhztx4kuqjs00zu3r0vv7ssp8glzmckjg2amu9s6gxqvyjvs2hu2j92azph9u98443h
+- **Monero:** 83nEtA4WKewhvYVMhQfPEqN6MMvrgNR2UNmGd4aw46K9CM8x52BovowaR8kCmf3FzAMndydTL682thK7YsCrwKKL8RRfsQy
 
 ### Original Creator — CodyTseng
 You can support the original Jumble project as well by supporting CodyTseng:
