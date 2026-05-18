@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/drawer'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { TPaymentMethod } from '@/types'
-import { Copy, ExternalLink } from 'lucide-react'
+import { Copy } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -23,8 +23,8 @@ import {
   buildPaytoUri,
   getPaytoActionUri,
   getPaytoIconChar,
-  getPaytoTypeInfo,
-  isKnownPaytoType
+  getPaytoLogoPath,
+  getPaytoTypeInfo
 } from '@/lib/payto'
 
 export default function TipDialog({
@@ -65,44 +65,40 @@ export default function TipDialog({
       {methods.map((method, i) => {
         const info = getPaytoTypeInfo(method.type)
         const iconChar = getPaytoIconChar(method.type)
-        const known = isKnownPaytoType(method.type)
+        const logoPath = getPaytoLogoPath(method.type)
         const label = info?.label ?? method.displayType ?? method.type
-        const actionUri = getPaytoActionUri(method.type, method.authority)
 
         return (
           <div
             key={i}
             className="flex items-center gap-3 rounded-lg border border-border/20 bg-card p-3"
           >
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-lg">
-              {iconChar ?? '?'}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium">{label}</div>
-              <div className="truncate text-xs text-muted-foreground">{method.authority}</div>
-            </div>
-            <div className="flex shrink-0 gap-1.5">
-              {known && actionUri && (
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="size-8"
-                  title={t('Open in wallet')}
-                  onClick={() => handleOpen(method)}
-                >
-                  <ExternalLink className="size-4" />
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                title={t('Copy')}
-                onClick={() => handleCopy(method)}
-              >
-                <Copy className="size-4" />
-              </Button>
-            </div>
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              onClick={() => handleOpen(method)}
+            >
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                {logoPath ? (
+                  <img src={logoPath} alt="" loading="lazy" className="size-5 object-contain" />
+                ) : (
+                  <span className="text-lg">{iconChar ?? '?'}</span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium">{label}</div>
+                <div className="truncate text-xs text-muted-foreground">{method.authority}</div>
+              </div>
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              title={t('Copy')}
+              onClick={() => handleCopy(method)}
+            >
+              <Copy className="size-4" />
+            </Button>
           </div>
         )
       })}

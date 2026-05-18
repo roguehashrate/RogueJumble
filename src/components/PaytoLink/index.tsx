@@ -5,12 +5,15 @@ import {
   parsePaytoUri,
   buildPaytoUri,
   getCanonicalPaytoType,
+  getPaytoTypeInfo,
   getPaytoIconChar,
+  getPaytoLogoPath,
+  getPaytoProfileUrl,
   isKnownPaytoType,
   isLightningPaytoType
 } from '@/lib/payto'
 import PaytoDialog from '@/components/PaytoDialog'
-import { HelpCircle, ExternalLink } from 'lucide-react'
+import { HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function PaytoLink({
@@ -20,7 +23,8 @@ export default function PaytoLink({
   pubkey,
   onOpenZap,
   className,
-  children
+  children,
+  linkTitle
 }: {
   paytoUri?: string
   type?: string
@@ -29,6 +33,7 @@ export default function PaytoLink({
   onOpenZap?: (pubkey: string) => void
   className?: string
   children?: React.ReactNode
+  linkTitle?: string
 }) {
   const { t } = useTranslation()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -48,6 +53,7 @@ export default function PaytoLink({
   }
 
   const { type, authority, raw } = parsed
+  const info = getPaytoTypeInfo(type)
   const known = isKnownPaytoType(type)
   const isLightning = isLightningPaytoType(type)
   const canZap = isLightning && !!pubkey && !!onOpenZap
@@ -67,8 +73,57 @@ export default function PaytoLink({
     setDialogOpen(true)
   }
 
+  const displayLabel = info?.label ?? type
+  const categoryLabel = (() => {
+    const c = info?.category
+    if (!c) return ''
+    if (c === 'bitcoin-layer') return 'Bitcoin layer'
+    return c.charAt(0).toUpperCase() + c.slice(1)
+  })()
+  const logoPath = getPaytoLogoPath(type)
   const iconChar = getPaytoIconChar(type)
+  const profileUrl = getPaytoProfileUrl(type, authority)
   const content = children ?? <span className="break-all">{authority}</span>
+  const overrideTip = linkTitle?.trim()
+
+  const iconEl = (
+    <span className="shrink-0 flex items-center justify-center w-4 h-4 text-[1rem] leading-none" aria-hidden>
+      {logoPath ? (
+        <img src={logoPath} alt="" loading="lazy" className="size-4 object-contain" />
+      ) : iconChar != null ? (
+        <span className={cn(
+          'inline-flex items-center justify-center',
+          isLightning && 'text-yellow-400'
+        )}>
+          {iconChar}
+        </span>
+      ) : (
+        <HelpCircle className="size-3.5 text-muted-foreground" />
+      )}
+    </span>
+  )
+
+  if (profileUrl) {
+    return (
+      <a
+        href={profileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          'text-primary hover:underline cursor-pointer text-left break-words inline-flex items-center gap-1.5',
+          className
+        )}
+        title={
+          overrideTip ||
+          (categoryLabel ? `${displayLabel} (${categoryLabel}): ${t('Open on website')}` : `${displayLabel}: ${t('Open on website')}`)
+        }
+        onClick={(e) => e.stopPropagation()}
+      >
+        {iconEl}
+        {content}
+      </a>
+    )
+  }
 
   return (
     <>
@@ -79,19 +134,17 @@ export default function PaytoLink({
           'text-primary hover:underline cursor-pointer text-left break-words inline-flex items-center gap-1.5',
           className
         )}
-        title={known ? t('Click to open payment options') : t('Click to copy address')}
+        title={
+          overrideTip ||
+          (known && categoryLabel
+            ? `${displayLabel} (${categoryLabel}): ${t('Click to open payment options')}`
+            : known
+              ? `${displayLabel}: ${t('Click to open payment options')}`
+              : t('Click to copy address'))
+        }
       >
-        <span className="shrink-0 flex items-center justify-center w-4 h-4 text-[1rem] leading-none" aria-hidden>
-          {iconChar != null ? (
-            <span className={cn('inline-flex items-center justify-center', isLightning && 'text-yellow-400')}>
-              {iconChar}
-            </span>
-          ) : (
-            <HelpCircle className="size-3.5 text-muted-foreground" />
-          )}
-        </span>
+        {iconEl}
         {content}
-        {known && !canZap && <ExternalLink className="ml-0.5 size-3 shrink-0 opacity-50" />}
       </button>
       {known && (
         <PaytoDialog

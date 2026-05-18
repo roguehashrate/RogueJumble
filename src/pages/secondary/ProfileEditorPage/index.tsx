@@ -327,10 +327,10 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
         </Item>
         <Item>
           <Label>{t('Payment Methods')}</Label>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-w-0">
             {paymentTargets.map((target, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="flex-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">{target.authority}</div>
+              <div key={i} className="flex items-center gap-2 min-w-0">
+                <div className="min-w-0 flex-1 break-all rounded-md bg-muted px-3 py-2 font-mono text-sm">{target.authority}</div>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -345,9 +345,9 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
                 </Button>
               </div>
             ))}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <Input
-                className="flex-1 font-mono text-sm"
+                className="min-w-0 flex-1 font-mono text-sm"
                 placeholder={t('payto://lightning/user@domain.com')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.currentTarget.value.trim()) {

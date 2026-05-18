@@ -787,5 +787,6 @@ export default {
     'Send a tip': 'Send a tip',
     'Open in wallet': 'Open in wallet',
     'Select a payment method to send a tip': 'Select a payment method to send a tip',
+    'Open on website': 'Open on website',
   }
 }
