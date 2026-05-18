@@ -221,6 +221,7 @@ class StuffStatsService {
           })
         }
       }
+
     }
 
     if (since) {

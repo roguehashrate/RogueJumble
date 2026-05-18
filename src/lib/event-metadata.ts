@@ -9,6 +9,7 @@ import { formatPubkey, isValidPubkey, pubkeyToNpub } from './pubkey'
 import { getDefaultRelayUrls } from './relay'
 import { generateBech32IdFromETag, getEmojiInfosFromEmojiTags, tagNameEquals } from './tag'
 import { isOnionUrl, isWebsocketUrl, normalizeHttpUrl, normalizeUrl } from './url'
+import { TPaymentInfo, TPaymentMethod } from '@/types'
 import storage from '@/services/local-storage.service'
 
 export function getRelayListFromEvent(
@@ -173,6 +174,59 @@ export function getZapInfoFromEvent(receiptEvent: Event) {
     }
   } catch {
     return null
+  }
+}
+
+export function getPaymentInfoFromEvent(event: Event): TPaymentInfo | null {
+  if (event.kind !== 10133) return null
+
+  let paymentInfo: Record<string, unknown> = {}
+  try {
+    if (event.content) {
+      paymentInfo = JSON.parse(event.content)
+    }
+  } catch {
+    // ignore parse errors
+  }
+
+  const paytoTags = event.tags.filter((tag) => tag[0] === 'payto' && tag[1] && tag[2])
+
+  const methods: TPaymentInfo['methods'] = []
+
+  paytoTags.forEach((tag) => {
+    const type = tag[1]?.toLowerCase() || 'lightning'
+    const authority = tag[2] || ''
+    const extra = tag.slice(3)
+    const paytoUri = `payto://${type}/${authority}`
+
+    methods.push({
+      type,
+      authority,
+      payto: paytoUri,
+      displayType: type === 'lightning' ? 'Lightning Network' : type.charAt(0).toUpperCase() + type.slice(1),
+      ...(extra.length > 0 && { extra })
+    })
+  })
+
+  if (methods.length === 0 && paymentInfo.methods && Array.isArray(paymentInfo.methods)) {
+    methods.push(...(paymentInfo.methods as TPaymentMethod[]).map((m) => ({
+      ...m,
+      payto: m.payto || (m.type && m.authority ? `payto://${m.type}/${m.authority}` : undefined)
+    })))
+  }
+
+  if (methods.length === 0 && paymentInfo.payto) {
+    methods.push({
+      payto: paymentInfo.payto as string,
+      type: (paymentInfo.type as string) || 'lightning',
+      authority: paymentInfo.authority as string,
+      displayType: paymentInfo.type === 'lightning' ? 'Lightning Network' : (paymentInfo.type as string) || 'Payment'
+    })
+  }
+
+  return {
+    ...paymentInfo,
+    methods: methods.length > 0 ? methods : undefined
   }
 }
 

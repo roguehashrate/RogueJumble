@@ -35,7 +35,6 @@ export function formatAmount(amount: number) {
 }
 
 export function getLightningAddressFromProfile(profile: TProfile) {
-  // Some clients have incorrectly filled in the positions for lud06 and lud16
   const { lud16: a, lud06: b } = profile
   let lud16: string | undefined
   let lud06: string | undefined

@@ -69,7 +69,10 @@ export default function PostContent({
     () => (parentStuff && typeof parentStuff !== 'string' ? parentStuff : undefined),
     [parentStuff]
   )
-  const [addClientTag, setAddClientTag] = useState(true)
+  const [addClientTag, setAddClientTag] = useState(() => {
+    const cached = window.localStorage.getItem(StorageKey.ADD_CLIENT_TAG)
+    return cached !== 'false'
+  })
   const [mentions, setMentions] = useState<string[]>([])
   const [isNsfw, setIsNsfw] = useState(false)
   const [isPoll, setIsPoll] = useState(false)
@@ -150,7 +153,7 @@ export default function PostContent({
             relays: []
           }
         )
-        setAddClientTag(cachedSettings.addClientTag ?? true)
+        setAddClientTag(cachedSettings.addClientTag ?? localStorage.getItem(StorageKey.ADD_CLIENT_TAG) !== 'false')
       }
       return
     }
@@ -537,7 +540,11 @@ export default function PostContent({
             size="icon"
             title={t('Client Tag')}
             className={addClientTag ? 'text-primary' : 'text-muted-foreground'}
-            onClick={() => setAddClientTag(!addClientTag)}
+            onClick={() => {
+              const next = !addClientTag
+              setAddClientTag(next)
+              window.localStorage.setItem(StorageKey.ADD_CLIENT_TAG, next.toString())
+            }}
           >
             <Tag className="size-5" />
           </Button>
@@ -546,7 +553,14 @@ export default function PostContent({
             size="icon"
             title={t('Proof of Work')}
             className={minPow > 0 ? 'text-primary' : 'text-muted-foreground'}
-            onClick={() => setMinPow(minPow > 0 ? 0 : 16)}
+            onClick={() => {
+              const next = minPow > 0 ? 0 : (() => {
+                const stored = window.localStorage.getItem(StorageKey.POW_POST_DIFFICULTY)
+                return stored ? parseInt(stored, 10) : 16
+              })()
+              setMinPow(next)
+              window.localStorage.setItem(StorageKey.POW_ENABLED, (next > 0).toString())
+            }}
           >
             <Pickaxe className="size-5" />
           </Button>

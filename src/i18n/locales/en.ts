@@ -775,6 +775,17 @@ export default {
     Info: 'Info',
     'Copy anyway': 'Copy anyway',
     'Are you sure you want to copy your private key to the clipboard? Anyone with access to this key can control your account.':
-      'Are you sure you want to copy your private key to the clipboard? Anyone with access to this key can control your account.'
+      'Are you sure you want to copy your private key to the clipboard? Anyone with access to this key can control your account.',
+    'Payment Methods': 'Payment Methods',
+    'Add payment method': 'Add payment method',
+    'Payment address – copy to use in your wallet or app':
+      'Payment address – copy to use in your wallet or app',
+    'Copy address': 'Copy address',
+    'Copy payto URI': 'Copy payto URI',
+    'Click to open payment options': 'Click to open payment options',
+    'Click to copy address': 'Click to copy address',
+    'Send a tip': 'Send a tip',
+    'Open in wallet': 'Open in wallet',
+    'Select a payment method to send a tip': 'Select a payment method to send a tip',
   }
 }

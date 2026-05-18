@@ -725,6 +725,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'جستجوی انجمن‌ها...',
     'No communities found': 'انجمنی یافت نشد',
-    'No communities yet': 'هنوز انجمنی وجود ندارد'
+    'No communities yet': 'هنوز انجمنی وجود ندارد',
   }
 }

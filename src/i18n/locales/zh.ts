@@ -694,6 +694,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': '搜索社区...',
     'No communities found': '未找到社区',
-    'No communities yet': '暂无社区'
+    'No communities yet': '暂无社区',
   }
 }

@@ -705,6 +705,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'البحث في المجتمعات...',
     'No communities found': 'لم يتم العثور على مجتمعات',
-    'No communities yet': 'لا توجد مجتمعات بعد'
+    'No communities yet': 'لا توجد مجتمعات بعد',
   }
 }

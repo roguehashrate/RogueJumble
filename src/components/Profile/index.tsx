@@ -14,12 +14,15 @@ import { SecondaryPageLink, useSecondaryPage } from '@/PageManager'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import client from '@/services/client.service'
-import { Link, MessageCircle, Zap, Bitcoin, Check, Copy } from 'lucide-react'
+import { getPaymentInfoFromEvent } from '@/lib/event-metadata'
+import { TPaymentMethod } from '@/types'
+import { Link, MessageCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFound from '../NotFound'
+import PaytoLink from '../PaytoLink'
 import SearchInput from '../SearchInput'
-import SpQrCode from '../SpQrCode'
+import ZapDialog from '../ZapDialog'
 import TextWithEmojis from '../TextWithEmojis'
 import TrustScoreBadge from '../TrustScoreBadge'
 import AvatarWithLightbox from './AvatarWithLightbox'
@@ -44,6 +47,8 @@ export default function Profile({ id }: { id?: string }) {
     )
   }, [followings, profile, accountPubkey])
   const [topContainerHeight, setTopContainerHeight] = useState(0)
+  const [zapDialogOpen, setZapDialogOpen] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<TPaymentMethod[]>([])
   const isSelf = accountPubkey === profile?.pubkey
   const [topContainer, setTopContainer] = useState<HTMLDivElement | null>(null)
   const topContainerRef = useCallback((node: HTMLDivElement | null) => {
@@ -75,6 +80,27 @@ export default function Profile({ id }: { id?: string }) {
   }, [profile?.pubkey])
 
   useEffect(() => {
+    if (!profile?.pubkey) {
+      setPaymentMethods([])
+      return
+    }
+
+    let cancelled = false
+    const fetchPaymentInfo = async () => {
+      const evt = await client.fetchPaymentInfoEvent(profile.pubkey)
+      if (cancelled) return
+      if (!evt) {
+        setPaymentMethods([])
+        return
+      }
+      const info = getPaymentInfoFromEvent(evt)
+      setPaymentMethods(info?.methods ?? [])
+    }
+    fetchPaymentInfo()
+    return () => { cancelled = true }
+  }, [profile?.pubkey])
+
+  useEffect(() => {
     if (!topContainer) return
 
     const checkHeight = () => {
@@ -93,6 +119,14 @@ export default function Profile({ id }: { id?: string }) {
       observer.disconnect()
     }
   }, [topContainer])
+
+  const paymentTargets = useMemo(() => {
+    const targets: TPaymentMethod[] = [...paymentMethods]
+    if (!targets.some((t) => t.type === 'lightning') && profile?.lightningAddress) {
+      targets.push({ type: 'lightning', authority: profile.lightningAddress })
+    }
+    return targets
+  }, [paymentMethods, profile?.lightningAddress])
 
   if (!profile && isFetching) {
     return (
@@ -114,7 +148,8 @@ export default function Profile({ id }: { id?: string }) {
   }
   if (!profile) return <NotFound />
 
-  const { banner, username, about, pubkey, website, lightningAddress, sp, emojis } = profile
+  const { banner, username, about, pubkey, website, lightningAddress, emojis } = profile
+
   return (
     <>
       <div ref={topContainerRef}>
@@ -164,19 +199,19 @@ export default function Profile({ id }: { id?: string }) {
               )}
             </div>
             <Nip05 pubkey={pubkey} />
-            {lightningAddress && (
-              <div className="flex select-text items-center gap-1 text-sm text-zap">
-                <Zap className="size-4 shrink-0" />
-                <div className="w-0 max-w-fit flex-1 truncate">{lightningAddress}</div>
-              </div>
-            )}
-            {sp && (
-              <div className="flex select-text items-center gap-1 text-sm text-orange-500">
-                <Bitcoin className="size-4 shrink-0" />
-                <SpCopy sp={sp} />
-                <SpQrCode sp={sp} />
-              </div>
-            )}
+            {paymentTargets.map((t, i) => (
+              <PaytoLink
+                key={i}
+                type={t.type}
+                authority={t.authority}
+                pubkey={pubkey}
+                onOpenZap={
+                  t.type === 'lightning'
+                    ? () => setZapDialogOpen(true)
+                    : undefined
+                }
+              />
+            ))}
             <div className="mt-1 flex gap-1">
               <PubkeyCopy pubkey={pubkey} />
               <NpubQrCode pubkey={pubkey} />
@@ -224,24 +259,9 @@ export default function Profile({ id }: { id?: string }) {
         </div>
       </div>
       <ProfileFeed pubkey={pubkey} topSpace={topContainerHeight + 100} search={debouncedInput} />
+      <ZapDialog open={zapDialogOpen} setOpen={setZapDialogOpen} pubkey={pubkey} />
     </>
   )
 }
 
-function SpCopy({ sp }: { sp: string }) {
-  const [copied, setCopied] = useState(false)
-  const truncated = sp.length > 24 ? sp.slice(0, 12) + '...' + sp.slice(-6) : sp
 
-  const copy = () => {
-    navigator.clipboard.writeText(sp)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="clickable flex w-fit items-center gap-1 font-mono text-xs" onClick={copy}>
-      <div>{truncated}</div>
-      {copied ? <Check size={14} /> : <Copy size={14} />}
-    </div>
-  )
-}

@@ -707,6 +707,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'ค้นหาชุมชน...',
     'No communities found': 'ไม่พบชุมชน',
-    'No communities yet': 'ยังไม่มีชุมชน'
+    'No communities yet': 'ยังไม่มีชุมชน',
   }
 }

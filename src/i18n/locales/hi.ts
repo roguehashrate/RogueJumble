@@ -725,6 +725,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'समुदाय खोजें...',
     'No communities found': 'कोई समुदाय नहीं मिला',
-    'No communities yet': 'अभी तक कोई समुदाय नहीं'
+    'No communities yet': 'अभी तक कोई समुदाय नहीं',
   }
 }

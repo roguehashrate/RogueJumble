@@ -291,3 +291,22 @@ export type TEncryptionKeypair = {
   privkey: Uint8Array
   pubkey: string
 }
+
+export type TPaymentMethod = {
+  type: string
+  authority: string
+  payto?: string
+  displayType?: string
+  currency?: string
+  extra?: string[]
+}
+
+export type TPaymentInfo = {
+  methods?: TPaymentMethod[]
+  payto?: string
+  type?: string
+  authority?: string
+  [key: string]: unknown
+}
+
+

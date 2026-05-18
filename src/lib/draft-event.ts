@@ -7,6 +7,8 @@ import {
   TEmoji,
   TMailboxRelay,
   TMailboxRelayScope,
+  TPaymentMethod,
+  TProfile,
   TPollCreateData,
   TRelaySet
 } from '@/types'
@@ -755,6 +757,31 @@ export function createLeaveDraftEvent(): TDraftEvent {
     created_at: Math.floor(Date.now() / 1000),
     tags: [['-']],
     content: ''
+  }
+}
+
+export function createPaymentInfoDraftEvent(profile: TProfile, methods: TPaymentMethod[]): TDraftEvent {
+  const tags: string[][] = []
+  const contentObj: Record<string, unknown> = {
+    methods: methods.map((m) => ({
+      type: m.type,
+      authority: m.authority
+    }))
+  }
+
+  methods.forEach((m) => {
+    const tag: string[] = ['payto', m.type, m.authority]
+    if (m.extra && m.extra.length > 0) {
+      tag.push(...m.extra)
+    }
+    tags.push(tag)
+  })
+
+  return {
+    kind: ExtendedKind.PAYMENT_INFO,
+    content: JSON.stringify(contentObj),
+    created_at: dayjs().unix(),
+    tags
   }
 }
 

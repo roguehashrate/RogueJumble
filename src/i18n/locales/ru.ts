@@ -730,6 +730,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'Поиск сообществ...',
     'No communities found': 'Сообщества не найдены',
-    'No communities yet': 'Сообществ пока нет'
+    'No communities yet': 'Сообществ пока нет',
   }
 }

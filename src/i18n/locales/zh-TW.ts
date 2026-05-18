@@ -703,6 +703,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': '搜尋社群...',
     'No communities found': '找不到社群',
-    'No communities yet': '尚無社群'
+    'No communities yet': '尚無社群',
   }
 }

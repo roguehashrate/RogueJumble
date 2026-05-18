@@ -11,6 +11,7 @@ import Likes from './Likes'
 import ReplyButton from './ReplyButton'
 import RepostButton from './RepostButton'
 import SeenOnButton from './SeenOnButton'
+import TipButton from './TipButton'
 import TopZaps from './TopZaps'
 import ZapButton from './ZapButton'
 
@@ -60,6 +61,7 @@ export default function StuffStats({
           <ReplyButton stuff={stuff} />
           <RepostButton stuff={stuff} />
           <LikeButton stuff={stuff} />
+          <TipButton stuff={stuff} />
           <ZapButton stuff={stuff} />
           <BookmarkButton stuff={stuff} />
           <SeenOnButton stuff={stuff} />
@@ -84,6 +86,7 @@ export default function StuffStats({
           <ReplyButton stuff={stuff} />
           <RepostButton stuff={stuff} />
           <LikeButton stuff={stuff} />
+          <TipButton stuff={stuff} />
           <ZapButton stuff={stuff} />
         </div>
         <div className="flex items-center" onClick={(e) => e.stopPropagation()}>

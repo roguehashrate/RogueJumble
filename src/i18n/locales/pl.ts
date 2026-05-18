@@ -732,6 +732,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'Szukaj społeczności...',
     'No communities found': 'Nie znaleziono społeczności',
-    'No communities yet': 'Brak społeczności'
+    'No communities yet': 'Brak społeczności',
   }
 }

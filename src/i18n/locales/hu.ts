@@ -719,6 +719,6 @@ export default {
     'Space Grotesk': 'Space Grotesk',
     'Search communities...': 'Közösségek keresése...',
     'No communities found': 'Nem található közösség',
-    'No communities yet': 'Még nincsenek közösségek'
+    'No communities yet': 'Még nincsenek közösségek',
   }
 }
