@@ -905,6 +905,21 @@ class IndexedDbService {
     })
   }
 
+  async putArchivedEventRows(rows: { key: string; event: Event; tier: number; pubkey: string; kind: number; accessedAt: number; createdAt: number }[]): Promise<void> {
+    if (!rows.length) return
+    await this.initPromise
+    if (!this.db) return
+    return new Promise((resolve, reject) => {
+      const txn = this.db!.transaction(StoreNames.EVENT_ARCHIVE, 'readwrite')
+      const store = txn.objectStore(StoreNames.EVENT_ARCHIVE)
+      for (const row of rows) {
+        store.put(row)
+      }
+      txn.oncomplete = () => resolve()
+      txn.onerror = (e) => reject(e)
+    })
+  }
+
   async getArchiveFootprint(): Promise<{ totalBytes: number; totalEvents: number }> {
     await this.initPromise
     if (!this.db) return { totalBytes: 0, totalEvents: 0 }
@@ -921,21 +936,10 @@ class IndexedDbService {
     return new Promise((resolve, reject) => {
       const txn = this.db!.transaction(StoreNames.EVENT_ARCHIVE, 'readonly')
       const store = txn.objectStore(StoreNames.EVENT_ARCHIVE)
-      const index = store.index('kindIdx')
-      const range = IDBKeyRange.lowerBound(0)
-      const request = index.openCursor(range)
-      request.onsuccess = (ev) => {
-        const cursor = (ev.target as IDBRequest).result
-        if (cursor) {
-          const row = cursor.value as { event: Event }
-          if (row.event?.id === id) {
-            resolve(row.event)
-          } else {
-            cursor.continue()
-          }
-        } else {
-          resolve(undefined)
-        }
+      const request = store.get(id)
+      request.onsuccess = () => {
+        const row = request.result as { event: Event } | undefined
+        resolve(row?.event)
       }
       request.onerror = () => reject(request.error)
     })
@@ -945,26 +949,23 @@ class IndexedDbService {
     const map = new Map<string, Event>()
     await this.initPromise
     if (!this.db || !ids.length) return map
-    return new Promise((resolve, reject) => {
-      const txn = this.db!.transaction(StoreNames.EVENT_ARCHIVE, 'readonly')
-      const store = txn.objectStore(StoreNames.EVENT_ARCHIVE)
-      const index = store.index('kindIdx')
-      const range = IDBKeyRange.lowerBound(0)
-      const request = index.openCursor(range)
-      request.onsuccess = (ev) => {
-        const cursor = (ev.target as IDBRequest).result
-        if (cursor) {
-          const row = cursor.value as { event: Event }
-          if (row.event?.id && ids.includes(row.event.id)) {
-            map.set(row.event.id, row.event)
-          }
-          cursor.continue()
-        } else {
-          resolve(map)
-        }
+    const txn = this.db!.transaction(StoreNames.EVENT_ARCHIVE, 'readonly')
+    const store = txn.objectStore(StoreNames.EVENT_ARCHIVE)
+    const results = await Promise.allSettled(
+      ids.map((id) => {
+        return new Promise<{ key: string; event: Event } | undefined>((resolve, reject) => {
+          const req = store.get(id)
+          req.onsuccess = () => resolve(req.result as { key: string; event: Event } | undefined)
+          req.onerror = () => reject(req.error)
+        })
+      })
+    )
+    for (const res of results) {
+      if (res.status === 'fulfilled' && res.value?.event) {
+        map.set(res.value.key, res.value.event)
       }
-      request.onerror = () => reject(request.error)
-    })
+    }
+    return map
   }
 
   async deleteNextEvictionArchiveCandidate(): Promise<boolean> {

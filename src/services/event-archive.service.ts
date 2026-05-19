@@ -47,27 +47,31 @@ async function flushPending(): Promise<void> {
   const batch = pendingQueue.splice(0, ARCHIVE_BATCH_SIZE)
   const maxBytes = getArchiveMaxBytes()
   const maxEvents = getArchiveMaxEvents()
+  const footprint = await indexedDb.getArchiveFootprint()
 
+  const rows: Parameters<typeof indexedDb.putArchivedEventRow>[0][] = []
   for (const event of batch) {
     if (shouldDropEventOnIngest(event)) continue
     if (SEEN_IDS.has(event.id)) continue
     SEEN_IDS.add(event.id)
 
-    const footprint = await indexedDb.getArchiveFootprint()
     if (footprint.totalEvents >= maxEvents || footprint.totalBytes >= maxBytes) {
       await indexedDb.deleteNextEvictionArchiveCandidate()
     }
 
-    const tier = getTier(event)
-    await indexedDb.putArchivedEventRow({
+    rows.push({
       key: makeArchiveKey(event),
       event,
-      tier,
+      tier: getTier(event),
       pubkey: event.pubkey,
       kind: event.kind,
       accessedAt: Date.now(),
       createdAt: event.created_at
     })
+  }
+
+  if (rows.length) {
+    await indexedDb.putArchivedEventRows(rows)
   }
 }
 
