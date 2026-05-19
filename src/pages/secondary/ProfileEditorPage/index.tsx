@@ -372,20 +372,20 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           />
         </Item>
         <Item>
-          <div className="flex items-center justify-between gap-2">
-            <Label>{t('Payment info')}</Label>
+          <div className="flex items-start justify-between gap-2">
+            <Label className="shrink-0 mt-2">{t('Payment info')}</Label>
             <Button variant="outline" size="sm" onClick={openPaymentInfoEditor} className="shrink-0">
               <Pencil className="h-3.5 w-3.5 mr-1" />
               {paymentInfoEvent ? t('Edit payment info') : t('Add payment info')}
             </Button>
           </div>
           {paymentInfoEvent ? (
-            <details className="text-sm text-muted-foreground mt-1">
+            <details className="text-sm text-muted-foreground mt-1 min-w-0">
               <summary className="flex items-center gap-2 cursor-pointer">
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4 shrink-0" />
                 {t('Raw payment info event')}
               </summary>
-              <div className="pt-2 space-y-2">
+              <div className="pt-2 space-y-2 min-w-0">
                 <div>
                   <p className="text-xs font-medium">{t('Content (JSON)')}</p>
                   <pre className="mt-1 p-3 rounded-md bg-muted text-xs overflow-auto max-h-48 break-all whitespace-pre-wrap">
@@ -394,7 +394,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
                 </div>
                 <div>
                   <p className="text-xs font-medium">{t('Tags')}</p>
-                  <pre className="mt-1 p-3 rounded-md bg-muted text-xs overflow-auto max-h-48">
+                  <pre className="mt-1 p-3 rounded-md bg-muted text-xs overflow-auto max-h-48 break-all whitespace-pre-wrap">
                     {JSON.stringify(paymentInfoEvent.tags ?? [], null, 2)}
                   </pre>
                 </div>
