@@ -372,7 +372,7 @@ class ClientService extends EventTarget {
               timelines[i] = _events
               if (eosedCount >= threshold) {
                 const events = mergeTimelines(timelines, filter.limit)
-                onEvents(events, eosedCount >= requestCount)
+                onEvents(events, true)
               }
             },
             onNew: (evt) => {

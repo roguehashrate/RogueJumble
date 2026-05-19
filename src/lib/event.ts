@@ -361,7 +361,8 @@ export function createFakeEvent(event: Partial<Event>): Event {
 
 export async function minePow(
   unsigned: UnsignedEvent,
-  difficulty: number
+  difficulty: number,
+  timeoutMs: number = 60_000
 ): Promise<Omit<Event, 'sig'>> {
   let count = 0
 
@@ -370,8 +371,15 @@ export async function minePow(
 
   event.tags.push(tag)
 
-  return new Promise((resolve) => {
+  const startTime = Date.now()
+
+  return new Promise((resolve, reject) => {
     const mine = () => {
+      if (Date.now() - startTime > timeoutMs) {
+        reject(new Error(`Proof-of-work mining timed out after ${timeoutMs / 1000}s. Try reducing the difficulty or disable PoW.`))
+        return
+      }
+
       let iterations = 0
 
       while (iterations < 1000) {

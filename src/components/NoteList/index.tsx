@@ -11,7 +11,6 @@ import { useContentPolicy } from '@/providers/ContentPolicyProvider'
 import { useDeletedEvent } from '@/providers/DeletedEventProvider'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { usePageActive } from '@/providers/PageActiveProvider'
 import { useUserTrust } from '@/providers/UserTrustProvider'
 import client from '@/services/client.service'
 import threadService from '@/services/thread.service'
@@ -81,7 +80,6 @@ const NoteList = forwardRef<
     ref
   ) => {
     const { t } = useTranslation()
-    const active = usePageActive()
     const { startLogin } = useNostr()
     const { isSpammer, meetsMinTrustScore } = useUserTrust()
     const { mutePubkeySet } = useMuteList()
@@ -342,13 +340,19 @@ const NoteList = forwardRef<
     }, [JSON.stringify(subRequests), refreshCount, JSON.stringify(showKinds)])
 
     useEffect(() => {
-      if (!subRequests.length || !active) return
+      if (!subRequests.length) return
+
+      const loadingTimeout = setTimeout(() => {
+        setInitialLoading(false)
+      }, 30_000)
 
       async function init() {
         setInitialLoading(true)
 
         if (showKinds?.length === 0 && subRequests.every(({ filter }) => !filter.kinds)) {
-          return () => {}
+          setInitialLoading(false)
+          clearTimeout(loadingTimeout)
+          return
         }
 
         const since = sinceRef.current
@@ -406,6 +410,7 @@ const NoteList = forwardRef<
                 }
               }
               if (eosed) {
+                clearTimeout(loadingTimeout)
                 threadService.addRepliesToThread(events)
                 setInitialLoading(false)
               }
@@ -444,9 +449,10 @@ const NoteList = forwardRef<
 
       const promise = init()
       return () => {
-        promise.then((closer) => closer())
+        clearTimeout(loadingTimeout)
+        promise.then((closer) => closer?.())
       }
-    }, [JSON.stringify(subRequests), refreshCount, JSON.stringify(showKinds), active])
+    }, [JSON.stringify(subRequests), refreshCount, JSON.stringify(showKinds)])
 
     const handleLoadMore = useCallback(async () => {
       if (!timelineKey || areAlgoRelays) return false
