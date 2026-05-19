@@ -72,7 +72,9 @@ export const StorageKey = {
   ACCOUNT_MUTE_DECRYPTED_TAGS_MAP: 'accountMuteDecryptedTagsMap', // deprecated
   ACCOUNT_PROFILE_EVENT_MAP: 'accountProfileEventMap', // deprecated
   ACTIVE_RELAY_SET_ID: 'activeRelaySetId', // deprecated
-  FEED_TYPE: 'feedType' // deprecated
+  FEED_TYPE: 'feedType', // deprecated
+  EVENT_ARCHIVE_MAX_MB: 'eventArchiveMaxMb',
+  EVENT_ARCHIVE_MAX_EVENTS: 'eventArchiveMaxEvents'
 }
 
 export const ApplicationDataKey = {
@@ -136,6 +138,13 @@ export const ExtendedKind = {
   ADDRESSABLE_SHORT_VIDEO: 34236,
   PAYMENT_INFO: 10133,
 }
+
+export const NIP71_VIDEO_KINDS = [
+  ExtendedKind.VIDEO,
+  ExtendedKind.SHORT_VIDEO,
+  ExtendedKind.ADDRESSABLE_NORMAL_VIDEO,
+  ExtendedKind.ADDRESSABLE_SHORT_VIDEO
+]
 
 export const ALLOWED_FILTER_KINDS = [
   kinds.ShortTextNote,

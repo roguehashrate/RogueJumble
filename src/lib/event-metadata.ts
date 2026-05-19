@@ -488,6 +488,12 @@ export function getPinnedEventHexIdSetFromPinListEvent(event?: Event | null): Se
   )
 }
 
+export function getRelayUrlFromRelayReviewEvent(event: Event): string | undefined {
+  const dTag = event.tags.find((t) => t[0] === 'd')
+  if (dTag?.[1]) return dTag[1]
+  return event.tags.find((t) => t[0] === 'relay')?.[1]
+}
+
 export function getFollowPackInfoFromEvent(event: Event) {
   let title: string | undefined
   let description: string | undefined

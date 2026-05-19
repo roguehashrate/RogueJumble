@@ -21,6 +21,7 @@ import FlexSearch from 'flexsearch'
 import { LRUCache } from 'lru-cache'
 import { Filter, kinds, matchFilters, Event as NEvent, nip19 } from 'nostr-tools'
 import { AbstractRelay } from 'nostr-tools/abstract-relay'
+import { queuePersistSeenEvent, loadArchivedEventForFetch } from './event-archive.service'
 import indexedDb from './indexed-db.service'
 import storage from './local-storage.service'
 
@@ -603,6 +604,7 @@ class ClientService extends EventTarget {
     const subCloser = this.subscribe(relays, since ? { ...filter, since } : filter, {
       onevent: (evt: NEvent) => {
         that.addEventToCache(evt)
+        queuePersistSeenEvent(evt)
         // not eosed yet, push to events
         if (!eosedAt) {
           return events.push(evt)
@@ -743,6 +745,7 @@ class ClientService extends EventTarget {
     let events = await this.query(urls, { ...filter, until, limit })
     events.forEach((evt) => {
       this.addEventToCache(evt)
+      queuePersistSeenEvent(evt)
     })
     events = events.sort((a, b) => compareEvents(b, a)).slice(0, limit)
 
@@ -954,6 +957,10 @@ class ClientService extends EventTarget {
 
     if (event && event.id !== id) {
       this.addEventToCache(event)
+    }
+
+    if (!event && filter.ids?.length) {
+      event = await loadArchivedEventForFetch(filter.ids[0])
     }
 
     return event

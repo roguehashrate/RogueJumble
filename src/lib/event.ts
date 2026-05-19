@@ -427,3 +427,11 @@ export function getRetainedEvent(a: Event, b: Event): Event {
 export function sortEventsDesc(events: Event[]): Event[] {
   return events.sort((a, b) => compareEvents(b, a))
 }
+
+export function isNip25ReactionKind(kind: number): boolean {
+  return kind === kinds.Reaction
+}
+
+export function isNip18RepostKind(kind: number): boolean {
+  return kind === kinds.Repost || kind === kinds.GenericRepost
+}
