@@ -1,3 +1,10 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
 import Uploader from '@/components/PostEditor/Uploader'
 import ProfileBanner from '@/components/ProfileBanner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -8,17 +15,17 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { createPaymentInfoDraftEvent, createProfileDraftEvent, createUserStatusDraftEvent } from '@/lib/draft-event'
-import { getPaymentInfoFromEvent, getUserStatusFromEvent } from '@/lib/event-metadata'
+import { getUserStatusFromEvent } from '@/lib/event-metadata'
 import { formatError } from '@/lib/error'
 import client from '@/services/client.service'
 import { generateImageByPubkey } from '@/lib/pubkey'
 import { isEmail } from '@/lib/utils'
 import { useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
-import { TPaymentMethod } from '@/types'
-import { Loader, Plus, Trash2, Upload } from 'lucide-react'
+import { ChevronDown, Loader, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import type { Event } from 'nostr-tools'
 import dayjs from 'dayjs'
-import { forwardRef, useEffect, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
@@ -34,7 +41,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
   const [website, setWebsite] = useState<string>('')
   const [nip05, setNip05] = useState<string>('')
   const [nip05Error, setNip05Error] = useState<string>('')
-  const [paymentTargets, setPaymentTargets] = useState<TPaymentMethod[]>([])
+  const [lud16, setLud16] = useState<string>('')
   const [status, setStatus] = useState<string>('')
   const [expireEnabled, setExpireEnabled] = useState(false)
   const [expireDurationKey, setExpireDurationKey] = useState<string>('15m')
@@ -42,6 +49,12 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
   const [saving, setSaving] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [paymentInfoEvent, setPaymentInfoEvent] = useState<Event | null>(null)
+  const [paymentInfoEditOpen, setPaymentInfoEditOpen] = useState(false)
+  const [paymentInfoEditContent, setPaymentInfoEditContent] = useState('')
+  const [paymentInfoEditMethods, setPaymentInfoEditMethods] = useState<Array<{ type: string; authority: string }>>([])
+  const [paymentInfoShowFullJson, setPaymentInfoShowFullJson] = useState(false)
+  const [savingPaymentInfo, setSavingPaymentInfo] = useState(false)
   const defaultImage = useMemo(
     () => (account ? generateImageByPubkey(account.pubkey) : undefined),
     [account]
@@ -55,14 +68,7 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       setAbout(profile.about ?? '')
       setWebsite(profile.website ?? '')
       setNip05(profile.nip05 ?? '')
-      const targets: TPaymentMethod[] = []
-      if (profile.lightningAddress) {
-        targets.push({ type: 'lightning', authority: profile.lightningAddress })
-      }
-      if (!targets.some((t) => t.type === 'bitcoin') && profile.sp) {
-        targets.push({ type: 'bitcoin', authority: profile.sp })
-      }
-      setPaymentTargets(targets)
+      setLud16(profile.lud16 ?? '')
     } else {
       setBanner('')
       setAvatar('')
@@ -70,24 +76,8 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       setAbout('')
       setWebsite('')
       setNip05('')
-      setPaymentTargets([])
+      setLud16('')
     }
-
-    const loadPaymentInfo = async () => {
-      if (!account) return
-      try {
-        const evt = await client.fetchPaymentInfoEvent(account.pubkey)
-        if (evt) {
-          const info = getPaymentInfoFromEvent(evt)
-          if (info?.methods && info.methods.length > 0) {
-            setPaymentTargets(info.methods)
-          }
-        }
-      } catch {
-        // ignore
-      }
-    }
-    loadPaymentInfo()
 
     const loadUserStatus = async () => {
       if (!account) return
@@ -135,7 +125,73 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
     loadUserStatus()
   }, [profile, account])
 
+  // Fetch payment info (kind 10133)
+  useEffect(() => {
+    if (!account?.pubkey) { setPaymentInfoEvent(null); return }
+    let cancelled = false
+    client
+      .fetchPaymentInfoEvent(account.pubkey)
+      .then((evt) => { if (!cancelled) setPaymentInfoEvent(evt ?? null) })
+      .catch(() => { if (!cancelled) setPaymentInfoEvent(null) })
+    return () => { cancelled = true }
+  }, [account?.pubkey])
+
+  // ─── Payment info dialog ──────────────────────────────────────────────────────
+
+  const openPaymentInfoEditor = useCallback(() => {
+    if (paymentInfoEvent) {
+      setPaymentInfoEditContent(
+        typeof paymentInfoEvent.content === 'string'
+          ? paymentInfoEvent.content
+          : JSON.stringify(paymentInfoEvent.content ?? '', null, 2)
+      )
+      const paytoTags = (paymentInfoEvent.tags ?? []).filter(
+        (tag) => Array.isArray(tag) && tag[0] === 'payto' && tag[1] != null
+      )
+      setPaymentInfoEditMethods(
+        paytoTags.length > 0
+          ? paytoTags.map((tag) => ({
+              type: (tag[1] as string) || 'lightning',
+              authority: (tag[2] as string) || ''
+            }))
+          : [{ type: 'lightning', authority: '' }]
+      )
+    } else {
+      setPaymentInfoEditContent('{}')
+      setPaymentInfoEditMethods([{ type: 'lightning', authority: '' }])
+    }
+    setPaymentInfoShowFullJson(false)
+    setPaymentInfoEditOpen(true)
+  }, [paymentInfoEvent])
+
+  const savePaymentInfo = useCallback(async () => {
+    const tags: string[][] = paymentInfoEditMethods
+      .filter((m) => m.authority.trim())
+      .map((m) => ['payto', (m.type.trim() || 'lightning').toLowerCase(), m.authority.trim()])
+    setSavingPaymentInfo(true)
+    try {
+      const contentStr = paymentInfoEditContent.trim() || '{}'
+      try { JSON.parse(contentStr) } catch {
+        toast.error(t('Invalid content JSON'))
+        setSavingPaymentInfo(false)
+        return
+      }
+      const draft = createPaymentInfoDraftEvent(contentStr, tags)
+      const published = await publish(draft)
+      await client.updatePaymentInfoEventCache(published)
+      setPaymentInfoEvent(published)
+      setPaymentInfoEditOpen(false)
+      toast.success(t('Payment info updated'))
+    } catch {
+      toast.error(t('Failed to publish payment info'))
+    } finally {
+      setSavingPaymentInfo(false)
+    }
+  }, [paymentInfoEditContent, paymentInfoEditMethods, publish, t])
+
   if (!account || !profile) return null
+
+  // ─── Save profile ─────────────────────────────────────────────────────────────
 
   const save = async () => {
     if (nip05 && !isEmail(nip05)) {
@@ -156,28 +212,10 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
       picture: avatar
     }
 
-    const lightningEntry = paymentTargets.find((t) => t.type === 'lightning')
-    if (lightningEntry?.authority) {
-      if (isEmail(lightningEntry.authority)) {
-        newProfileContent.lud16 = lightningEntry.authority
-      } else {
-        newProfileContent.lud06 = lightningEntry.authority
-      }
+    if (lud16.trim()) {
+      newProfileContent.lud16 = lud16.trim()
     } else {
       delete newProfileContent.lud16
-      delete newProfileContent.lud06
-    }
-
-    if (lightningEntry?.authority && !isEmail(lightningEntry.authority) && !lightningEntry.authority.startsWith('lnurl')) {
-      delete newProfileContent.lud16
-      delete newProfileContent.lud06
-    }
-
-    const bitcoinEntry = paymentTargets.find((t) => t.type === 'bitcoin')
-    if (bitcoinEntry?.authority?.startsWith('sp1')) {
-      newProfileContent.sp = bitcoinEntry.authority
-    } else {
-      delete newProfileContent.sp
     }
 
     setSaving(true)
@@ -189,10 +227,6 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
     try {
       const newProfileEvent = await publish(profileDraftEvent)
       await updateProfileEvent(newProfileEvent)
-
-      const paymentInfoDraftEvent = createPaymentInfoDraftEvent(paymentTargets)
-      const paymentInfoEvent = await publish(paymentInfoDraftEvent)
-      await client.updatePaymentInfoEventCache(paymentInfoEvent)
 
       let statusExpiration: number | undefined
       if (expireEnabled) {
@@ -326,62 +360,51 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           {nip05Error && <div className="pl-3 text-xs text-destructive">{nip05Error}</div>}
         </Item>
         <Item>
-          <Label>{t('Payment Methods')}</Label>
-          <div className="flex flex-col gap-2 min-w-0">
-            {paymentTargets.map((target, i) => (
-              <div key={i} className="flex items-center gap-2 min-w-0">
-                <div className="min-w-0 flex-1 break-all rounded-md bg-muted px-3 py-2 font-mono text-sm">{target.authority}</div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 size-8"
-                  onClick={() => {
-                    const next = paymentTargets.filter((_, j) => j !== i)
-                    setPaymentTargets(next)
-                    setHasChanged(true)
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            ))}
-            <div className="flex items-center gap-2 min-w-0">
-              <Input
-                className="min-w-0 flex-1 font-mono text-sm"
-                placeholder={t('payto://lightning/user@domain.com')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                    const val = e.currentTarget.value.trim()
-                    let type = 'lightning'
-                    let authority = val
-                    if (val.startsWith('payto://')) {
-                      const rest = val.slice(8)
-                      const slashIdx = rest.indexOf('/')
-                      if (slashIdx > 0) {
-                        type = rest.slice(0, slashIdx)
-                        authority = decodeURIComponent(rest.slice(slashIdx + 1))
-                      }
-                    }
-                    setPaymentTargets([...paymentTargets, { type, authority }])
-                    e.currentTarget.value = ''
-                    setHasChanged(true)
-                  }
-                }}
-              />
-              <Button
-                variant="secondary"
-                size="sm"
-                className="shrink-0 gap-1"
-                onClick={() => {
-                  setPaymentTargets([...paymentTargets, { type: 'lightning', authority: '' }])
-                  setHasChanged(true)
-                }}
-              >
-                <Plus className="size-4" />
-                {t('Add')}
-              </Button>
-            </div>
+          <Label htmlFor="profile-lud16-input">{t('Lightning Address')}</Label>
+          <Input
+            id="profile-lud16-input"
+            value={lud16}
+            placeholder="user@getalby.com"
+            onChange={(e) => {
+              setLud16(e.target.value)
+              setHasChanged(true)
+            }}
+          />
+        </Item>
+        <Item>
+          <div className="flex items-center justify-between gap-2">
+            <Label>{t('Payment info')}</Label>
+            <Button variant="outline" size="sm" onClick={openPaymentInfoEditor} className="shrink-0">
+              <Pencil className="h-3.5 w-3.5 mr-1" />
+              {paymentInfoEvent ? t('Edit payment info') : t('Add payment info')}
+            </Button>
           </div>
+          {paymentInfoEvent ? (
+            <details className="text-sm text-muted-foreground mt-1">
+              <summary className="flex items-center gap-2 cursor-pointer">
+                <ChevronDown className="h-4 w-4" />
+                {t('Raw payment info event')}
+              </summary>
+              <div className="pt-2 space-y-2">
+                <div>
+                  <p className="text-xs font-medium">{t('Content (JSON)')}</p>
+                  <pre className="mt-1 p-3 rounded-md bg-muted text-xs overflow-auto max-h-48 break-all whitespace-pre-wrap">
+                    {paymentInfoEvent.content || '{}'}
+                  </pre>
+                </div>
+                <div>
+                  <p className="text-xs font-medium">{t('Tags')}</p>
+                  <pre className="mt-1 p-3 rounded-md bg-muted text-xs overflow-auto max-h-48">
+                    {JSON.stringify(paymentInfoEvent.tags ?? [], null, 2)}
+                  </pre>
+                </div>
+              </div>
+            </details>
+          ) : (
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('No payment info event yet. Click "Add payment info" to create one.')}
+            </p>
+          )}
         </Item>
         <Item>
           <Label htmlFor="profile-status-input">{t('User status')}</Label>
@@ -442,6 +465,127 @@ const ProfileEditorPage = forwardRef(({ index }: { index?: number }, ref) => {
           )}
         </Item>
       </div>
+
+      {/* Edit payment info dialog */}
+      <Dialog open={paymentInfoEditOpen} onOpenChange={setPaymentInfoEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{t('Edit payment info')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto space-y-4">
+            <Item>
+              <Label>{t('Payment methods')}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t('Type (e.g. lightning) and authority (e.g. user@domain.com).')}
+              </p>
+              <div className="space-y-2">
+                {paymentInfoEditMethods.map((row, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      placeholder={t('Type')}
+                      value={row.type}
+                      onChange={(e) => {
+                        const next = [...paymentInfoEditMethods]
+                        next[idx] = { ...next[idx], type: e.target.value }
+                        setPaymentInfoEditMethods(next)
+                      }}
+                      className="flex-1 max-w-[140px] font-mono text-sm"
+                    />
+                    <Input
+                      placeholder={t('Authority')}
+                      value={row.authority}
+                      onChange={(e) => {
+                        const next = [...paymentInfoEditMethods]
+                        next[idx] = { ...next[idx], authority: e.target.value }
+                        setPaymentInfoEditMethods(next)
+                      }}
+                      className="flex-1 font-mono text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() =>
+                        setPaymentInfoEditMethods(paymentInfoEditMethods.filter((_, i) => i !== idx))
+                      }
+                      aria-label={t('Remove')}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() =>
+                    setPaymentInfoEditMethods([
+                      ...paymentInfoEditMethods,
+                      { type: 'lightning', authority: '' }
+                    ])
+                  }
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {t('Add payment method')}
+                </Button>
+              </div>
+            </Item>
+            <Item>
+              <Label htmlFor="payment-info-content">{t('Additional content (JSON)')}</Label>
+              <Input
+                id="payment-info-content"
+                className="font-mono text-sm"
+                value={paymentInfoEditContent}
+                onChange={(e) => setPaymentInfoEditContent(e.target.value)}
+                placeholder='{}'
+              />
+            </Item>
+            <Item>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => setPaymentInfoShowFullJson((v) => !v)}
+              >
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${paymentInfoShowFullJson ? 'rotate-180' : ''}`}
+                />
+                {t('Show full event JSON')}
+              </Button>
+              {paymentInfoShowFullJson && (
+                <pre className="mt-2 p-3 rounded-md bg-muted text-xs overflow-auto max-h-48 break-all whitespace-pre-wrap border">
+                  {JSON.stringify(
+                    createPaymentInfoDraftEvent(
+                      paymentInfoEditContent.trim() || '{}',
+                      paymentInfoEditMethods
+                        .filter((m) => m.authority.trim())
+                        .map((m) => [
+                          'payto',
+                          (m.type.trim() || 'lightning').toLowerCase(),
+                          m.authority.trim()
+                        ])
+                    ),
+                    null,
+                    2
+                  )}
+                </pre>
+              )}
+            </Item>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentInfoEditOpen(false)}>
+              {t('Cancel')}
+            </Button>
+            <Button onClick={savePaymentInfo} disabled={savingPaymentInfo} className="gap-2">
+              {savingPaymentInfo && <Loader className="size-4 animate-spin" />}
+              {savingPaymentInfo ? t('Saving…') : t('Save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SecondaryPageLayout>
   )
 })

@@ -907,6 +907,8 @@ class IndexedDbService {
         return StoreNames.DM_RELAYS_EVENTS
       case ExtendedKind.ENCRYPTION_KEY_ANNOUNCEMENT:
         return StoreNames.ENCRYPTION_KEY_ANNOUNCEMENT_EVENTS
+      case ExtendedKind.PAYMENT_INFO:
+        return StoreNames.PAYMENT_INFO_EVENTS
       default:
         return undefined
     }
