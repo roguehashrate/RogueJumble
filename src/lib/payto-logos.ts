@@ -23,6 +23,7 @@ import tronPng from '../assets/payto_logos/Tron.png?url'
 import usdcLogo from '../assets/payto_logos/usd-coin-usdc-logo.svg?url'
 import venmoPng from '../assets/payto_logos/venmo.png?url'
 import xrpGif from '../assets/payto_logos/XRP.gif?url'
+import zcashPng from '../assets/payto_logos/Zcash.png?url'
 
 export const PAYTO_LOGO_URL_BY_FILENAME: Record<string, string> = {
   'bitcoin.svg': bitcoinLogo,
@@ -49,5 +50,6 @@ export const PAYTO_LOGO_URL_BY_FILENAME: Record<string, string> = {
   'Tron.png': tronPng,
   'usd-coin-usdc-logo.svg': usdcLogo,
   'venmo.png': venmoPng,
-  'XRP.gif': xrpGif
+  'XRP.gif': xrpGif,
+  'Zcash.png': zcashPng
 }

@@ -58,7 +58,8 @@ export const PAYTO_KNOWN_TYPES: Record<
   github: { label: 'GitHub Sponsors', symbol: '🐙', category: 'tip' },
   geyser: { label: 'Geyser Fund', symbol: '⛲', category: 'tip' },
   gofundme: { label: 'GoFundMe', symbol: '🎯', category: 'tip' },
-  kickstarter: { label: 'Kickstarter', symbol: '🚀', category: 'tip' }
+  kickstarter: { label: 'Kickstarter', symbol: '🚀', category: 'tip' },
+  zcash: { label: 'Zcash', symbol: 'ⓩ', category: 'crypto' }
 }
 
 const PAYTO_TYPE_ALIASES: Record<string, string> = {
@@ -69,7 +70,8 @@ const PAYTO_TYPE_ALIASES: Record<string, string> = {
   ltc: 'litecoin',
   xno: 'nano',
   sol: 'solana',
-  bch: 'bitcoin-cash'
+  bch: 'bitcoin-cash',
+  zec: 'zcash'
 }
 
 export function getCanonicalPaytoType(type: string): string {
@@ -109,7 +111,8 @@ const PAYTO_LOGO_FILES: Record<string, string> = {
   github: 'github_sponsors.png',
   geyser: 'geyser_fund.webp',
   gofundme: 'gofundme.jpeg',
-  kickstarter: 'kickstarter.webp'
+  kickstarter: 'kickstarter.webp',
+  zcash: 'Zcash.png'
 }
 
 const PAYTO_PROFILE_URL_TEMPLATES: Record<string, string> = {
@@ -184,6 +187,8 @@ export function getPaytoActionUri(type: string, authority: string): string | nul
       return `https://patreon.com/${authority.replace(/^@/, '')}`
     case 'github':
       return `https://github.com/sponsors/${authority.replace(/^@/, '')}`
+    case 'zcash':
+      return `zcash:${authority}`
     default:
       return null
   }
