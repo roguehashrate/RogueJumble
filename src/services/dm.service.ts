@@ -379,7 +379,6 @@ class DmService {
     // If no DM messages stored locally yet, try migrating gift-wrap events already in local events store
     if (!(await indexedDb.hasDmMessages())) {
       try {
-        console.log('[DM] No local DM messages found — attempting migration from local events store')
         await this.migrateFromLocalEvents(accountPubkey, encryptionKeypair)
       } catch (err) {
         console.warn('[DM] migration from local events failed:', err)
@@ -470,7 +469,6 @@ class DmService {
 
     if (messages.length > 0) {
       await this.rebuildConversationsFromMessages(accountPubkey, messages)
-      console.log(`[DM migration] imported ${messages.length} messages from local events`)
     }
   }
 
@@ -514,12 +512,6 @@ class DmService {
         parseFailCount++
       }
     }
-
-    const sentCount = messages.filter((m) => m.senderPubkey === accountPubkey).length
-    const receivedCount = messages.length - sentCount
-    console.log(
-      `[DM sync] batch: ${events.length} events, ${messages.length} messages (${sentCount} sent, ${receivedCount} received), ${unwrapFailCount} unwrap failed, ${parseFailCount} parse failed`
-    )
 
     await this.rebuildConversationsFromMessages(accountPubkey, messages, encryptionPubkeyMap)
   }
