@@ -14,6 +14,7 @@ const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undef
 const applyTheme = (themeName: TThemeName) => {
   const root = window.document.documentElement
   const theme = THEME_COLORS[themeName]
+  if (!theme) return
   const colors = theme.colors
   const style = theme.style
 
@@ -68,9 +69,10 @@ const applyTheme = (themeName: TThemeName) => {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [themeSetting, setThemeSettingState] = useState<TThemeName>(
-    (localStorage.getItem(StorageKey.THEME_SETTING) as TThemeName) ?? 'sapphire'
-  )
+  const [themeSetting, setThemeSettingState] = useState<TThemeName>(() => {
+    const stored = localStorage.getItem(StorageKey.THEME_SETTING)
+    return stored && stored in THEME_COLORS ? (stored as TThemeName) : 'sapphire'
+  })
   const [theme, setTheme] = useState<TTheme>(themeSetting)
 
   useEffect(() => {
