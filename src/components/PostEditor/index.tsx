@@ -65,7 +65,7 @@ export default function PostEditor({
             }
           }}
         >
-          <ScrollArea className="h-full max-h-screen px-4">
+          <ScrollArea className="h-full max-h-dvh px-4">
             <div className="space-y-4 px-2 py-6">
               <SheetHeader>
                 <SheetTitle className="text-start">
@@ -93,7 +93,7 @@ export default function PostEditor({
           }
         }}
       >
-        <ScrollArea className="h-full max-h-screen px-4">
+        <ScrollArea className="h-full max-h-dvh px-4">
           <div className="space-y-4 px-2 py-6">
             <DialogHeader>
               <DialogTitle>

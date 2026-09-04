@@ -121,6 +121,7 @@ export interface ISigner {
   nip04Decrypt: (pubkey: string, cipherText: string) => Promise<string>
   nip44Encrypt: (pubkey: string, plainText: string) => Promise<string>
   nip44Decrypt: (pubkey: string, cipherText: string) => Promise<string>
+  getPrivateKeyByteArray?: () => Uint8Array
 }
 
 export type TSignerType = 'nsec' | 'nip-07' | 'bunker' | 'browser-nsec' | 'ncryptsec' | 'npub'
@@ -145,7 +146,6 @@ export type TFeedType =
   | 'mediaFeed'
   | 'textFeed'
   | 'articleFeed'
-  | 'groups'
 export type TFeedInfo = { feedType: TFeedType; id?: string; name?: string } | null
 
 export type TLanguage = 'en' | 'zh' | 'pl'

@@ -421,7 +421,7 @@ const UserAggregationList = forwardRef<
     }
 
     const list = (
-      <div className="min-h-screen">
+      <div className="min-h-dvh">
         {pinnedAggregations.map((agg) => (
           <UserAggregationItem
             key={agg.pubkey}

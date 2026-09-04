@@ -29,9 +29,8 @@ import { useTranslation } from 'react-i18next'
 
 export default function Settings() {
   const { t } = useTranslation()
-  const { pubkey, nsec, ncryptsec } = useNostr()
+  const { pubkey, ncryptsec } = useNostr()
   const { push } = useSecondaryPage()
-  const [copiedNsec, setCopiedNsec] = useState(false)
   const [copiedNcryptsec, setCopiedNcryptsec] = useState(false)
 
   return (
@@ -72,7 +71,7 @@ export default function Settings() {
         <ChevronRight />
       </SettingItem>
 
-      {(!!pubkey || !!nsec || !!ncryptsec) && (
+      {(!!pubkey || !!ncryptsec) && (
         <>
           <Separator className="my-2" />
           <SectionHeader>{t('Account')}</SectionHeader>
@@ -86,17 +85,6 @@ export default function Settings() {
           </div>
           <ChevronRight />
         </SettingItem>
-      )}
-      {!!nsec && (
-        <CopyPrivateKeyItem
-          label={`${t('Copy private key')} (nsec)`}
-          value={nsec}
-          copied={copiedNsec}
-          onCopy={() => {
-            setCopiedNsec(true)
-            setTimeout(() => setCopiedNsec(false), 2000)
-          }}
-        />
       )}
       {!!ncryptsec && (
         <CopyPrivateKeyItem

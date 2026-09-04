@@ -30,6 +30,12 @@ export function isAndroid() {
   return /android/i.test(ua)
 }
 
+export function isIOS() {
+  if (typeof window === 'undefined' || !window.navigator) return false
+  const ua = window.navigator.userAgent
+  return /iphone|ipod|ipad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
 export function isTorBrowser() {
   if (typeof window === 'undefined' || !window.navigator) return false
   const ua = window.navigator.userAgent

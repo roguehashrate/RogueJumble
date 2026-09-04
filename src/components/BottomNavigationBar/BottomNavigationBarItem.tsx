@@ -28,9 +28,10 @@ export default function BottomNavigationBarItem({
     <button
       type="button"
       className={cn(
-        'group relative m-0 flex h-12 w-full items-center justify-center rounded-none p-3 text-muted-foreground outline-none [&_svg]:size-6',
+        'group relative flex h-12 w-12 flex-none items-center justify-center outline-none',
+        'text-muted-foreground transition-colors duration-200',
         active && 'text-primary',
-        bouncing && '[&>svg]:animate-icon-bounce'
+        bouncing && '[&>span:last-child]:animate-icon-bounce'
       )}
       style={{
         WebkitTapHighlightColor: 'transparent',
@@ -42,7 +43,22 @@ export default function BottomNavigationBarItem({
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
-      {children}
+      {/* iOS-style active bubble behind the icon */}
+      <span
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute inset-x-1 inset-y-1 rounded-2xl transition-all duration-200',
+          active ? 'bg-primary/12 opacity-100' : 'opacity-0'
+        )}
+      />
+      <span
+        className={cn(
+          'relative z-10 flex size-[26px] items-center justify-center transition-transform duration-150 ease-out group-active:scale-90 [&_svg]:size-[24px] [&_svg]:shrink-0',
+          active && 'scale-100 translate-y-0'
+        )}
+      >
+        {children}
+      </span>
     </button>
   )
 }

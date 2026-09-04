@@ -30,15 +30,9 @@ const StoreNames = {
   MUTE_DECRYPTED_TAGS: 'muteDecryptedTags', // deprecated
   RELAY_INFO_EVENTS: 'relayInfoEvents', // deprecated
   TIMELINE_REFS: 'timelineRefs',
-  GROUP_MESSAGES: 'groupMessages',
   STUFF_STATS: 'stuffStats',
   THREAD_REPLIES: 'threadReplies',
-  // DM stores
-  DM_MESSAGES: 'dmMessages',
-  DM_CONVERSATIONS: 'dmConversations',
   SUB_REQUESTS: 'subRequests',
-  DM_RELAYS_EVENTS: 'dmRelaysEvents',
-  ENCRYPTION_KEY_ANNOUNCEMENT_EVENTS: 'encryptionKeyAnnouncementEvents',
   PAYMENT_INFO_EVENTS: 'paymentInfoEvents',
   EVENT_ARCHIVE: 'eventArchive'
 }
@@ -126,12 +120,6 @@ class IndexedDbService {
           if (!db.objectStoreNames.contains(StoreNames.TIMELINE_REFS)) {
             db.createObjectStore(StoreNames.TIMELINE_REFS, { keyPath: 'key' })
           }
-          if (!db.objectStoreNames.contains(StoreNames.GROUP_MESSAGES)) {
-            const groupMessagesStore = db.createObjectStore(StoreNames.GROUP_MESSAGES, {
-              keyPath: 'key'
-            })
-            groupMessagesStore.createIndex('addedAtIndex', 'addedAt')
-          }
           if (!db.objectStoreNames.contains(StoreNames.STUFF_STATS)) {
             const stuffStatsStore = db.createObjectStore(StoreNames.STUFF_STATS, { keyPath: 'key' })
             stuffStatsStore.createIndex('addedAtIndex', 'addedAt')
@@ -150,27 +138,8 @@ class IndexedDbService {
             db.deleteObjectStore(StoreNames.MUTE_DECRYPTED_TAGS)
           }
 
-          // Create DM stores if missing
-          if (!db.objectStoreNames.contains(StoreNames.DM_MESSAGES)) {
-            const dmMessagesStore = db.createObjectStore(StoreNames.DM_MESSAGES, { keyPath: 'id' })
-            dmMessagesStore.createIndex('participantsKeyIndex', 'participantsKey')
-            dmMessagesStore.createIndex('createdAtIndex', 'createdAt')
-          }
-
-          if (!db.objectStoreNames.contains(StoreNames.DM_CONVERSATIONS)) {
-            const dmConvStore = db.createObjectStore(StoreNames.DM_CONVERSATIONS, { keyPath: 'key' })
-            dmConvStore.createIndex('pubkeyIndex', 'pubkey')
-            dmConvStore.createIndex('lastMessageAtIndex', 'lastMessageAt')
-          }
-
           if (!db.objectStoreNames.contains(StoreNames.SUB_REQUESTS)) {
             db.createObjectStore(StoreNames.SUB_REQUESTS, { keyPath: 'key' })
-          }
-          if (!db.objectStoreNames.contains(StoreNames.DM_RELAYS_EVENTS)) {
-            db.createObjectStore(StoreNames.DM_RELAYS_EVENTS, { keyPath: 'key' })
-          }
-          if (!db.objectStoreNames.contains(StoreNames.ENCRYPTION_KEY_ANNOUNCEMENT_EVENTS)) {
-            db.createObjectStore(StoreNames.ENCRYPTION_KEY_ANNOUNCEMENT_EVENTS, { keyPath: 'key' })
           }
           if (!db.objectStoreNames.contains(StoreNames.EVENT_ARCHIVE)) {
             const archive = db.createObjectStore(StoreNames.EVENT_ARCHIVE, { keyPath: 'key' })
@@ -676,74 +645,6 @@ class IndexedDbService {
     })
   }
 
-  async putGroupMessages(
-    key: string,
-    messages: { event: Event; relays: string[] }[]
-  ): Promise<void> {
-    await this.initPromise
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        return reject('database not initialized')
-      }
-      const transaction = this.db.transaction(StoreNames.GROUP_MESSAGES, 'readwrite')
-      const store = transaction.objectStore(StoreNames.GROUP_MESSAGES)
-
-      const data = {
-        key,
-        messages,
-        addedAt: Date.now()
-      }
-
-      const putRequest = store.put(data)
-      putRequest.onsuccess = () => {
-        transaction.commit()
-        resolve()
-      }
-
-      putRequest.onerror = (event) => {
-        transaction.commit()
-        reject(event)
-      }
-    })
-  }
-
-  async getGroupMessages(key: string): Promise<{ event: Event; relays: string[] }[] | null> {
-    await this.initPromise
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        return reject('database not initialized')
-      }
-      const transaction = this.db.transaction(StoreNames.GROUP_MESSAGES, 'readonly')
-      const store = transaction.objectStore(StoreNames.GROUP_MESSAGES)
-      const request = store.get(key)
-
-      request.onsuccess = () => {
-        transaction.commit()
-        const result = request.result as
-          | { messages: { event: Event; relays: string[] }[]; addedAt: number }
-          | undefined
-        if (result?.messages) {
-          // Clean up group messages older than 7 days
-          if (result.addedAt < Date.now() - 1000 * 60 * 60 * 24 * 7) {
-            const deleteTransaction = this.db!.transaction(StoreNames.GROUP_MESSAGES, 'readwrite')
-            deleteTransaction.objectStore(StoreNames.GROUP_MESSAGES).delete(key)
-            deleteTransaction.commit()
-            resolve(null)
-          } else {
-            resolve(result.messages)
-          }
-        } else {
-          resolve(null)
-        }
-      }
-
-      request.onerror = (event) => {
-        transaction.commit()
-        reject(event)
-      }
-    })
-  }
-
   async putStuffStats(key: string, stats: unknown): Promise<void> {
     await this.initPromise
     return new Promise((resolve, reject) => {
@@ -1015,10 +916,6 @@ class IndexedDbService {
         return StoreNames.PIN_LIST_EVENTS
       case ExtendedKind.PINNED_USERS:
         return StoreNames.PINNED_USERS_EVENTS
-      case ExtendedKind.DM_RELAYS:
-        return StoreNames.DM_RELAYS_EVENTS
-      case ExtendedKind.ENCRYPTION_KEY_ANNOUNCEMENT:
-        return StoreNames.ENCRYPTION_KEY_ANNOUNCEMENT_EVENTS
       case ExtendedKind.PAYMENT_INFO:
         return StoreNames.PAYMENT_INFO_EVENTS
       default:
@@ -1223,160 +1120,6 @@ class IndexedDbService {
     })
   }
 
-  // --- DM helpers (persistent implementations) ---
-  async hasDmMessages(): Promise<boolean> {
-    await this.initPromise
-    if (!this.db) return false
-    return new Promise((resolve) => {
-      const transaction = this.db!.transaction(StoreNames.DM_MESSAGES, 'readonly')
-      const store = transaction.objectStore(StoreNames.DM_MESSAGES)
-      const req = store.count()
-      req.onsuccess = () => resolve((req.result as number) > 0)
-      req.onerror = () => resolve(false)
-    })
-  }
-
-  async getAllDmMessagesForAccount(accountPubkey: string): Promise<any[]> {
-    await this.initPromise
-    if (!this.db) return []
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(StoreNames.DM_MESSAGES, 'readonly')
-      const store = transaction.objectStore(StoreNames.DM_MESSAGES)
-      const request = store.openCursor()
-      const results: any[] = []
-      request.onsuccess = (ev) => {
-        const cursor = (ev.target as IDBRequest).result
-        if (cursor) {
-          const val = cursor.value as any
-          if (val && typeof val.participantsKey === 'string') {
-            const parts = val.participantsKey.split(':')
-            if (parts.includes(accountPubkey)) results.push(val)
-          }
-          cursor.continue()
-        } else {
-          // sort by createdAt asc
-          results.sort((a, b) => a.createdAt - b.createdAt)
-          resolve(results)
-        }
-      }
-      request.onerror = (e) => reject(e)
-    })
-  }
-
-  async getDmMessages(participantsKey: string, options?: { after?: number; before?: number; limit?: number }): Promise<any[]> {
-    await this.initPromise
-    if (!this.db) return []
-    return new Promise((resolve, reject) => {
-      try {
-        const transaction = this.db!.transaction(StoreNames.DM_MESSAGES, 'readonly')
-        const store = transaction.objectStore(StoreNames.DM_MESSAGES)
-        const index = store.index('participantsKeyIndex')
-        const range = IDBKeyRange.only(participantsKey)
-        const request = index.openCursor(range)
-        const results: any[] = []
-        request.onsuccess = (ev) => {
-          const cursor = (ev.target as IDBRequest).result
-          if (cursor) {
-            const val = cursor.value as any
-            if (options?.after !== undefined && val.createdAt <= options.after) {
-              cursor.continue()
-              return
-            }
-            if (options?.before !== undefined && val.createdAt >= options.before) {
-              cursor.continue()
-              return
-            }
-            results.push(val)
-            if (options?.limit && results.length >= options.limit) {
-              resolve(results.sort((a, b) => a.createdAt - b.createdAt))
-              return
-            }
-            cursor.continue()
-          } else {
-            resolve(results.sort((a, b) => a.createdAt - b.createdAt))
-          }
-        }
-        request.onerror = (e) => reject(e)
-      } catch (err) {
-        reject(err)
-      }
-    })
-  }
-
-  async getDmMessageById(id: string): Promise<any | null> {
-    await this.initPromise
-    if (!this.db) return null
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(StoreNames.DM_MESSAGES, 'readonly')
-      const store = transaction.objectStore(StoreNames.DM_MESSAGES)
-      const req = store.get(id)
-      req.onsuccess = () => resolve((req.result as any) ?? null)
-      req.onerror = (e) => reject(e)
-    })
-  }
-
-  async putDmMessage(message: any): Promise<void> {
-    await this.initPromise
-    if (!this.db) return
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(StoreNames.DM_MESSAGES, 'readwrite')
-      const store = transaction.objectStore(StoreNames.DM_MESSAGES)
-      const putReq = store.put(message)
-      putReq.onsuccess = () => resolve()
-      putReq.onerror = (e) => reject(e)
-    })
-  }
-
-  async getDmConversation(key: string): Promise<any | null> {
-    await this.initPromise
-    if (!this.db) return null
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(StoreNames.DM_CONVERSATIONS, 'readonly')
-      const store = transaction.objectStore(StoreNames.DM_CONVERSATIONS)
-      const req = store.get(key)
-      req.onsuccess = () => resolve((req.result as any) ?? null)
-      req.onerror = (e) => reject(e)
-    })
-  }
-
-  async putDmConversation(conv: any): Promise<void> {
-    await this.initPromise
-    if (!this.db) return
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(StoreNames.DM_CONVERSATIONS, 'readwrite')
-      const store = transaction.objectStore(StoreNames.DM_CONVERSATIONS)
-      const putReq = store.put(conv)
-      putReq.onsuccess = () => resolve()
-      putReq.onerror = (e) => reject(e)
-    })
-  }
-
-  async getAllDmConversations(accountPubkey: string): Promise<any[]> {
-    await this.initPromise
-    if (!this.db) return []
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(StoreNames.DM_CONVERSATIONS, 'readonly')
-      const store = transaction.objectStore(StoreNames.DM_CONVERSATIONS)
-      const request = store.openCursor()
-      const results: any[] = []
-      request.onsuccess = (ev) => {
-        const cursor = (ev.target as IDBRequest).result
-        if (cursor) {
-          const val = cursor.value as any
-          // Conversation key format expected: `${accountPubkey}:${otherPubkey}`
-          if (typeof val.key === 'string' && val.key.startsWith(accountPubkey + ':')) {
-            results.push(val)
-          }
-          cursor.continue()
-        } else {
-          // sort by lastMessageAt desc
-          results.sort((a, b) => (b.lastMessageAt ?? 0) - (a.lastMessageAt ?? 0))
-          resolve(results)
-        }
-      }
-      request.onerror = (e) => reject(e)
-    })
-  }
 }
 
 const instance = IndexedDbService.getInstance()

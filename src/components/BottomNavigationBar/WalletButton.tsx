@@ -16,7 +16,7 @@ export default function WalletButton() {
         push('/settings/wallet')
       }}
     >
-      <Wallet className="size-4" />
+      <Wallet />
     </BottomNavigationBarItem>
   )
 }

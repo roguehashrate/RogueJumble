@@ -25,6 +25,9 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI',
+      Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    letter-spacing: -0.011em;
     -webkit-overflow-scrolling: touch;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
@@ -36,6 +39,12 @@
     min-height: 100vh;
   }
 
+  @supports (min-height: 100dvh) {
+    #root {
+      min-height: 100dvh;
+    }
+  }
+
   #root::before {
     content: '';
     position: fixed;
@@ -43,7 +52,7 @@
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 0px);
-    background: #000;
+    background: hsl(var(--background));
     z-index: 9999;
     pointer-events: none;
   }

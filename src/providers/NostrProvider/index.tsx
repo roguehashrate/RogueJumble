@@ -63,7 +63,6 @@ type TNostrContext = {
   notificationsSeenAt: number
   account: TAccountPointer | null
   accounts: TAccountPointer[]
-  nsec: string | null
   ncryptsec: string | null
   switchAccount: (account: TAccountPointer | null) => Promise<void>
   nsecLogin: (nsec: string, password?: string, needSetup?: boolean) => Promise<string>
@@ -118,7 +117,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     storage.getAccounts().map((act) => ({ pubkey: act.pubkey, signerType: act.signerType }))
   )
   const [account, setAccount] = useState<TAccountPointer | null>(null)
-  const [nsec, setNsec] = useState<string | null>(null)
   const [ncryptsec, setNcryptsec] = useState<string | null>(null)
   const [signer, setSigner] = useState<ISigner | null>(null)
   const [openLoginDialog, setOpenLoginDialog] = useState(false)
@@ -176,7 +174,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setRelayList(null)
       setProfile(null)
       setProfileEvent(null)
-      setNsec(null)
       setFavoriteRelaysEvent(null)
       setFollowListEvent(null)
       setMuteListEvent(null)
@@ -185,12 +182,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       setNotificationsSeenAt(-1)
       if (!account) {
         return
-      }
-      const storedNsec = storage.getAccountNsec(account.pubkey)
-      if (storedNsec) {
-        setNsec(storedNsec)
-      } else {
-        setNsec(null)
       }
       const storedNcryptsec = storage.getAccountNcryptsec(account.pubkey)
       if (storedNcryptsec) {
@@ -508,12 +499,17 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
       throw new Error('invalid nsec or hex')
     }
     const pubkey = nsecSigner.login(privkey)
-    if (password) {
-      const ncryptsec = nip49.encrypt(privkey, password)
-      login(nsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
-    } else {
-      login(nsecSigner, { pubkey, signerType: 'nsec', nsec: nip19.nsecEncode(privkey) })
+
+    // For security, a raw nsec is never persisted in plaintext. Always encrypt
+    // it with a password and store it as ncryptsec. If no password was provided,
+    // prompt the user to set one.
+    const resolvedPassword = password || (await requestPassword())
+    if (!resolvedPassword) {
+      throw new Error('A password is required to store your private key securely.')
     }
+    const ncryptsec = nip49.encrypt(privkey, resolvedPassword)
+    login(nsecSigner, { pubkey, signerType: 'ncryptsec', ncryptsec })
+
     if (needSetup) {
       setupNewUser(nsecSigner)
     }
@@ -588,14 +584,19 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
     }
     if (account.signerType === 'nsec' || account.signerType === 'browser-nsec') {
       if (account.nsec) {
+        // Migrate a plaintext-stored nsec to password-encrypted ncryptsec so
+        // the raw private key is never persisted in localStorage.
         const browserNsecSigner = new NsecSigner()
         browserNsecSigner.login(account.nsec)
-        // Migrate to nsec
-        if (account.signerType === 'browser-nsec') {
-          storage.removeAccount(account)
-          account = { ...account, signerType: 'nsec' }
-          storage.addAccount(account)
+        const privkey = nip19.decode(account.nsec).data as Uint8Array
+        const password = await requestPassword()
+        if (!password) {
+          return null
         }
+        const ncryptsec = nip49.encrypt(privkey, password)
+        storage.removeAccount(account)
+        account = { ...account, signerType: 'ncryptsec', ncryptsec, nsec: undefined }
+        storage.addAccount(account)
         return login(browserNsecSigner, account)
       }
     } else if (account.signerType === 'ncryptsec') {
@@ -864,7 +865,6 @@ export function NostrProvider({ children }: { children: React.ReactNode }) {
         notificationsSeenAt,
         account,
         accounts,
-        nsec,
         ncryptsec,
         switchAccount,
         nsecLogin,

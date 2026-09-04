@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils'
 import { CurrentRelaysProvider } from '@/providers/CurrentRelaysProvider'
-import { GroupChatContextProvider } from '@/providers/GroupChatContextProvider'
 import { TPageRef } from '@/types'
 import {
   createContext,
@@ -273,40 +272,38 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
             : null
         }}
       >
-        <GroupChatContextProvider>
-          <CurrentRelaysProvider>
-            <NotificationProvider>
-              <BackgroundOrbs />
-              {!!secondaryStack.length &&
-                secondaryStack.map((item, index) => (
-                  <div
-                    key={item.index}
-                    style={{
-                      display: index === secondaryStack.length - 1 ? 'block' : 'none'
-                    }}
-                  >
-                    {item.element && <item.element />}
-                  </div>
-                ))}
-              {primaryPages.map(({ name, props }) => (
+        <CurrentRelaysProvider>
+          <NotificationProvider>
+            <BackgroundOrbs />
+            {!!secondaryStack.length &&
+              secondaryStack.map((item, index) => (
                 <div
-                  key={name}
+                  key={item.index}
                   style={{
-                    display:
-                      secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
+                    display: index === secondaryStack.length - 1 ? 'block' : 'none'
                   }}
                 >
-                  <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
+                  {item.element && <item.element />}
                 </div>
               ))}
-              {secondaryStack.length > 0 &&
-              secondaryStack[secondaryStack.length - 1]?.url?.includes('/settings/wallet/history') ? null : (
-                <BottomNavigationBar />
-              )}
-              <TooManyRelaysAlertDialog />
-            </NotificationProvider>
-          </CurrentRelaysProvider>
-        </GroupChatContextProvider>
+            {primaryPages.map(({ name, props }) => (
+              <div
+                key={name}
+                style={{
+                  display:
+                    secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
+                }}
+              >
+                <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
+              </div>
+            ))}
+            {secondaryStack.length > 0 &&
+            secondaryStack[secondaryStack.length - 1]?.url?.includes('/settings/wallet/history') ? null : (
+              <BottomNavigationBar />
+            )}
+            <TooManyRelaysAlertDialog />
+          </NotificationProvider>
+        </CurrentRelaysProvider>
       </SecondaryPageContext.Provider>
     </PrimaryPageContext.Provider>
   )

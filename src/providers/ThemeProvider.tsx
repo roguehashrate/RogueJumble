@@ -11,6 +11,34 @@ type ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
 
+const hslToHex = (hsl: string): string => {
+  const m = hsl.trim().match(/^([\d.]+)\s+([\d.]+)%\s+([\d.]+)%$/)
+  if (!m) return '#000000'
+  const h = (parseFloat(m[1]) % 360 + 360) % 360
+  const s = Math.min(100, Math.max(0, parseFloat(m[2]))) / 100
+  const l = Math.min(100, Math.max(0, parseFloat(m[3]))) / 100
+
+  const hue2rgb = (p: number, q: number, t: number): number => {
+    if (t < 0) t += 1
+    if (t > 1) t -= 1
+    if (t < 1 / 6) return p + (q - p) * 6 * t
+    if (t < 1 / 2) return q
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    return p
+  }
+
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s
+  const p = 2 * l - q
+  const r = hue2rgb(p, q, h / 360 + 1 / 3)
+  const g = hue2rgb(p, q, h / 360)
+  const b = hue2rgb(p, q, h / 360 - 1 / 3)
+  const toHex = (v: number) =>
+    Math.round(Math.min(1, Math.max(0, v)) * 255)
+      .toString(16)
+      .padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
 const applyTheme = (themeName: TThemeName) => {
   const root = window.document.documentElement
   const theme = THEME_COLORS[themeName]
@@ -66,6 +94,12 @@ const applyTheme = (themeName: TThemeName) => {
     'midnight'
   )
   root.classList.add(themeName)
+
+  // Keep the PWA theme-color / status-bar tint in sync with the active theme
+  const themeColor = hslToHex(colors.background)
+  window.document
+    .querySelectorAll('meta[name="theme-color"]')
+    .forEach((meta) => meta.setAttribute('content', themeColor))
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 p-4">
+        <div className="flex h-dvh w-screen flex-col items-center justify-center gap-4 p-4">
           <h1 className="text-2xl font-bold">Oops, something went wrong.</h1>
           <p className="max-w-md text-center text-lg">
             Sorry for the inconvenience. If you don't mind helping, you can{' '}

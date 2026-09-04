@@ -91,21 +91,7 @@ export const toChachiChat = (relay: string, d: string) => {
   return `https://chachi.chat/${relay.replace(/^wss?:\/\//, '').replace(/\/$/, '')}/${d}`
 }
 
-export const toGroupChat = (relayDomain: string, groupId: string, groupName?: string) => {
-  const path = `/groups/${encodeURIComponent(relayDomain)}/${encodeURIComponent(groupId)}`
-  if (groupName) {
-    const query = new URLSearchParams({ name: groupName }).toString()
-    return `${path}?${query}`
-  }
-  return path
-}
-
 export const toUserAggregationDetail = (feedId: string, pubkey: string) => {
   const npub = nip19.npubEncode(pubkey)
   return `/user-aggregation/${feedId}/${npub}`
-}
-
-export const toDmConversation = (pubkey: string) => {
-  const npub = pubkey.startsWith('npub') ? pubkey : nip19.npubEncode(pubkey)
-  return `/dms/${npub}`
 }

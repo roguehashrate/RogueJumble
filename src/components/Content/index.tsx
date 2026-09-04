@@ -8,7 +8,6 @@ import {
   EmbeddedUrlParser,
   EmbeddedWebsocketUrlParser,
   Bech32EventParser,
-  GroupLinkParser,
   parseContent
 } from '@/lib/content-parser'
 import { getImetaInfosFromEvent } from '@/lib/event'
@@ -30,7 +29,6 @@ import {
 } from '../Embedded'
 import Emoji from '../Emoji'
 import ExternalLink from '../ExternalLink'
-import GroupLink from '../GroupLink'
 import HighlightButton from '../HighlightButton'
 import ImageGallery from '../ImageGallery'
 import MarkdownContent from '../MarkdownContent'
@@ -73,7 +71,6 @@ export default function Content({
     const nodes = parseContent(_content, [
       EmbeddedEventParser,
       Bech32EventParser,
-      GroupLinkParser,
       EmbeddedMentionParser,
       EmbeddedUrlParser,
       EmbeddedLNInvoiceParser,
@@ -335,13 +332,6 @@ export default function Content({
             if (node.type === 'bech32-event') {
               return <EmbeddedNote key={index} noteId={node.data} className="mt-2" />
             }
-            if (node.type === 'group-link') {
-              const match = node.data.match(/nostr:group:([a-z0-9-_]+)@([^\s]+)/i)
-              if (match) {
-                const [, groupId, relayUrl] = match
-                return <GroupLink key={index} groupId={groupId} relayUrl={relayUrl} />
-              }
-            }
             if (node.type === 'mention') {
               return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
             }
@@ -429,13 +419,6 @@ export default function Content({
           }
           if (node.type === 'bech32-event') {
             return <EmbeddedNote key={index} noteId={node.data} className="mt-2" />
-          }
-          if (node.type === 'group-link') {
-            const match = node.data.match(/nostr:group:([a-z0-9-_]+)@([^\s]+)/i)
-            if (match) {
-              const [, groupId, relayUrl] = match
-              return <GroupLink key={index} groupId={groupId} relayUrl={relayUrl} />
-            }
           }
           if (node.type === 'mention') {
             return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />

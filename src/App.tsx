@@ -22,8 +22,7 @@ import { TranslationServiceProvider } from '@/providers/TranslationServiceProvid
 import { UserPreferencesProvider } from '@/providers/UserPreferencesProvider'
 import { UserTrustProvider } from '@/providers/UserTrustProvider'
 import { ZapProvider } from '@/providers/ZapProvider'
-import { DmProvider } from '@/providers/DmProvider'
-import { DmContextProvider } from '@/providers/DmContextProvider'
+import { BitcoinProvider } from '@/providers/BitcoinProvider'
 import { PageManager } from './PageManager'
 
 export default function App(): JSX.Element {
@@ -35,8 +34,9 @@ export default function App(): JSX.Element {
             <DeletedEventProvider>
               <NostrProvider>
                 <ZapProvider>
-                  <TranslationServiceProvider>
-                    <FavoriteRelaysProvider>
+                  <BitcoinProvider>
+                    <TranslationServiceProvider>
+                      <FavoriteRelaysProvider>
                       <FollowListProvider>
                         <MuteListProvider>
                           <UserTrustProvider>
@@ -47,13 +47,9 @@ export default function App(): JSX.Element {
                                     <FeedProvider>
                                       <MediaUploadServiceProvider>
                                         <KindFilterProvider>
-                                          <DmProvider>
-                                            <DmContextProvider>
-                                              <PageManager />
-                                              <InstallPrompt />
-                                              <Toaster />
-                                            </DmContextProvider>
-                                          </DmProvider>
+                                          <PageManager />
+                                          <InstallPrompt />
+                                          <Toaster />
                                         </KindFilterProvider>
                                       </MediaUploadServiceProvider>
                                     </FeedProvider>
@@ -66,6 +62,7 @@ export default function App(): JSX.Element {
                       </FollowListProvider>
                     </FavoriteRelaysProvider>
                   </TranslationServiceProvider>
+                  </BitcoinProvider>
                 </ZapProvider>
               </NostrProvider>
             </DeletedEventProvider>

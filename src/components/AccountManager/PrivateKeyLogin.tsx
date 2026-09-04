@@ -14,7 +14,7 @@ export default function PrivateKeyLogin({
   onLoginSuccess: () => void
 }) {
   return (
-    <Tabs defaultValue="nsec">
+    <Tabs defaultValue="ncryptsec">
       <TabsList>
         <TabsTrigger value="nsec">nsec</TabsTrigger>
         <TabsTrigger value="ncryptsec">ncryptsec</TabsTrigger>
@@ -61,7 +61,7 @@ function NsecLogin({ back, onLoginSuccess }: { back: () => void; onLoginSuccess:
     >
       <div className="text-orange-400">
         {t(
-          'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x. If you must use a private key, please set a password for encryption at minimum.'
+          'Using private key login is insecure. It is recommended to use a browser extension for login, such as alby, nostr-keyx or nos2x. If you must use a private key, a password is required so your key is stored encrypted.'
         )}
       </div>
       <div className="grid gap-2">
@@ -81,7 +81,7 @@ function NsecLogin({ back, onLoginSuccess }: { back: () => void; onLoginSuccess:
         <Input
           id="password-input"
           type="password"
-          placeholder={t('optional: encrypt nsec')}
+          placeholder={t('required: encrypt nsec')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />

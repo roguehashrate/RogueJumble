@@ -484,7 +484,7 @@ const NoteList = forwardRef<
     }
 
     const list = (
-      <div className="min-h-screen">
+      <div className="min-h-dvh">
         {initialLoading && shouldShowLoadingIndicator && <LoadingBar />}
         {pinnedEventIds?.map((id) => (
           <PinnedNoteCard key={id} eventId={id} className="w-full" />

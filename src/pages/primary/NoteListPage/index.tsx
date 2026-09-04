@@ -23,7 +23,6 @@ import {
 import { useTranslation } from 'react-i18next'
 import FeedButton from './FeedButton'
 import RelaysFeed from './RelaysFeed'
-import GroupsFeed from '@/components/GroupsFeed'
 
 const NoteListPage = forwardRef<TPageRef>((_, ref) => {
   const { t } = useTranslation()
@@ -69,9 +68,6 @@ const NoteListPage = forwardRef<TPageRef>((_, ref) => {
   } else if (feedInfo.feedType === 'articleFeed' && !pubkey) {
     switchFeed(null)
     return null
-  } else if (feedInfo.feedType === 'groups' && !pubkey) {
-    switchFeed(null)
-    return null
   } else if (feedInfo.feedType === 'following') {
     content = <FollowingFeed />
   } else if (feedInfo.feedType === 'mediaFeed') {
@@ -80,8 +76,6 @@ const NoteListPage = forwardRef<TPageRef>((_, ref) => {
     content = <FollowingFeed feedVariant="textFeed" />
   } else if (feedInfo.feedType === 'articleFeed') {
     content = <FollowingFeed feedVariant="articleFeed" />
-  } else if (feedInfo.feedType === 'groups') {
-    content = <GroupsFeed />
   } else {
     content = (
       <>

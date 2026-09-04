@@ -73,6 +73,19 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      {
+        name: 'inject-csp',
+        apply: 'build',
+        transformIndexHtml(html) {
+          const csp = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http:; connect-src 'self' ws: wss: https: http:; font-src 'self' data: https:; frame-src https: http:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"
+          return {
+            html,
+            tags: [
+              { tag: 'meta', attrs: { 'http-equiv': 'Content-Security-Policy', content: csp }, injectTo: 'head' }
+            ]
+          }
+        }
+      },
       VitePWA({
         registerType: 'autoUpdate',
         workbox: {
@@ -121,8 +134,8 @@ export default defineConfig(({ mode }) => {
           ],
           start_url: '/',
           display: 'standalone',
-          background_color: '#FFFFFF',
-          theme_color: '#FFFFFF',
+          background_color: '#0b0e13',
+          theme_color: '#0b0e13',
           description: packageJson.description,
           shortcuts: [
             {

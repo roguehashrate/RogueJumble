@@ -15,7 +15,8 @@ import {
   TFont,
   TFontSize,
   TPrimaryColor,
-  TThemeName
+  TThemeName,
+  TZapChoice
 } from '@/constants'
 import { isSameAccount } from '@/lib/account'
 import { randomString } from '@/lib/random'
@@ -105,6 +106,7 @@ class LocalStorageService {
   private minTrustScore: number = 0
   private minTrustScoreMap: Record<string, number> = {}
   private hideIndirectNotifications: boolean = false
+  private zapChoiceMap: Record<string, TZapChoice> = {}
 
   constructor() {
     if (!LocalStorageService.instance) {
@@ -129,6 +131,8 @@ class LocalStorageService {
     const lastReadNotificationTimeMapStr =
       window.localStorage.getItem(StorageKey.LAST_READ_NOTIFICATION_TIME_MAP) ?? '{}'
     this.lastReadNotificationTimeMap = JSON.parse(lastReadNotificationTimeMapStr)
+    const zapChoiceMapStr = window.localStorage.getItem(StorageKey.ZAP_CHOICE_MAP) ?? '{}'
+    this.zapChoiceMap = JSON.parse(zapChoiceMapStr)
 
     const relaySetsStr = window.localStorage.getItem(StorageKey.RELAY_SETS)
     if (!relaySetsStr) {
@@ -464,11 +468,17 @@ class LocalStorageService {
   }
 
   addAccount(account: TAccount) {
+    // Never persist a raw nsec in localStorage. Only the password-encrypted
+    // ncryptsec (or an external signer credential) is allowed at rest.
+    const sanitized = { ...account }
+    if ('nsec' in sanitized) {
+      delete sanitized.nsec
+    }
     const index = this.accounts.findIndex((act) => isSameAccount(act, account))
     if (index !== -1) {
-      this.accounts[index] = account
+      this.accounts[index] = sanitized
     } else {
-      this.accounts.push(account)
+      this.accounts.push(sanitized)
     }
     window.localStorage.setItem(StorageKey.ACCOUNTS, JSON.stringify(this.accounts))
     return this.accounts
@@ -537,6 +547,18 @@ class LocalStorageService {
     window.localStorage.setItem(
       StorageKey.LAST_READ_NOTIFICATION_TIME_MAP,
       JSON.stringify(this.lastReadNotificationTimeMap)
+    )
+  }
+
+  getZapChoice(pubkey: string): TZapChoice {
+    return this.zapChoiceMap[pubkey] ?? 'undecided'
+  }
+
+  setZapChoice(pubkey: string, choice: TZapChoice) {
+    this.zapChoiceMap[pubkey] = choice
+    window.localStorage.setItem(
+      StorageKey.ZAP_CHOICE_MAP,
+      JSON.stringify(this.zapChoiceMap)
     )
   }
 

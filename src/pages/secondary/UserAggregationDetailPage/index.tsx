@@ -70,7 +70,7 @@ const UserAggregationDetailPage = forwardRef(
         title={<SimpleUsername userId={pubkey} className="truncate" />}
         displayScrollToTopButton
       >
-        <div className="min-h-screen">
+        <div className="min-h-dvh">
           {aggregation.map((event) => (
             <NoteCard key={event.id} className="w-full" event={event} filterMutedNotes={false} />
           ))}

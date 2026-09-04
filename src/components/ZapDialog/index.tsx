@@ -18,9 +18,12 @@ import { Label } from '@/components/ui/label'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useZap } from '@/providers/ZapProvider'
+import { useBitcoin } from '@/providers/BitcoinProvider'
+import { useFetchPaymentInfo } from '@/hooks/useFetchPaymentInfo'
+import { resolveOnchainAddress, onchainZap } from '@/services/bitcoin-zap.service'
 import lightning from '@/services/lightning.service'
 import stuffStatsService from '@/services/stuff-stats.service'
-import { Loader } from 'lucide-react'
+import { Zap, Loader, Bitcoin } from 'lucide-react'
 import { NostrEvent } from 'nostr-tools'
 import { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -142,8 +145,14 @@ function ZapDialogContent({
   onSuccess?: () => void
 }) {
   const { t, i18n } = useTranslation()
-  const { pubkey } = useNostr()
-  const { defaultZapSats, defaultZapComment, balanceDisplayUnit, toSats, formatBalance } = useZap()
+  const { pubkey, startLogin } = useNostr()
+  const { defaultZapSats, defaultZapComment, balanceDisplayUnit, toSats, formatBalance, canSendZaps } = useZap()
+  const bitcoin = useBitcoin()
+  const { paymentInfo } = useFetchPaymentInfo(recipient)
+  const lightningUnavailable = !canSendZaps
+  const [method, setMethod] = useState<'lightning' | 'bitcoin'>(
+    lightningUnavailable ? 'bitcoin' : 'lightning'
+  )
 
   const toDisplayUnit = (sats: number): number => {
     switch (balanceDisplayUnit) {
@@ -210,6 +219,12 @@ function ZapDialogContent({
       }
       const satsAmount = toSats(amount)
       setZapping(true)
+      if (method === 'bitcoin') {
+        await handleBitcoinZap(recipient, satsAmount, comment, event)
+        onSuccess?.()
+        setOpen(false)
+        return
+      }
       const zapResult = await lightning.zap(pubkey, event ?? recipient, satsAmount, comment, () =>
         setOpen(false)
       )
@@ -228,8 +243,69 @@ function ZapDialogContent({
     }
   }
 
+  const handleBitcoinZap = async (
+    targetPubkey: string,
+    satsAmount: number,
+    comment: string,
+    event?: NostrEvent
+  ) => {
+    if (!bitcoin.isSupported) {
+      // On-chain spending requires an in-app secret key (nsec / ncryptsec /
+      // browser-nsec) to sign the PSBT. Notify the user and offer to add one.
+      toast.error(t('To send Bitcoin on-chain you need to sign in with a secret key'))
+      startLogin()
+      throw new Error(t('On-chain sending requires a secret-key sign-in'))
+    }
+    const recipientAddress = resolveOnchainAddress(targetPubkey, paymentInfo?.methods)
+    if (!recipientAddress) {
+      throw new Error(t('Cannot resolve the recipient Bitcoin address'))
+    }
+    const utxos = bitcoin.utxos
+    const feeRate = bitcoin.feeRates?.halfHourFee ?? 1
+    if (utxos.length === 0) {
+      throw new Error(t('No on-chain funds available'))
+    }
+    await onchainZap(targetPubkey, recipientAddress, satsAmount, utxos, feeRate, comment, event)
+  }
+
+  const methodUnavailableNote = !canSendZaps
+    ? t('Lightning zaps are turned off for your account. You can still send Bitcoin on-chain.')
+    : !bitcoin.isSupported
+      ? t('Bitcoin on-chain sending needs a secret-key sign-in to unlock.')
+      : null
+
   return (
     <>
+      {/* Zap method switcher */}
+      <div className="mb-4 flex items-center gap-2 rounded-lg bg-muted/40 p-1">
+        <button
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium ${
+            method === 'lightning' ? 'bg-foreground text-background' : 'text-muted-foreground'
+          } ${lightningUnavailable ? 'cursor-not-allowed opacity-50' : ''}`}
+          onClick={() => !lightningUnavailable && setMethod('lightning')}
+          disabled={lightningUnavailable}
+          title={lightningUnavailable ? t('Lightning zaps are turned off for your account') : undefined}
+        >
+          <Zap className="size-4" />
+          {t('Lightning')}
+        </button>
+        <button
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium ${
+            method === 'bitcoin' ? 'bg-foreground text-background' : 'text-muted-foreground'
+          }`}
+          onClick={() => setMethod('bitcoin')}
+        >
+          <Bitcoin className="size-4" />
+          {t('Bitcoin')}
+        </button>
+      </div>
+
+      {methodUnavailableNote && (
+        <p className="mb-4 -mt-2 text-center text-xs text-muted-foreground">
+          {methodUnavailableNote}
+        </p>
+      )}
+
       {/* Amount input */}
       <div className="flex flex-col items-center">
         <div className="flex w-full justify-center">
@@ -275,7 +351,10 @@ function ZapDialogContent({
       </div>
 
       <Button onClick={handleZap}>
-        {zapping && <Loader className="animate-spin" />} {t('Zap {{amount}}', { amount: formatBalance(toSats(amount)) })}
+        {zapping && <Loader className="animate-spin" />}{' '}
+        {method === 'bitcoin'
+          ? t('Send Bitcoin {{amount}}', { amount: formatBalance(toSats(amount)) })
+          : t('Zap {{amount}}', { amount: formatBalance(toSats(amount)) })}
       </Button>
     </>
   )

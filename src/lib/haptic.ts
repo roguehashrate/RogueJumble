@@ -1,53 +1,94 @@
 /**
- * Haptic feedback utility using the Vibration API.
- * Provides native-like tactile feedback on mobile devices.
- * Gracefully falls back on devices that don't support vibration.
+ * Haptic feedback utility.
+ *
+ * Uses the Vibration API where available (Android / desktop mobile-emulation)
+ * and falls back to an AudioContext-based "tap" via Web Audio on iOS Safari,
+ * which does not expose `navigator.vibrate`.
  */
 
-const VIBRATION_PATTERNS = {
-  light: 10,
-  medium: 20,
-  heavy: 40,
-  success: [30] as number[],
-  warning: [50, 30, 50] as number[],
-  error: [100] as number[],
-  click: 5,
-  press: 15
-} as const
+const VIBRATION_PATTERNS: Record<string, number | number[]> = {
+  light: 8,
+  medium: 16,
+  heavy: 36,
+  success: 20,
+  warning: [50, 30, 50],
+  error: 90,
+  click: 4,
+  press: 12
+}
 
-type VibrationType = keyof typeof VIBRATION_PATTERNS
+export type HapticType = keyof typeof VIBRATION_PATTERNS
 
-/**
- * Trigger haptic feedback.
- * @param type - The type of haptic feedback to trigger
- */
-export function haptic(type: VibrationType = 'click'): void {
-  // Feature detection: Vibration API
-  if (!('vibrate' in navigator)) return
+let audioCtx: AudioContext | null = null
 
-  // Only vibrate on mobile devices (desktop browsers may not support it)
-  if (!isMobileDevice()) return
-
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null
+  if (audioCtx) return audioCtx
+  const Ctor =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  if (!Ctor) return null
   try {
-    const vibrationPattern = VIBRATION_PATTERNS[type]
-    navigator.vibrate(vibrationPattern as number | number[])
+    audioCtx = new Ctor()
   } catch {
-    // Silently fail on unsupported browsers
+    return null
   }
+  return audioCtx
 }
 
 /**
- * Check if the current device is likely a mobile device.
+ * Play a short, low-amplitude impulse using Web Audio.
+ * Long enough to feel like a tap, short enough to not sound like a beep.
  */
+function playAudioTap(): void {
+  const ctx = getAudioContext()
+  if (!ctx) return
+  try {
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {})
+    }
+    const duration = 0.03
+    const oscillator = ctx.createOscillator()
+    const gain = ctx.createGain()
+    oscillator.type = 'sine'
+    oscillator.frequency.value = 220
+    gain.gain.setValueAtTime(0.02, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration)
+    oscillator.connect(gain)
+    gain.connect(ctx.destination)
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + duration)
+  } catch {
+    // Silently fail on unsupported environments
+  }
+}
+
 function isMobileDevice(): boolean {
   if (typeof navigator === 'undefined') return false
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return true
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+  return mobileRegex.test(navigator.userAgent || '')
+}
 
-  // Check for touch support
-  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    return true
+/**
+ * Trigger haptic feedback.
+ * @param type - The type of haptic feedback to trigger.
+ */
+export function haptic(type: HapticType = 'click'): void {
+  if (!isMobileDevice()) return
+
+  // 1) Preferred path: the Vibration API (Android, Chrome, etc.)
+  if ('vibrate' in navigator) {
+    try {
+      const pattern = VIBRATION_PATTERNS[type]
+      navigator.vibrate(pattern as number | number[])
+      return
+    } catch {
+      // fall through to audio tap
+    }
   }
 
-  // Check user agent for mobile devices
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
-  return mobileRegex.test(navigator.userAgent)
+  // 2) iOS fallback: Web Audio tap. Skip the richer patterns that don't map
+  //    to a tactile tap (warning/error are still fine as a single muted tap).
+  playAudioTap()
 }

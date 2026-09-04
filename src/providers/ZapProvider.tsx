@@ -1,9 +1,11 @@
 import lightningService, { TTransaction } from '@/services/lightning.service'
 import client from '@/services/client.service'
 import storage from '@/services/local-storage.service'
+import { useNostr } from '@/providers/NostrProvider'
 import { onConnected, onDisconnected } from '@getalby/bitcoin-connect-react'
 import { GetInfoResponse, WebLNProvider } from '@webbtc/webln-types'
 import { createContext, useContext, useEffect, useState } from 'react'
+import { TZapChoice } from '@/constants'
 
 type TWalletDisplayUnit = 'sats' | 'bits' | 'btc'
 
@@ -26,6 +28,9 @@ type TZapContext = {
   refreshTransactionHistory: () => Promise<void>
   clearTransactionHistory: () => void
   refreshBalance: () => Promise<void>
+  zapChoice: TZapChoice
+  setZapChoice: (choice: TZapChoice) => void
+  canSendZaps: boolean
 }
 
 const ZapContext = createContext<TZapContext | undefined>(undefined)
@@ -39,6 +44,7 @@ export const useZap = () => {
 }
 
 export function ZapProvider({ children }: { children: React.ReactNode }) {
+  const { pubkey } = useNostr()
   const [defaultZapSats, setDefaultZapSats] = useState<number>(storage.getDefaultZapSats())
   const [defaultZapComment, setDefaultZapComment] = useState<string>(storage.getDefaultZapComment())
   const [quickZap, setQuickZap] = useState<boolean>(storage.getQuickZap())
@@ -50,6 +56,10 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
   const [walletInfo, setWalletInfo] = useState<GetInfoResponse | null>(null)
   const [balance, setBalance] = useState<number | null>(null)
   const [transactionHistory, setTransactionHistory] = useState<TTransaction[]>([])
+  const [zapChoice, setZapChoiceState] = useState<TZapChoice>(() =>
+    storage.getZapChoice(pubkey ?? '')
+  )
+  const canSendZaps = zapChoice !== 'no'
 
   const refreshTransactionHistory = async () => {
     if (lightningService.provider) {
@@ -181,6 +191,16 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
     setQuickZap(quickZap)
   }
 
+  useEffect(() => {
+    setZapChoiceState(storage.getZapChoice(pubkey ?? ''))
+  }, [pubkey])
+
+  const setZapChoice = (choice: TZapChoice) => {
+    if (!pubkey) return
+    storage.setZapChoice(pubkey, choice)
+    setZapChoiceState(choice)
+  }
+
   return (
     <ZapContext.Provider
       value={{
@@ -201,7 +221,10 @@ export function ZapProvider({ children }: { children: React.ReactNode }) {
         transactionHistory,
         refreshTransactionHistory,
         clearTransactionHistory,
-        refreshBalance
+        refreshBalance,
+        zapChoice,
+        setZapChoice,
+        canSendZaps
       }}
     >
       {children}

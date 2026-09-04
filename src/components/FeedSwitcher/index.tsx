@@ -5,7 +5,7 @@ import { SecondaryPageLink } from '@/PageManager'
 import { useFavoriteRelays } from '@/providers/FavoriteRelaysProvider'
 import { useFeed } from '@/providers/FeedProvider'
 import { useNostr } from '@/providers/NostrProvider'
-import { Image, BookOpen, Settings2, UsersRound, MessageCircle } from 'lucide-react'
+import { Image, BookOpen, Settings2, UsersRound } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import RelayIcon from '../RelayIcon'
@@ -92,23 +92,6 @@ export default function FeedSwitcher({ close }: { close?: () => void }) {
                 <BookOpen className="size-5" />
               </div>
               <div className="flex-1">{t('Articles')}</div>
-            </div>
-          </FeedSwitcherItem>
-
-          <FeedSwitcherItem
-            isActive={feedInfo?.feedType === 'groups'}
-            disabled={!pubkey}
-            onClick={() => {
-              if (!pubkey) return
-              switchFeed('groups', { pubkey })
-              close?.()
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-6 shrink-0 items-center justify-center">
-                <MessageCircle className="size-5" />
-              </div>
-              <div className="flex-1">{t('Groups')}</div>
             </div>
           </FeedSwitcherItem>
         </div>

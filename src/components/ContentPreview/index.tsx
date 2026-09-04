@@ -1,4 +1,4 @@
-import { ExtendedKind, NIP29_GROUP_KINDS } from '@/constants'
+import { ExtendedKind } from '@/constants'
 import { isMentioningMutedUsers } from '@/lib/event'
 import { cn } from '@/lib/utils'
 import { useContentPolicy } from '@/providers/ContentPolicyProvider'
@@ -64,8 +64,7 @@ export default function ContentPreview({
       ExtendedKind.COMMENT,
       ExtendedKind.VOICE,
       ExtendedKind.VOICE_COMMENT,
-      ExtendedKind.RELAY_REVIEW,
-      NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE
+      ExtendedKind.RELAY_REVIEW
     ].includes(event.kind)
   ) {
     return <NormalContentPreview event={event} className={className} />

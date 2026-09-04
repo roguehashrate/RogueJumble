@@ -297,7 +297,7 @@ export default function PostContent({
             placeholder={t('Type your article...')}
             value={articleContent}
             onChange={(e) => setArticleContent(e.target.value)}
-            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-base transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           />
           <div className="space-y-1">
             <input
@@ -305,7 +305,7 @@ export default function PostContent({
               placeholder={t('Tags (e.g. #nostr #btc #note)...')}
               value={articleTags}
               onChange={(e) => setArticleTags(e.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base transition-all duration-200 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
             />
             {articleTags.trim() && (
               <div className="flex flex-wrap gap-1.5 px-1">

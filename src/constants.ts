@@ -74,8 +74,11 @@ export const StorageKey = {
   ACTIVE_RELAY_SET_ID: 'activeRelaySetId', // deprecated
   FEED_TYPE: 'feedType', // deprecated
   EVENT_ARCHIVE_MAX_MB: 'eventArchiveMaxMb',
-  EVENT_ARCHIVE_MAX_EVENTS: 'eventArchiveMaxEvents'
+  EVENT_ARCHIVE_MAX_EVENTS: 'eventArchiveMaxEvents',
+  ZAP_CHOICE_MAP: 'zapChoiceMap'
 }
+
+export type TZapChoice = 'yes' | 'no' | 'undecided'
 
 export const ApplicationDataKey = {
   NOTIFICATIONS_SEEN_AT: 'seen_notifications_at'
@@ -96,40 +99,18 @@ export const SEARCHABLE_RELAY_URLS = [
 
 export const TRENDING_NOTES_RELAY_URLS = ['wss://trending.relays.land/']
 
-// NIP-29 Group Chat Event Kinds
-export const NIP29_GROUP_KINDS = {
-  GROUP_LIST: 10009,
-  GROUP_CHAT_MESSAGE: 9,
-  GROUP_METADATA: 39000,
-  GROUP_CREATE: 9007,
-  GROUP_ADD_USER: 9000,
-  GROUP_REMOVE_USER: 9001,
-  GROUP_EDIT_METADATA: 9002,
-  GROUP_DELETE_EVENT: 9003,
-  GROUP_JOIN_REQUEST: 9021,
-  GROUP_LEAVE_REQUEST: 9022
-} as const
-
 export const ExtendedKind = {
   EXTERNAL_CONTENT_REACTION: 17,
-  SEAL: 13,
-  RUMOR_CHAT: 14,
-  RUMOR_FILE: 15,
   PICTURE: 20,
   VIDEO: 21,
   SHORT_VIDEO: 22,
-  GIFT_WRAP: 1059,
   POLL: 1068,
   POLL_RESPONSE: 1018,
   COMMENT: 1111,
   VOICE: 1222,
   VOICE_COMMENT: 1244,
-  CLIENT_KEY_ANNOUNCEMENT: 4454,
-  KEY_TRANSFER: 4455,
   PINNED_USERS: 10010,
   FAVORITE_RELAYS: 10012,
-  ENCRYPTION_KEY_ANNOUNCEMENT: 10044,
-  DM_RELAYS: 10050,
   BLOSSOM_SERVER_LIST: 10063,
   FOLLOW_PACK: 39089,
   RELAY_REVIEW: 31987,
@@ -137,6 +118,7 @@ export const ExtendedKind = {
   ADDRESSABLE_NORMAL_VIDEO: 34235,
   ADDRESSABLE_SHORT_VIDEO: 34236,
   PAYMENT_INFO: 10133,
+  ONCHAIN_ZAP: 8333,
 }
 
 export const NIP71_VIDEO_KINDS = [
@@ -160,8 +142,7 @@ export const ALLOWED_FILTER_KINDS = [
   kinds.Highlights,
   kinds.LongFormArticle,
   ExtendedKind.ADDRESSABLE_NORMAL_VIDEO,
-  ExtendedKind.ADDRESSABLE_SHORT_VIDEO,
-  NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE
+  ExtendedKind.ADDRESSABLE_SHORT_VIDEO
 ]
 
 export const SUPPORTED_KINDS = [
@@ -181,7 +162,6 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 export const EMOJI_SHORT_CODE_REGEX = /:[a-zA-Z0-9_-]+:/g
 export const EMBEDDED_EVENT_REGEX = /nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
 export const BECH32_EVENT_REGEX = /(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
-export const GROUP_LINK_REGEX = /nostr:group:([a-z0-9-_]+)@([^\s]+)/gi
 export const EMBEDDED_MENTION_REGEX = /nostr:(npub1[a-z0-9]{58}|nprofile1[a-z0-9]+)/g
 export const HASHTAG_REGEX = /#[\p{L}\p{N}\p{M}_]+/gu
 export const LN_INVOICE_REGEX = /(ln(?:bc|tb|bcrt))([0-9]+[munp]?)?1([02-9ac-hj-np-z]+)/g
@@ -211,17 +191,6 @@ export const DEFAULT_NOSTRCONNECT_RELAY = [
   'wss://relay.primal.net/',
   'wss://relay.damus.io/'
 ]
-
-export const DEFAULT_DM_RELAYS = [
-  'wss://auth.nostr1.com',
-  'wss://relay.0xchat.com',
-  'wss://nip17.com',
-  'wss://chat.wisp.talk',
-  'wss://relay.damus.io',
-  'wss://nos.lol'
-]
-
-export const DM_TIME_RANDOMIZATION_SECONDS = 2 * 24 * 60 * 60 // 2 days in seconds
 
 export const DEFAULT_FAVICON_URL_TEMPLATE = 'https://{hostname}/favicon.ico'
 

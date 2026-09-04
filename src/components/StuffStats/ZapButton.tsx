@@ -21,17 +21,21 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
   const { checkLogin, pubkey } = useNostr()
   const { event, stuffKey } = useStuff(stuff)
   const noteStats = useStuffStatsById(stuffKey)
-  const { defaultZapSats, defaultZapComment, quickZap, formatBalance } = useZap()
+  const { defaultZapSats, defaultZapComment, quickZap, formatBalance, canSendZaps } = useZap()
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
   const [openZapDialog, setOpenZapDialog] = useState(false)
   const [zapping, setZapping] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [lightningAvailable, setLightningAvailable] = useState(false)
   const { zapAmount, hasZapped } = useMemo(() => {
     return {
       zapAmount: noteStats?.zaps?.reduce((acc, zap) => acc + zap.amount, 0),
       hasZapped: pubkey ? noteStats?.zaps?.some((zap) => zap.pubkey === pubkey) : false
     }
   }, [noteStats, pubkey])
+  // A post/user is always on-chain zappable: the recipient's Taproot address is
+  // derived purely from their pubkey. The button is disabled only until a login
+  // is established, never because the recipient lacks a lightning address.
   const [disable, setDisable] = useState(true)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLongPressRef = useRef(false)
@@ -42,17 +46,22 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
   }
 
   useEffect(() => {
+    setDisable(!pubkey)
     if (!event) {
-      setDisable(true)
+      setLightningAvailable(false)
       return
     }
-
+    let active = true
     client.fetchProfile(event.pubkey).then((profile) => {
-      if (!profile) return
-      const lightningAddress = getLightningAddressFromProfile(profile)
-      if (lightningAddress) setDisable(false)
+      if (!active) return
+      setLightningAvailable(
+        Boolean(profile && getLightningAddressFromProfile(profile)) && canSendZaps
+      )
     })
-  }, [event])
+    return () => {
+      active = false
+    }
+  }, [event, pubkey, canSendZaps])
 
   const handleZap = async () => {
     try {
@@ -95,7 +104,7 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
       setTouchStart({ x: touch.clientX, y: touch.clientY })
     }
 
-    if (quickZap) {
+    if (quickZap && lightningAvailable) {
       timerRef.current = setTimeout(() => {
         isLongPressRef.current = true
         checkLogin(() => {
@@ -128,8 +137,15 @@ export default function ZapButton({ stuff }: { stuff: Event | string }) {
         setOpenZapDialog(true)
         setZapping(true)
       })
-    } else if (!isLongPressRef.current) {
+    } else if (lightningAvailable && !isLongPressRef.current) {
       checkLogin(() => handleZap())
+    } else {
+      // No lightning (or this was a long-press) — open the dialog so the
+      // on-chain Bitcoin method stays reachable.
+      checkLogin(() => {
+        setOpenZapDialog(true)
+        setZapping(true)
+      })
     }
     isLongPressRef.current = false
   }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X, Download, Smartphone } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { X, Download, Smartphone, Share } from 'lucide-react'
+import { cn, isIOS } from '@/lib/utils'
 
 export default function InstallPrompt() {
   const { t } = useTranslation()
@@ -11,7 +11,10 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     // Check if already installed
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      // iOS Safari/standalone exposes this even before full support
+      (navigator as any).standalone === true
     if (isStandalone) {
       setIsInstalled(true)
       return
@@ -25,6 +28,15 @@ export default function InstallPrompt() {
       setTimeout(() => {
         setShowPrompt(true)
       }, 3000)
+    }
+
+    // iOS (non-standalone Safari) has no beforeinstallprompt, so fall back
+    // to a guide explaining the Add to Home Screen flow with the Share button.
+    if (isIOS() && !(navigator as any).standalone) {
+      const timer = setTimeout(() => {
+        setShowPrompt(true)
+      }, 3000)
+      return () => clearTimeout(timer)
     }
 
     // Listen for app installed event
@@ -57,9 +69,11 @@ export default function InstallPrompt() {
     setShowPrompt(false)
   }
 
-  if (isInstalled || !showPrompt || !deferredPrompt) {
+  if (isInstalled || !showPrompt) {
     return null
   }
+
+  const isIosFallback = isIOS() && !deferredPrompt && !(navigator as any).standalone
 
   return (
     <div
@@ -77,16 +91,25 @@ export default function InstallPrompt() {
           <div className="flex-1">
             <h3 className="font-semibold text-foreground">{t('Install RogueJumble')}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t('Install for a native app experience with offline support')}
+              {isIosFallback
+                ? t('Tap the Share button, then choose Add to Home Screen')
+                : t('Install for a native app experience with offline support')}
             </p>
             <div className="mt-3 flex gap-2">
-              <button
-                onClick={handleInstall}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-              >
-                <Download className="size-3.5" />
-                {t('Install')}
-              </button>
+              {isIosFallback ? (
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm">
+                  <Share className="size-3.5" />
+                  {t('Share › Add to Home Screen')}
+                </span>
+              ) : (
+                <button
+                  onClick={handleInstall}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                >
+                  <Download className="size-3.5" />
+                  {t('Install')}
+                </button>
+              )}
               <button
                 onClick={handleDismiss}
                 className="inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"

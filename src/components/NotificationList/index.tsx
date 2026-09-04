@@ -1,4 +1,4 @@
-import { ExtendedKind, NIP29_GROUP_KINDS, NOTIFICATION_LIST_STYLE, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
+import { ExtendedKind, NOTIFICATION_LIST_STYLE, SPECIAL_TRUST_SCORE_FILTER_ID } from '@/constants'
 import { useInfiniteScroll } from '@/hooks'
 import { compareEvents } from '@/lib/event'
 import { haptic } from '@/lib/haptic'
@@ -61,8 +61,7 @@ const NotificationList = forwardRef((_, ref) => {
           kinds.Highlights,
           ExtendedKind.COMMENT,
           ExtendedKind.VOICE_COMMENT,
-          ExtendedKind.POLL,
-          NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE
+          ExtendedKind.POLL
         ]
       case 'reactions':
         return [kinds.Reaction, kinds.Repost, kinds.GenericRepost, ExtendedKind.POLL_RESPONSE]
@@ -79,8 +78,7 @@ const NotificationList = forwardRef((_, ref) => {
           ExtendedKind.COMMENT,
           ExtendedKind.POLL_RESPONSE,
           ExtendedKind.VOICE_COMMENT,
-          ExtendedKind.POLL,
-          NIP29_GROUP_KINDS.GROUP_CHAT_MESSAGE
+          ExtendedKind.POLL
         ]
     }
   }, [notificationType])

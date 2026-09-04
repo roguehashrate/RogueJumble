@@ -33,8 +33,6 @@ const LazyUserAggregationDetailPage = lazy(
   () => import('@/pages/secondary/UserAggregationDetailPage')
 )
 const LazyComposePage = lazy(() => import('@/pages/secondary/ComposePage'))
-const LazyGroupChatPage = lazy(() => import('@/pages/secondary/GroupChatPage'))
-const LazyDmConversationPage = lazy(() => import('@/pages/secondary/DmConversationPage'))
 const LazyTransactionHistoryPage = lazy(() => import('@/pages/secondary/TransactionHistoryPage'))
 
 // Route configs with lazy component types instead of pre-created elements
@@ -65,8 +63,6 @@ const SECONDARY_ROUTE_CONFIGS = [
   { path: '/follow-packs/:id', Component: LazyFollowPackPage },
   { path: '/user-aggregation/:feedId/:npub', Component: LazyUserAggregationDetailPage },
   { path: '/compose', Component: LazyComposePage },
-  { path: '/groups/:relayDomain/:groupId', Component: LazyGroupChatPage },
-  { path: '/dms/:id', Component: LazyDmConversationPage },
   { path: '/settings/wallet/history', Component: LazyTransactionHistoryPage }
 ]
 
