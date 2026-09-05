@@ -1,45 +1,16 @@
 import { Label } from '@/components/ui/label'
-import { FONT, FONT_SIZE, THEME_COLORS, TThemeName } from '@/constants'
+import { FONT_SIZE, THEME_COLORS, TThemeName } from '@/constants'
 import SecondaryPageLayout from '@/layouts/SecondaryPageLayout'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/providers/ThemeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
-import { ChevronDown, LayoutList, List, Type } from 'lucide-react'
+import { ChevronDown, LayoutList, List } from 'lucide-react'
 import { forwardRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const NOTIFICATION_STYLES = [
   { key: 'detailed', label: 'Detailed', icon: <LayoutList className="size-5" /> },
   { key: 'compact', label: 'Compact', icon: <List className="size-5" /> }
-] as const
-
-const FONTS = [
-  { key: FONT.DEFAULT, label: 'System', preview: <Type className="size-5" /> },
-  {
-    key: FONT.MONOSPACE,
-    label: 'JetBrains Mono',
-    preview: <span className="size-5 font-['JetBrains_Mono']">Aa</span>
-  },
-  {
-    key: FONT.DYSLEXIC,
-    label: 'Comic Neue',
-    preview: <span className="size-5 font-['Comic_Neue']">Aa</span>
-  },
-  {
-    key: FONT.SOURCESANS,
-    label: 'Space Grotesk',
-    preview: <span className="size-5 font-['Space_Grotesk']">Aa</span>
-  },
-  {
-    key: FONT.CAVEAT,
-    label: 'Caveat',
-    preview: <span className="size-5 font-['Caveat']">Aa</span>
-  },
-  {
-    key: FONT.ORBITRON,
-    label: 'Orbitron',
-    preview: <span className="size-5 font-['Orbitron']">Aa</span>
-  }
 ] as const
 
 const FONT_SIZES = [
@@ -54,8 +25,6 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
   const {
     notificationListStyle,
     updateNotificationListStyle,
-    font,
-    updateFont,
     fontSize,
     updateFontSize
   } = useUserPreferences()
@@ -107,20 +76,6 @@ const AppearanceSettingsPage = forwardRef(({ index }: { index?: number }, ref) =
               ))}
             </div>
           )}
-        </div>
-        <div className="flex flex-col gap-2 px-4">
-          <Label className="text-base">{t('Font')}</Label>
-          <div className="grid w-full grid-cols-2 gap-4 md:grid-cols-4">
-            {FONTS.map(({ key, label, preview }) => (
-              <OptionButton
-                key={key}
-                isSelected={font === key}
-                icon={preview}
-                label={t(label)}
-                onClick={() => updateFont(key)}
-              />
-            ))}
-          </div>
         </div>
         <div className="flex flex-col gap-2 px-4">
           <Label className="text-base">{t('Font size')}</Label>

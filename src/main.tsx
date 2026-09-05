@@ -6,7 +6,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { initI18n } from './i18n'
-import { initFonts } from './lib/fontLoader'
 
 function VhProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -23,25 +22,19 @@ function VhProvider({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-// Only the active language (plus English fallback) is fetched, then render.
-// Fonts load in the background (font-display: swap) so the UI is interactive fast.
-initI18n().then(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <VhProvider>
-          <App />
-        </VhProvider>
-      </ErrorBoundary>
-    </StrictMode>
-  )
-})
-
-// Only fetch the webfont the user actually selected (default = system font, nothing to load)
-let selectedFont = 'default'
-try {
-  selectedFont = window.localStorage.getItem('font') || 'default'
-} catch {
-  // ignore
-}
-initFonts(selectedFont)
+// Render the app regardless of i18n state, so a failed locale fetch can never
+// leave a blank screen. English is bundled (no network), other languages load
+// lazily in the background and hot-swap once ready.
+initI18n()
+  .catch(console.error)
+  .finally(() => {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <ErrorBoundary>
+          <VhProvider>
+            <App />
+          </VhProvider>
+        </ErrorBoundary>
+      </StrictMode>
+    )
+  })

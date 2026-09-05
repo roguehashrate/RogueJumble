@@ -2,13 +2,14 @@ import dayjs from 'dayjs'
 import i18n, { Resource } from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
+import en from './locales/en'
 
-// Locale bundles are fetched on demand — only the active language (plus the
-// English fallback) is ever downloaded, instead of all 18 at startup.
+// English is bundled with the app so it renders instantly. The other locale
+// bundles are fetched on demand — only the active language is ever downloaded,
+// instead of all 18 at startup.
 const languageModules = {
   ar: () => import('./locales/ar'),
   de: () => import('./locales/de'),
-  en: () => import('./locales/en'),
   es: () => import('./locales/es'),
   fa: () => import('./locales/fa'),
   fr: () => import('./locales/fr'),
@@ -26,7 +27,7 @@ const languageModules = {
   'zh-TW': () => import('./locales/zh-TW')
 } as const
 
-export type TLanguage = keyof typeof languageModules
+export type TLanguage = 'en' | keyof typeof languageModules
 
 export const LocalizedLanguageNames: Record<TLanguage, string> = {
   ar: 'العربية',
@@ -49,7 +50,7 @@ export const LocalizedLanguageNames: Record<TLanguage, string> = {
   'zh-TW': '繁體中文'
 }
 
-export const supportedLanguages = Object.keys(languageModules) as TLanguage[]
+export const supportedLanguages = ['en', ...Object.keys(languageModules)] as TLanguage[]
 
 const loadedBundles = new Set<TLanguage>()
 
@@ -82,20 +83,28 @@ function detectLanguage(): TLanguage {
 }
 
 async function loadLocale(lng: TLanguage) {
-  if (loadedBundles.has(lng)) return
+  if (loadedBundles.has(lng) || lng === 'en') return
   loadedBundles.add(lng)
-  const module = await languageModules[lng]()
+  const module = await languageModules[lng as keyof typeof languageModules]()
   const bundle = module.default as Resource
   i18n.addResourceBundle(lng, 'translation', bundle.translation, true, true)
 }
 
+// English is always available (bundled), so the app can render immediately
+// without waiting for any locale fetch.
+const enBundle = en as unknown as Resource
+i18n.addResourceBundle('en', 'translation', enBundle.translation, true, true)
+loadedBundles.add('en')
+
 /**
- * Initialize i18n, fetching only the bundles that are actually needed:
- * the detected language plus the English fallback (when different).
+ * Initialize i18n, fetching only the bundles that are actually needed: English
+ * is bundled and the detected language is fetched lazily when it differs.
  */
 export async function initI18n(): Promise<typeof i18n> {
   const primary = detectLanguage()
-  await Promise.all([loadLocale(primary), primary !== 'en' ? loadLocale('en') : Promise.resolve()])
+  if (primary !== 'en') {
+    await loadLocale(primary)
+  }
 
   i18n.on('languageChanged', (lng) => {
     const lang = convertDetectedLanguage(String(lng))
@@ -110,6 +119,9 @@ export async function initI18n(): Promise<typeof i18n> {
       resources: {},
       interpolation: {
         escapeValue: false // react already safes from xss
+      },
+      react: {
+        useSuspense: false
       },
       detection: {
         convertDetectedLanguage: (lng) => convertDetectedLanguage(lng) || 'en'

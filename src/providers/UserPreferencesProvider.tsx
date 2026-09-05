@@ -1,15 +1,11 @@
-import { applyFont } from '@/lib/fontLoader'
 import { isTorBrowser } from '@/lib/utils'
 import storage from '@/services/local-storage.service'
-import { TEmoji, TFont, TFontSize, TNotificationStyle } from '@/types'
+import { TEmoji, TFontSize, TNotificationStyle } from '@/types'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 type TUserPreferencesContext = {
   notificationListStyle: TNotificationStyle
   updateNotificationListStyle: (style: TNotificationStyle) => void
-
-  font: TFont
-  updateFont: (font: TFont) => void
 
   fontSize: TFontSize
   updateFontSize: (fontSize: TFontSize) => void
@@ -47,7 +43,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   const [notificationListStyle, setNotificationListStyle] = useState(
     storage.getNotificationListStyle()
   )
-  const [font, setFont] = useState<TFont>(storage.getFont())
   const [fontSize, setFontSize] = useState<TFontSize>(storage.getFontSize())
   const [muteMedia, setMuteMedia] = useState(true)
   const [sidebarCollapse, setSidebarCollapse] = useState(storage.getSidebarCollapse())
@@ -90,12 +85,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
     storage.setEnableTorMode(enable)
   }
 
-  const updateFont = (font: TFont) => {
-    setFont(font)
-    storage.setFont(font)
-    applyFont(font)
-  }
-
   const updateFontSize = (fontSize: TFontSize) => {
     setFontSize(fontSize)
     storage.setFontSize(fontSize)
@@ -108,7 +97,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
   }
 
   useEffect(() => {
-    updateFont(font)
     updateFontSize(fontSize)
   }, [])
 
@@ -117,8 +105,6 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
       value={{
         notificationListStyle,
         updateNotificationListStyle,
-        font,
-        updateFont,
         fontSize,
         updateFontSize,
         muteMedia,

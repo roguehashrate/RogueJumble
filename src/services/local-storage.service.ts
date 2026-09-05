@@ -4,7 +4,6 @@ import {
   DEFAULT_FAVICON_URL_TEMPLATE,
   DEFAULT_NIP_96_SERVICE,
   ExtendedKind,
-  FONT,
   FONT_SIZE,
   MEDIA_AUTO_LOAD_POLICY,
   NOTIFICATION_LIST_STYLE,
@@ -12,7 +11,6 @@ import {
   PROFILE_PICTURE_AUTO_LOAD_POLICY,
   SEARCHABLE_RELAY_URLS,
   StorageKey,
-  TFont,
   TFontSize,
   TPrimaryColor,
   TThemeName,
@@ -98,7 +96,6 @@ class LocalStorageService {
   private quickReaction: boolean = false
   private quickReactionEmoji: string | TEmoji = '+'
   private nsfwDisplayPolicy: TNsfwDisplayPolicy = NSFW_DISPLAY_POLICY.HIDE_CONTENT
-  private font: TFont = FONT.DEFAULT
   private fontSize: TFontSize = FONT_SIZE.DEFAULT
   private defaultRelayUrls: string[] = BIG_RELAY_URLS
   private searchRelayUrls: string[] = SEARCHABLE_RELAY_URLS
@@ -208,14 +205,6 @@ class LocalStorageService {
       this.nsfwDisplayPolicy =
         defaultShowNsfwStr === 'true' ? NSFW_DISPLAY_POLICY.SHOW : NSFW_DISPLAY_POLICY.HIDE_CONTENT
       window.localStorage.setItem(StorageKey.NSFW_DISPLAY_POLICY, this.nsfwDisplayPolicy)
-    }
-
-    const fontStr = window.localStorage.getItem(StorageKey.FONT)
-    if (fontStr && Object.values(FONT).includes(fontStr as TFont)) {
-      this.font = fontStr as TFont
-    } else {
-      this.font = FONT.DEFAULT
-      window.localStorage.setItem(StorageKey.FONT, this.font)
     }
 
     const fontSizeStr = window.localStorage.getItem(StorageKey.FONT_SIZE)
@@ -676,15 +665,6 @@ class LocalStorageService {
   setProfilePictureAutoLoadPolicy(policy: TProfilePictureAutoLoadPolicy) {
     this.profilePictureAutoLoadPolicy = policy
     window.localStorage.setItem(StorageKey.PROFILE_PICTURE_AUTO_LOAD_POLICY, policy)
-  }
-
-  getFont() {
-    return this.font
-  }
-
-  setFont(font: TFont) {
-    this.font = font
-    window.localStorage.setItem(StorageKey.FONT, font)
   }
 
   getFontSize() {

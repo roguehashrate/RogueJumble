@@ -222,16 +222,6 @@ export const NSFW_DISPLAY_POLICY = {
   SHOW: 'show'
 } as const
 
-export const FONT = {
-  DEFAULT: 'default',
-  MONOSPACE: 'monospace',
-  DYSLEXIC: 'dyslexic',
-  SOURCESANS: 'sourcesans',
-  CAVEAT: 'caveat',
-  ORBITRON: 'orbitron'
-} as const
-export type TFont = (typeof FONT)[keyof typeof FONT]
-
 export const FONT_SIZE = {
   DEFAULT: 'default',
   MEDIUM: 'medium',
