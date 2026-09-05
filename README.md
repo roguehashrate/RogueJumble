@@ -1,9 +1,3 @@
-<div align="center">
-  <picture>
-    <img src="./resources/logo-light.svg" alt="RogueJumble Logo" width="400" />
-  </picture>
-  <p>logo originally designed by <a href="http://wolfertdan.com/">Daniel David</a></p>
-</div>
 
 # RogueJumble
 
