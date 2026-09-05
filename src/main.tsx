@@ -23,15 +23,23 @@ function VhProvider({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-// Preload fonts before rendering
-initFonts().then(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <VhProvider>
-          <App />
-        </VhProvider>
-      </ErrorBoundary>
-    </StrictMode>
-  )
-})
+// Render immediately — don't block first paint on webfont downloads.
+// Fonts load in the background (font-display: swap) so the UI is interactive fast.
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <VhProvider>
+        <App />
+      </VhProvider>
+    </ErrorBoundary>
+  </StrictMode>
+)
+
+// Only fetch the webfont the user actually selected (default = system font, nothing to load)
+let selectedFont = 'default'
+try {
+  selectedFont = window.localStorage.getItem('font') || 'default'
+} catch {
+  // ignore
+}
+initFonts(selectedFont)

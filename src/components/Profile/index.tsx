@@ -191,19 +191,24 @@ export default function Profile({ id }: { id?: string }) {
               )}
             </div>
             <Nip05 pubkey={pubkey} />
-            {paymentTargets.map((t, i) => (
-              <PaytoLink
-                key={i}
-                type={t.type}
-                authority={t.authority}
-                pubkey={pubkey}
-                onOpenZap={
-                  t.type === 'lightning'
-                    ? () => setZapDialogOpen(true)
-                    : undefined
-                }
-              />
-            ))}
+            {paymentTargets.length > 0 && (
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                {paymentTargets.map((t, i) => (
+                  <PaytoLink
+                    key={i}
+                    type={t.type}
+                    authority={t.authority}
+                    pubkey={pubkey}
+                    iconOnly
+                    onOpenZap={
+                      t.type === 'lightning'
+                        ? () => setZapDialogOpen(true)
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
+            )}
             <div className="mt-1 flex gap-1">
               <PubkeyCopy pubkey={pubkey} />
               <NpubQrCode pubkey={pubkey} />

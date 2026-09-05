@@ -1,9 +1,11 @@
 import ScrollToTopButton from '@/components/ScrollToTopButton'
 import { Titlebar } from '@/components/Titlebar'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { usePrimaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { PageActiveContext } from '@/providers/PageActiveProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { TPrimaryPageName } from '@/routes/primary'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
@@ -26,39 +28,71 @@ const PrimaryPageLayout = forwardRef(
   ) => {
     const { pubkey } = useNostr()
     const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const { isSmallScreen } = useScreenSize()
     const { current, display } = usePrimaryPage()
 
     useImperativeHandle(
       ref,
       () => ({
         scrollToTop: (behavior: ScrollBehavior = 'smooth') => {
-          window.scrollTo({ top: 0, behavior })
+          if (isSmallScreen) {
+            window.scrollTo({ top: 0, behavior })
+            return
+          }
+          scrollAreaRef.current?.scrollTo({ top: 0, behavior })
         }
       }),
-      []
+      [isSmallScreen]
     )
 
     useEffect(() => {
+      if (isSmallScreen) {
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      } else {
+        scrollAreaRef.current?.scrollTo({ top: 0 })
+      }
       // Reset scroll position when pubkey changes
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    }, [pubkey])
+    }, [pubkey, isSmallScreen])
+
+    if (isSmallScreen) {
+      return (
+        <PageActiveContext.Provider value={current === pageName && display}>
+          <DeepBrowsingProvider active={current === pageName && display}>
+            <div
+              style={{
+                paddingTop: 'env(safe-area-inset-top, 0px)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)'
+              }}
+            >
+              <PrimaryPageTitlebar hideBottomBorder={hideTitlebarBottomBorder}>
+                {titlebar}
+              </PrimaryPageTitlebar>
+              {children}
+            </div>
+            {displayScrollToTopButton && <ScrollToTopButton />}
+          </DeepBrowsingProvider>
+        </PageActiveContext.Provider>
+      )
+    }
 
     return (
       <PageActiveContext.Provider value={current === pageName && display}>
-        <DeepBrowsingProvider active={current === pageName && display}>
-          <div
+        <DeepBrowsingProvider
+          active={current === pageName && display}
+          scrollAreaRef={scrollAreaRef}
+        >
+          <ScrollArea
+            className="h-full overflow-auto"
+            scrollBarClassName="z-30 pt-12"
             ref={scrollAreaRef}
-            style={{
-              paddingTop: 'env(safe-area-inset-top, 0px)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)'
-            }}
           >
             <PrimaryPageTitlebar hideBottomBorder={hideTitlebarBottomBorder}>
               {titlebar}
             </PrimaryPageTitlebar>
             {children}
-          </div>
-          {displayScrollToTopButton && <ScrollToTopButton />}
+            <div className="h-4" />
+          </ScrollArea>
+          {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
         </DeepBrowsingProvider>
       </PageActiveContext.Provider>
     )
@@ -79,7 +113,7 @@ function PrimaryPageTitlebar({
   hideBottomBorder?: boolean
 }) {
   return (
-    <Titlebar className="py-1 px-3" hideBottomBorder={hideBottomBorder} autoHide>
+    <Titlebar className="px-3 py-1" hideBottomBorder={hideBottomBorder} autoHide>
       {children}
     </Titlebar>
   )

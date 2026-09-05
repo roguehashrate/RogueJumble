@@ -1,4 +1,4 @@
-const FONT_URLS = {
+const FONT_URLS: Record<string, { 400: string; 700: string }> = {
   ComicNeue: {
     400: 'https://fonts.gstatic.com/s/comicneue/v9/4UaHrEJDsxBrF37olUeDx60.ttf',
     700: 'https://fonts.gstatic.com/s/comicneue/v9/4UaErEJDsxBrF37olUeD_xHMwps.ttf'
@@ -21,7 +21,19 @@ const FONT_URLS = {
   }
 }
 
+const FONT_FAMILY_TO_LOAD: Record<string, string | null> = {
+  default: null,
+  monospace: 'JetBrainsMono',
+  dyslexic: 'ComicNeue',
+  sourcesans: 'SpaceGrotesk',
+  caveat: 'Caveat',
+  orbitron: 'Orbitron'
+}
+
 let styleEl: HTMLStyleElement | null = null
+
+// Webfonts that have already been requested (dedupes concurrent loads)
+const loadedFonts = new Set<string>()
 
 function applyFont(fontName: string) {
   const families: Record<string, string> = {
@@ -44,6 +56,27 @@ function applyFont(fontName: string) {
   styleEl.setAttribute('data-app-font', 'true')
   styleEl.textContent = `*, *::before, *::after { font-family: ${family} !important; }`
   document.head.appendChild(styleEl)
+
+  // Make sure the webfont (if any) is available for the chosen font
+  const fontKey = FONT_FAMILY_TO_LOAD[fontName]
+  if (fontKey) {
+    loadFontFromKey(fontKey)
+  }
+}
+
+async function loadFontFromKey(fontKey: string) {
+  if (loadedFonts.has(fontKey)) return
+  loadedFonts.add(fontKey)
+  const urls = FONT_URLS[fontKey]
+  if (!urls) return
+  try {
+    await Promise.all([
+      loadFontFromURL(fontKey, '400', urls[400]),
+      loadFontFromURL(fontKey, '700', urls[700])
+    ])
+  } catch {
+    // Ignore — the browser will use a fallback family
+  }
 }
 
 async function loadFontFromURL(family: string, weight: string, url: string) {
@@ -60,20 +93,14 @@ async function loadFontFromURL(family: string, weight: string, url: string) {
   }
 }
 
-export async function initFonts() {
-  // Preload Google Fonts
-  await Promise.all([
-    loadFontFromURL('Comic Neue', '400', FONT_URLS.ComicNeue[400]),
-    loadFontFromURL('Comic Neue', '700', FONT_URLS.ComicNeue[700]),
-    loadFontFromURL('JetBrains Mono', '400', FONT_URLS.JetBrainsMono[400]),
-    loadFontFromURL('JetBrains Mono', '700', FONT_URLS.JetBrainsMono[700]),
-    loadFontFromURL('Space Grotesk', '400', FONT_URLS.SpaceGrotesk[400]),
-    loadFontFromURL('Space Grotesk', '700', FONT_URLS.SpaceGrotesk[700]),
-    loadFontFromURL('Caveat', '400', FONT_URLS.Caveat[400]),
-    loadFontFromURL('Caveat', '700', FONT_URLS.Caveat[700]),
-    loadFontFromURL('Orbitron', '400', FONT_URLS.Orbitron[400]),
-    loadFontFromURL('Orbitron', '700', FONT_URLS.Orbitron[700])
-  ])
+/**
+ * Load only the webfont needed for the selected font preference (no-op for the
+ * default system font). Called after first render so it never blocks startup.
+ */
+export function initFonts(fontName: string) {
+  const fontKey = FONT_FAMILY_TO_LOAD[fontName] || ''
+  if (!fontKey) return
+  loadFontFromKey(fontKey)
 }
 
 export { applyFont }

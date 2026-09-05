@@ -1,11 +1,13 @@
 import ScrollToTopButton from '@/components/ScrollToTopButton'
 import { Titlebar } from '@/components/Titlebar'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSecondaryPage } from '@/PageManager'
 import { DeepBrowsingProvider } from '@/providers/DeepBrowsingProvider'
 import { PageActiveContext } from '@/providers/PageActiveProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { ChevronLeft } from 'lucide-react'
-import { forwardRef, useEffect, useImperativeHandle } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const SecondaryPageLayout = forwardRef(
@@ -32,29 +34,63 @@ const SecondaryPageLayout = forwardRef(
     ref
   ) => {
     const { currentIndex } = useSecondaryPage()
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
+    const { isSmallScreen } = useScreenSize()
 
     useImperativeHandle(
       ref,
       () => ({
         scrollToTop: (behavior: ScrollBehavior = 'smooth') => {
-          window.scrollTo({ top: 0, behavior })
+          if (isSmallScreen) {
+            window.scrollTo({ top: 0, behavior })
+            return
+          }
+          scrollAreaRef.current?.scrollTo({ top: 0, behavior })
         }
       }),
-      []
+      [isSmallScreen]
     )
 
     useEffect(() => {
-      setTimeout(() => window.scrollTo({ top: 0 }), 10)
-    }, [])
+      if (isSmallScreen) {
+        setTimeout(() => window.scrollTo({ top: 0 }), 10)
+      } else {
+        scrollAreaRef.current?.scrollTo({ top: 0 })
+      }
+    }, [isSmallScreen])
+
+    if (isSmallScreen) {
+      return (
+        <PageActiveContext.Provider value={currentIndex === index}>
+          <DeepBrowsingProvider active={currentIndex === index}>
+            <div
+              style={{
+                paddingTop: 'env(safe-area-inset-top, 0px)',
+                paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)'
+              }}
+            >
+              <SecondaryPageTitlebar
+                title={title}
+                controls={controls}
+                hideBackButton={hideBackButton}
+                hideBottomBorder={hideTitlebarBottomBorder}
+                titlebar={titlebar}
+              />
+              {children}
+            </div>
+            {displayScrollToTopButton && <ScrollToTopButton />}
+          </DeepBrowsingProvider>
+        </PageActiveContext.Provider>
+      )
+    }
 
     return (
       <PageActiveContext.Provider value={currentIndex === index}>
-        <DeepBrowsingProvider active={currentIndex === index}>
-          <div
-            style={{
-              paddingTop: 'env(safe-area-inset-top, 0px)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom) + 5rem)'
-            }}
+        <DeepBrowsingProvider active={currentIndex === index} scrollAreaRef={scrollAreaRef}>
+          <ScrollArea
+            className="h-full overflow-auto"
+            scrollBarClassName="z-30 pt-12"
+            ref={scrollAreaRef}
           >
             <SecondaryPageTitlebar
               title={title}
@@ -64,8 +100,9 @@ const SecondaryPageLayout = forwardRef(
               titlebar={titlebar}
             />
             {children}
-          </div>
-          {displayScrollToTopButton && <ScrollToTopButton />}
+            <div className="h-4" />
+          </ScrollArea>
+          {displayScrollToTopButton && <ScrollToTopButton scrollAreaRef={scrollAreaRef} />}
         </DeepBrowsingProvider>
       </PageActiveContext.Provider>
     )
@@ -89,7 +126,7 @@ export function SecondaryPageTitlebar({
 }): JSX.Element {
   if (titlebar) {
     return (
-      <Titlebar className="py-1 px-3" hideBottomBorder={hideBottomBorder}>
+      <Titlebar className="px-3 py-1" hideBottomBorder={hideBottomBorder}>
         {titlebar}
       </Titlebar>
     )

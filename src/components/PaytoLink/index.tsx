@@ -24,7 +24,8 @@ export default function PaytoLink({
   onOpenZap,
   className,
   children,
-  linkTitle
+  linkTitle,
+  iconOnly
 }: {
   paytoUri?: string
   type?: string
@@ -34,6 +35,7 @@ export default function PaytoLink({
   className?: string
   children?: React.ReactNode
   linkTitle?: string
+  iconOnly?: boolean
 }) {
   const { t } = useTranslation()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -83,22 +85,51 @@ export default function PaytoLink({
   const logoPath = getPaytoLogoPath(type)
   const iconChar = getPaytoIconChar(type)
   const profileUrl = getPaytoProfileUrl(type, authority)
-  const content = children ?? <span className="break-all">{authority}</span>
+  const content = children ?? (iconOnly ? null : <span className="break-all">{authority}</span>)
   const overrideTip = linkTitle?.trim()
 
+  const baseTip = (() => {
+    if (profileUrl) {
+      return categoryLabel
+        ? `${displayLabel} (${categoryLabel}): ${t('Open on website')}`
+        : `${displayLabel}: ${t('Open on website')}`
+    }
+    return known && categoryLabel
+      ? `${displayLabel} (${categoryLabel}): ${t('Click to open payment options')}`
+      : known
+        ? `${displayLabel}: ${t('Click to open payment options')}`
+        : t('Click to copy address')
+  })()
+  const tipText = overrideTip ?? (iconOnly ? `${authority} — ${baseTip}` : baseTip)
+
   const iconEl = (
-    <span className="shrink-0 flex items-center justify-center w-4 h-4 text-[1rem] leading-none" aria-hidden>
+    <span
+      className={cn(
+        'flex shrink-0 items-center justify-center',
+        iconOnly
+          ? 'size-8 rounded-lg border border-border/60 bg-card/70 text-lg'
+          : 'h-4 w-4 text-[1rem] leading-none'
+      )}
+      aria-hidden
+    >
       {logoPath ? (
-        <img src={logoPath} alt="" loading="lazy" className="size-4 object-contain" />
+        <img
+          src={logoPath}
+          alt=""
+          loading="lazy"
+          className={iconOnly ? 'size-5 object-contain' : 'size-4 object-contain'}
+        />
       ) : iconChar != null ? (
-        <span className={cn(
-          'inline-flex items-center justify-center',
-          isLightning && 'text-yellow-400'
-        )}>
+        <span
+          className={cn(
+            'inline-flex items-center justify-center',
+            isLightning && 'text-yellow-400'
+          )}
+        >
           {iconChar}
         </span>
       ) : (
-        <HelpCircle className="size-3.5 text-muted-foreground" />
+        <HelpCircle className={cn('text-muted-foreground', iconOnly ? 'size-5' : 'size-3.5')} />
       )}
     </span>
   )
@@ -110,13 +141,11 @@ export default function PaytoLink({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          'text-primary hover:underline cursor-pointer text-left break-words inline-flex items-center gap-1.5',
+          'inline-flex cursor-pointer items-center gap-1.5 break-words text-left text-primary hover:underline',
           className
         )}
-        title={
-          overrideTip ||
-          (categoryLabel ? `${displayLabel} (${categoryLabel}): ${t('Open on website')}` : `${displayLabel}: ${t('Open on website')}`)
-        }
+        title={tipText}
+        aria-label={iconOnly ? authority : undefined}
         onClick={(e) => e.stopPropagation()}
       >
         {iconEl}
@@ -131,17 +160,11 @@ export default function PaytoLink({
         type="button"
         onClick={handleClick}
         className={cn(
-          'text-primary hover:underline cursor-pointer text-left break-words inline-flex items-center gap-1.5',
+          'inline-flex cursor-pointer items-center gap-1.5 break-words text-left text-primary hover:underline',
           className
         )}
-        title={
-          overrideTip ||
-          (known && categoryLabel
-            ? `${displayLabel} (${categoryLabel}): ${t('Click to open payment options')}`
-            : known
-              ? `${displayLabel}: ${t('Click to open payment options')}`
-              : t('Click to copy address'))
-        }
+        title={tipText}
+        aria-label={iconOnly ? authority : undefined}
       >
         {iconEl}
         {content}

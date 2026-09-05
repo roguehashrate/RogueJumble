@@ -1,20 +1,20 @@
 import { cn } from '@/lib/utils'
 import { CurrentRelaysProvider } from '@/providers/CurrentRelaysProvider'
 import { TPageRef } from '@/types'
-import {
-  createContext,
-  RefObject,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
-import BackgroundOrbs from './components/BackgroundOrbs'
+import { createContext, RefObject, useContext, useEffect, useRef, useState } from 'react'
+import BackgroundAudio from './components/BackgroundAudio'
 import BottomNavigationBar from './components/BottomNavigationBar'
+import Sidebar from './components/Sidebar'
 import TooManyRelaysAlertDialog from './components/TooManyRelaysAlertDialog'
+import { useScreenSize } from './providers/ScreenSizeProvider'
 import { normalizeUrl } from './lib/url'
 import { NotificationProvider } from './providers/NotificationProvider'
-import { PRIMARY_PAGE_MAP, PRIMARY_PAGE_REF_MAP, LazyPage, TPrimaryPageName } from './routes/primary'
+import {
+  PRIMARY_PAGE_MAP,
+  PRIMARY_PAGE_REF_MAP,
+  LazyPage,
+  TPrimaryPageName
+} from './routes/primary'
 import { createSecondaryLazyElement } from './routes/secondary'
 import modalManager from './services/modal-manager.service'
 
@@ -60,15 +60,14 @@ export function useSecondaryPage() {
 
 export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
   const [currentPrimaryPage, setCurrentPrimaryPage] = useState<TPrimaryPageName>('home')
-  const [primaryPages, setPrimaryPages] = useState<
-    { name: TPrimaryPageName; props?: any }[]
-  >([
+  const [primaryPages, setPrimaryPages] = useState<{ name: TPrimaryPageName; props?: any }[]>([
     {
       name: 'home'
     }
   ])
   const [secondaryStack, setSecondaryStack] = useState<TStackItem[]>([])
   const ignorePopStateRef = useRef(false)
+  const { isSmallScreen } = useScreenSize()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -252,54 +251,99 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
     }
   }
 
+  const primaryDisplay = isSmallScreen ? secondaryStack.length === 0 : true
+
   return (
     <PrimaryPageContext.Provider
       value={{
         navigate: navigatePrimaryPage,
         current: currentPrimaryPage,
-        display: secondaryStack.length === 0
+        display: primaryDisplay
       }}
     >
       <SecondaryPageContext.Provider
         value={{
           push: pushSecondaryPage,
           pop: popSecondaryPage,
-          currentIndex: secondaryStack.length
-            ? secondaryStack[secondaryStack.length - 1].index
-            : 0,
-          currentUrl: secondaryStack.length
-            ? secondaryStack[secondaryStack.length - 1].url
-            : null
+          currentIndex: secondaryStack.length ? secondaryStack[secondaryStack.length - 1].index : 0,
+          currentUrl: secondaryStack.length ? secondaryStack[secondaryStack.length - 1].url : null
         }}
       >
         <CurrentRelaysProvider>
           <NotificationProvider>
-            <BackgroundOrbs />
-            {!!secondaryStack.length &&
-              secondaryStack.map((item, index) => (
-                <div
-                  key={item.index}
-                  style={{
-                    display: index === secondaryStack.length - 1 ? 'block' : 'none'
-                  }}
-                >
-                  {item.element && <item.element />}
+            {isSmallScreen ? (
+              <>
+                {!!secondaryStack.length &&
+                  secondaryStack.map((item, index) => (
+                    <div
+                      key={item.index}
+                      style={{
+                        display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                      }}
+                    >
+                      {item.element && <item.element />}
+                    </div>
+                  ))}
+                {primaryPages.map(({ name, props }) => (
+                  <div
+                    key={name}
+                    style={{
+                      display:
+                        secondaryStack.length === 0 && currentPrimaryPage === name
+                          ? 'block'
+                          : 'none'
+                    }}
+                  >
+                    <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
+                  </div>
+                ))}
+                {secondaryStack.length > 0 &&
+                secondaryStack[secondaryStack.length - 1]?.url?.includes(
+                  '/settings/wallet/history'
+                ) ? null : (
+                  <BottomNavigationBar />
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex h-dvh w-full overflow-hidden">
+                  <Sidebar />
+                  <div className="grid w-full min-w-0 grid-cols-2 gap-2 p-2">
+                    <div className="min-h-0 overflow-hidden rounded-2xl border border-border/30 bg-background shadow-lg">
+                      {primaryPages.map(({ name, props }) => (
+                        <div
+                          key={name}
+                          className="h-full w-full"
+                          style={{
+                            display: currentPrimaryPage === name ? 'block' : 'none'
+                          }}
+                        >
+                          <LazyPage
+                            Component={PRIMARY_PAGE_MAP[name]}
+                            pageKey={name}
+                            props={props}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="min-h-0 overflow-hidden rounded-2xl border border-border/30 bg-background shadow-lg">
+                      {!!secondaryStack.length &&
+                        secondaryStack.map((item, index) => (
+                          <div
+                            key={item.index}
+                            className="h-full w-full"
+                            style={{
+                              display: index === secondaryStack.length - 1 ? 'block' : 'none'
+                            }}
+                          >
+                            {item.element && <item.element />}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
                 </div>
-              ))}
-            {primaryPages.map(({ name, props }) => (
-              <div
-                key={name}
-                style={{
-                  display:
-                    secondaryStack.length === 0 && currentPrimaryPage === name ? 'block' : 'none'
-                }}
-              >
-                <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
-              </div>
-            ))}
-            {secondaryStack.length > 0 &&
-            secondaryStack[secondaryStack.length - 1]?.url?.includes('/settings/wallet/history') ? null : (
-              <BottomNavigationBar />
+                <BackgroundAudio className="fixed bottom-4 end-4 z-50 w-80 overflow-hidden rounded-2xl border shadow-lg" />
+              </>
             )}
             <TooManyRelaysAlertDialog />
           </NotificationProvider>
@@ -344,7 +388,10 @@ function isCurrentPage(stack: TStackItem[], url: string) {
   return currentPage.url === url
 }
 
-function findAndCloneElement(url: string, index: number): { element: React.ComponentType | null; ref: RefObject<TPageRef> | null } {
+function findAndCloneElement(
+  url: string,
+  index: number
+): { element: React.ComponentType | null; ref: RefObject<TPageRef> | null } {
   return createSecondaryLazyElement(url, index)
 }
 
