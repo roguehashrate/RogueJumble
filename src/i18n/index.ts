@@ -82,19 +82,18 @@ function detectLanguage(): TLanguage {
   return 'en'
 }
 
-async function loadLocale(lng: TLanguage) {
-  if (loadedBundles.has(lng) || lng === 'en') return
+type TLocaleBundle = { translation: Record<string, string> }
+
+const enBundle: TLocaleBundle = en as unknown as TLocaleBundle
+
+// Fetch a locale module (deduped). Returns null when the language doesn't need
+// a fetch (English is bundled / already loaded).
+async function fetchLocale(lng: TLanguage): Promise<TLocaleBundle | null> {
+  if (loadedBundles.has(lng) || lng === 'en') return null
   loadedBundles.add(lng)
   const module = await languageModules[lng as keyof typeof languageModules]()
-  const bundle = module.default as Resource
-  i18n.addResourceBundle(lng, 'translation', bundle.translation, true, true)
+  return module.default as TLocaleBundle
 }
-
-// English is always available (bundled), so the app can render immediately
-// without waiting for any locale fetch.
-const enBundle = en as unknown as Resource
-i18n.addResourceBundle('en', 'translation', enBundle.translation, true, true)
-loadedBundles.add('en')
 
 /**
  * Initialize i18n, fetching only the bundles that are actually needed: English
@@ -102,13 +101,23 @@ loadedBundles.add('en')
  */
 export async function initI18n(): Promise<typeof i18n> {
   const primary = detectLanguage()
-  if (primary !== 'en') {
-    await loadLocale(primary)
+  const resources: Resource = { en: enBundle }
+  const primaryBundle = await fetchLocale(primary)
+  if (primaryBundle) {
+    resources[primary] = primaryBundle
   }
 
   i18n.on('languageChanged', (lng) => {
     const lang = convertDetectedLanguage(String(lng))
-    if (lang) loadLocale(lang)
+    if (!lang) return
+    // After init the instance exposes addResourceBundle; load lazily on switch.
+    void fetchLocale(lang).then((bundle) => {
+      if (bundle && typeof i18n.addResourceBundle === 'function') {
+        i18n.addResourceBundle(lang, 'translation', bundle.translation, true, true)
+        // Re-emit so react-i18next re-renders now that the bundle is available.
+        i18n.changeLanguage(lang)
+      }
+    })
   })
 
   await i18n
@@ -116,7 +125,7 @@ export async function initI18n(): Promise<typeof i18n> {
     .use(initReactI18next)
     .init({
       fallbackLng: 'en',
-      resources: {},
+      resources,
       interpolation: {
         escapeValue: false // react already safes from xss
       },
