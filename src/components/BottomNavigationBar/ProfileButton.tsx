@@ -7,7 +7,7 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 export default function ProfileButton() {
   const { checkLogin, pubkey } = useNostr()
   const { navigate, current, display } = usePrimaryPage()
-  const { pop, currentIndex } = useSecondaryPage()
+  const { resetToRoot } = useSecondaryPage()
   const isActive = current === 'profile' && display
 
   return (
@@ -17,7 +17,7 @@ export default function ProfileButton() {
         haptic('click')
         if (pubkey) {
           if (!display) {
-            pop(-(currentIndex + 1))
+            resetToRoot()
           }
           navigate('profile')
         } else {

@@ -8,7 +8,7 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 export default function NotificationsButton() {
   const { checkLogin } = useNostr()
   const { navigate, current, display } = usePrimaryPage()
-  const { pop, currentIndex } = useSecondaryPage()
+  const { resetToRoot } = useSecondaryPage()
   const { unreadCount } = useNotification()
   const isActive = current === 'notifications' && display
 
@@ -19,7 +19,7 @@ export default function NotificationsButton() {
         haptic('click')
         checkLogin(() => {
           if (!display) {
-            pop(-(currentIndex + 1))
+            resetToRoot()
           }
           navigate('notifications')
         })

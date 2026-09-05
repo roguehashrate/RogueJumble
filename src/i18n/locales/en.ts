@@ -833,5 +833,6 @@ export default {
     'Bitcoin on-chain sending needs a secret-key sign-in to unlock.': 'Bitcoin on-chain sending needs a secret-key sign-in to unlock.',
     'Sign in with a secret key to view and manage your on-chain Bitcoin.': 'Sign in with a secret key to view and manage your on-chain Bitcoin.',
     'Read-only balance. Sign in with a secret key to send on-chain.': 'Read-only balance. Sign in with a secret key to send on-chain.',
+    'Back to home': 'Back to home',
   }
 }

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { usePrimaryPage } from '@/PageManager'
+import { usePrimaryPage, useSecondaryPage } from '@/PageManager'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useUserPreferences } from '@/providers/UserPreferencesProvider'
@@ -32,6 +32,7 @@ export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: bo
   const { sidebarCollapse, updateSidebarCollapse } = useUserPreferences()
   const { pubkey } = useNostr()
   const { navigate } = usePrimaryPage()
+  const { resetToRoot } = useSecondaryPage()
 
   if (isSmallScreen) return null
 
@@ -58,7 +59,10 @@ export default function PrimaryPageSidebar({ iconRail = false }: { iconRail?: bo
             'flex w-full items-center justify-center transition-opacity hover:opacity-80',
             iconRail ? 'mb-6 px-2 py-1' : collapse ? 'mb-4 px-3 py-1' : 'mb-4 px-4'
           )}
-          onClick={() => navigate('home')}
+          onClick={() => {
+            resetToRoot()
+            navigate('home')
+          }}
           aria-label="Go to home"
         >
           <SidebarLogo size={iconRail ? 'small' : 'normal'} />

@@ -5,7 +5,7 @@ import BottomNavigationBarItem from './BottomNavigationBarItem'
 
 export default function HomeButton() {
   const { navigate, current, display } = usePrimaryPage()
-  const { pop, currentIndex } = useSecondaryPage()
+  const { resetToRoot } = useSecondaryPage()
   const isActive = current === 'home' && display
 
   return (
@@ -14,7 +14,7 @@ export default function HomeButton() {
       onClick={() => {
         haptic('click')
         if (!display) {
-          pop(-(currentIndex + 1))
+          resetToRoot()
         }
         navigate('home')
       }}

@@ -27,6 +27,7 @@ type TPrimaryPageContext = {
 type TSecondaryPageContext = {
   push: (url: string) => void
   pop: (delta?: number) => void
+  resetToRoot: () => void
   currentIndex: number
   currentUrl: string | null
 }
@@ -251,6 +252,16 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
     }
   }
 
+  // Reset the secondary page stack so the feed is shown again. Used by the
+  // "Home" affordances (dock + sidebar + not-found page) so users always have a
+  // reliable way back to the feed regardless of how deep they navigated.
+  const resetSecondaryStack = () => {
+    if (secondaryStack.length > 0) {
+      window.history.replaceState(null, '', '/')
+      setSecondaryStack([])
+    }
+  }
+
   const primaryDisplay = isSmallScreen ? secondaryStack.length === 0 : true
 
   return (
@@ -265,6 +276,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
         value={{
           push: pushSecondaryPage,
           pop: popSecondaryPage,
+          resetToRoot: resetSecondaryStack,
           currentIndex: secondaryStack.length ? secondaryStack[secondaryStack.length - 1].index : 0,
           currentUrl: secondaryStack.length ? secondaryStack[secondaryStack.length - 1].url : null
         }}
@@ -297,12 +309,7 @@ export function PageManager({ maxStackSize = 5 }: { maxStackSize?: number }) {
                     <LazyPage Component={PRIMARY_PAGE_MAP[name]} pageKey={name} props={props} />
                   </div>
                 ))}
-                {secondaryStack.length > 0 &&
-                secondaryStack[secondaryStack.length - 1]?.url?.includes(
-                  '/settings/wallet/history'
-                ) ? null : (
-                  <BottomNavigationBar />
-                )}
+                <BottomNavigationBar />
               </>
             ) : (
               <>
